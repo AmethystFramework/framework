@@ -1,2 +1,3 @@
 export * from "./src/classes/mod.ts";
-export * from "./src/monitors/command_handler.ts";
+export * from "./src/monitors/mod.ts";
+export * from "./src/types/mod.ts";

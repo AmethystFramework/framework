@@ -1,5 +1,5 @@
 import { Collection, startBot } from "../../deps.ts";
-import { executeCommand } from "../monitors/command_handler.ts";
+import { executeNormalCommand } from "../monitors/mod.ts";
 import { CommandClientOptions } from "../types/clientOptions.ts";
 import { Command } from "../types/Command.ts";
 import { CommandClientEvents } from "../types/eventHandlers.ts";
@@ -39,7 +39,7 @@ export class CommandClient extends SimpleClient {
         ...this.eventHandlers,
         messageCreate: (message) => {
           this.eventHandlers.messageCreate?.(message);
-          executeCommand(this, message);
+          executeNormalCommand(this, message);
         },
       },
     });
