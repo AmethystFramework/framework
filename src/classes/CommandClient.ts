@@ -25,6 +25,12 @@ export class CommandClient extends SimpleClient {
     this.eventHandlers.commandAdd?.(command);
   }
 
+  /** Creates a command */
+  deleteCommand(command: Command) {
+    this.commands.delete(command.name);
+    this.eventHandlers.commandAdd?.(command);
+  }
+
   /** Start the bot */
   async start() {
     return await startBot({
