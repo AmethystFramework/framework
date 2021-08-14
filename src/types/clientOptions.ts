@@ -8,4 +8,6 @@ export interface CommandClientOptions extends SimpleClientOptions {
   prefix: string | ((message: DiscordenoMessage) => Promise<string> | string);
   /** The owner ids of the bot */
   ownerIds?: (bigint | string)[];
+  /** The dir of your command folder */
+  commandDir?: string;
 }

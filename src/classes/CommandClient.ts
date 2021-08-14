@@ -31,8 +31,34 @@ export class CommandClient extends SimpleClient {
     this.eventHandlers.commandAdd?.(command);
   }
 
+  /** Loads a command file */
+  async load(dir: string) {
+    const cmdClass = await import(`file://${Deno.realPathSync(dir)}`);
+    const cmd: Command = new cmdClass.default();
+    this.addCommand(cmd);
+    return cmd;
+  }
+
+  /** Load all commands in a directory */
+  async loadAll(path?: string): Promise<void> {
+    if (!path && !this.options.commandDir)
+      throw "You have to specify a path or setup a command dir.";
+    path = (path || this.options.commandDir)!.replaceAll("\\", "/");
+    const files = Deno.readDirSync(Deno.realPathSync(path));
+    for (const file of files) {
+      if (!file.name) continue;
+      const currentPath = `${path}/${file.name}`;
+      if (file.isFile) {
+        if (!currentPath.endsWith(".ts")) continue;
+        await this.load(currentPath);
+        continue;
+      }
+      this.loadAll(currentPath);
+    }
+  }
+
   /** Start the bot */
-  async start() {
+  async start(): Promise<void> {
     return await startBot({
       ...this.options,
       eventHandlers: {
