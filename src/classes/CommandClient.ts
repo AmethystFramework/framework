@@ -1,4 +1,4 @@
-import { Collection } from "../../deps.ts";
+import { Collection, startBot } from "../../deps.ts";
 import { executeCommand } from "../monitors/command_handler.ts";
 import { CommandClientOptions } from "../types/clientOptions.ts";
 import { Command } from "../types/Command.ts";
@@ -14,16 +14,28 @@ export class CommandClient extends SimpleClient {
     super(options);
     this.prefix = options.prefix;
     this.options = options;
-    this.eventHandlers.messageCreate = (message) => {
-      executeCommand(this, message);
-    };
   }
 
+  /** Creates a command */
   addCommand(command: Command) {
     this.commands.set(command.name, {
       ...command,
       category: command.category || "misc",
     });
     this.eventHandlers.commandAdd?.(command);
+  }
+
+  /** Start the bot */
+  async start() {
+    return await startBot({
+      ...this.options,
+      eventHandlers: {
+        ...this.eventHandlers,
+        messageCreate: (message) => {
+          this.eventHandlers.messageCreate?.(message);
+          executeCommand(this, message);
+        },
+      },
+    });
   }
 }
