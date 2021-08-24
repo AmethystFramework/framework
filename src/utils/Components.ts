@@ -7,11 +7,13 @@ import {
 
 const snowflakeRegex = /[0-9]{17,19}/;
 
+/** A class containing all options for a select menu */
 export class SelectMenuOptions extends Array<SelectOption> {
   constructor(...args: SelectOption[]) {
     super(...args);
     return this;
   }
+  /** A function that adds an option */
   addOption(
     label: string,
     value: string,
@@ -34,6 +36,7 @@ export class SelectMenuOptions extends Array<SelectOption> {
     return this;
   }
 
+  /** Convert a string to emoji */
   stringToEmoji(emoji?: string | bigint) {
     if (!emoji) return;
 
@@ -53,6 +56,7 @@ export class SelectMenuOptions extends Array<SelectOption> {
   }
 }
 
+/** A class to add components to use in a message */
 export class Components extends Array<ActionRow> {
   constructor(...args: ActionRow[]) {
     super(...args);
@@ -60,6 +64,7 @@ export class Components extends Array<ActionRow> {
     return this;
   }
 
+  /** Add an action row */
   addActionRow() {
     // Don't allow more than 5 Action Rows
     if (this.length === 5) return this;
@@ -71,6 +76,7 @@ export class Components extends Array<ActionRow> {
     return this;
   }
 
+  /** Add a select menu to the components */
   addSelectMenu(
     id: string,
     options: SelectOption[],
@@ -100,6 +106,7 @@ export class Components extends Array<ActionRow> {
     return this;
   }
 
+  /** Add a button to the components */
   addButton(
     label: string,
     style: keyof typeof ButtonStyles,
@@ -144,6 +151,7 @@ export class Components extends Array<ActionRow> {
     return this;
   }
 
+  /** A functions that converts a string to emoji */
   stringToEmoji(emoji?: string | bigint) {
     if (!emoji) return;
 

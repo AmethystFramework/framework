@@ -16,6 +16,7 @@ const embedLimits = {
   total: 6000,
 };
 
+/** A class to setup a rich embed */
 export class Embed {
   /** The amount of characters in the embed. */
   currentTotal = 0;
