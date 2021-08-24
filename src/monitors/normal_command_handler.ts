@@ -49,11 +49,17 @@ async function commandAllowed(
     return { type: 1, context: ctx };
 
   // Checks if the command is DMs only
-  if (command.dmOnly && (ctx.guild || ctx.message.channel?.type !== 1))
+  if (
+    (command.dmOnly || client.dmsOnly) &&
+    (ctx.guild || ctx.message.channel?.type !== 1)
+  )
     return { type: 2, context: ctx };
 
   // Checks if the command is guilds only
-  if (command.guildOnly && (!ctx.guild || ctx.message.channel?.type === 1))
+  if (
+    (command.guildOnly || client.guildsOnly) &&
+    (!ctx.guild || ctx.message.channel?.type === 1)
+  )
     return { type: 3, context: ctx };
 
   if (
@@ -98,7 +104,7 @@ async function commandAllowed(
     ))
   )
     return {
-      type: 4,
+      type: 5,
       context: ctx,
       channel: false,
       value: command.botServerPermissions,
@@ -114,7 +120,7 @@ async function commandAllowed(
     ))
   )
     return {
-      type: 4,
+      type: 5,
       context: ctx,
       channel: true,
       value: command.botChannelPermissions,

@@ -10,4 +10,8 @@ export interface CommandClientOptions extends SimpleClientOptions {
   ownerIds?: (bigint | string)[];
   /** The dir of your command folder */
   commandDir?: string;
+  /** Whether the bot is guild only */
+  guildOnly?: boolean;
+  /** Whether the bot is dms only */
+  dmOnly?: boolean;
 }

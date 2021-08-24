@@ -9,11 +9,17 @@ export class CommandClient extends SimpleClient {
   public readonly prefix: CommandClientOptions["prefix"];
   public readonly commands: Collection<string, Command> = new Collection();
   public readonly options: CommandClientOptions;
+  public readonly guildsOnly: boolean;
+  public readonly dmsOnly: boolean;
   public eventHandlers: Partial<CommandClientEvents> = {};
   constructor(options: CommandClientOptions) {
     super(options);
     this.prefix = options.prefix;
     this.options = options;
+    if (options.dmOnly && options.guildOnly)
+      throw "The command client can't be dms only and guilds only at the same time";
+    this.guildsOnly = options.guildOnly ?? false;
+    this.dmsOnly = options.dmOnly ?? false;
   }
 
   /** Creates a command */
@@ -59,13 +65,17 @@ export class CommandClient extends SimpleClient {
 
   /** Start the bot */
   async start(): Promise<void> {
+    if (!this.guildsOnly && !this.options.intents.includes("DirectMessages"))
+      this.options.intents.push("DirectMessages");
+    if (!this.dmsOnly && !this.options.intents.includes("GuildMessages"))
+      this.options.intents.push("GuildMessages");
     return await startBot({
       ...this.options,
       eventHandlers: {
         ...this.eventHandlers,
         messageCreate: (message) => {
-          this.eventHandlers.messageCreate?.(message);
           executeNormalCommand(this, message);
+          this.eventHandlers.messageCreate?.(message);
         },
       },
     });
