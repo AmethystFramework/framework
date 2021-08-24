@@ -43,7 +43,7 @@ async function commandAllowed(
   // DM channels aren't nsfw
   if (
     command.nsfw &&
-    ctx.guild?.nsfwLevel != 3 &&
+    ctx.guild?.nsfwLevel !== 3 &&
     (!ctx.guild || ctx.message.channel?.type === 1 || ctx.message.channel?.nsfw)
   )
     return { type: 1, context: ctx };
@@ -65,7 +65,12 @@ async function commandAllowed(
       command.userServerPermissions
     ))
   )
-    return { type: 4, context: ctx, value: command.userServerPermissions };
+    return {
+      type: 4,
+      context: ctx,
+      channel: false,
+      value: command.userServerPermissions,
+    };
 
   if (
     command.userChannelPermissions?.length &&
@@ -76,8 +81,44 @@ async function commandAllowed(
       command.userChannelPermissions
     ))
   )
-    return { type: 4, context: ctx, value: command.userChannelPermissions };
+    return {
+      type: 4,
+      context: ctx,
+      channel: true,
+      value: command.userChannelPermissions,
+    };
 
+  if (
+    command.botServerPermissions?.length &&
+    ctx.guild &&
+    !(await hasGuildPermissions(
+      ctx.guild.id,
+      ctx.message.authorId,
+      command.botServerPermissions
+    ))
+  )
+    return {
+      type: 4,
+      context: ctx,
+      channel: false,
+      value: command.botServerPermissions,
+    };
+
+  if (
+    command.botChannelPermissions?.length &&
+    ctx.guild &&
+    !(await hasChannelPermissions(
+      ctx.guild.id,
+      ctx.message.authorId,
+      command.botChannelPermissions
+    ))
+  )
+    return {
+      type: 4,
+      context: ctx,
+      channel: true,
+      value: command.botChannelPermissions,
+    };
   return true;
 }
 

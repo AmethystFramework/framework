@@ -1,8 +1,8 @@
 import { Permission } from "../../deps.ts";
-import { Command as command } from "../types/Command.ts";
+import { Command } from "../types/Command.ts";
 import { CommandContext } from "../types/commandContext.ts";
 
-export class Command implements command {
+export class CommandClass implements Command {
   /** The command's name */
   // @ts-ignore -
   public name: string;
@@ -24,7 +24,7 @@ export class Command implements command {
   public userChannelPermissions?: Permission[];
   /** Executes the command */
   execute?: (ctx: CommandContext) => Promise<void> | void;
-  constructor(CommandOptions: command) {
+  constructor(CommandOptions: Command) {
     Object.keys(CommandOptions).forEach((key) => {
       // @ts-ignore -
       this[key] = CommandOptions[key];

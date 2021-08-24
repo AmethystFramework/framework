@@ -5,6 +5,8 @@ export interface Command {
   name: string;
   /** Command category */
   category?: string;
+  /** The command description */
+  description?: string;
   /** Command aliases */
   aliases?: string[];
   /** Check whether the command should be dms only */
@@ -19,6 +21,10 @@ export interface Command {
   userServerPermissions?: Permission[];
   /** Checks for user channel permissions */
   userChannelPermissions?: Permission[];
+  /** Checks for bot server permissions */
+  botServerPermissions?: Permission[];
+  /** Checks for bot channel permissions */
+  botChannelPermissions?: Permission[];
   /** Executes the command */
   execute?: (ctx: CommandContext) => Promise<void> | void;
 }
