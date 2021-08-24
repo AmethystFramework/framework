@@ -3,9 +3,11 @@ import { Command } from "./Command.ts";
 import { CommandContext } from "./commandContext.ts";
 import { AmethystError } from "./error.ts";
 
+/** The simple client events */
 // deno-lint-ignore no-empty-interface
 export interface SimpleClientEvents extends EventHandlers {}
 
+/** The command client's events which extends the simple client's */
 export interface CommandClientEvents extends SimpleClientEvents {
   /** Executes when a command is added */
   commandAdd: (command: Command) => Promise<void> | void;

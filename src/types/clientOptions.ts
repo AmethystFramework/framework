@@ -1,8 +1,9 @@
 import { BotConfig, DiscordenoMessage } from "../../deps.ts";
-
+/** The simple client's options */
 // deno-lint-ignore no-empty-interface
 export interface SimpleClientOptions extends Omit<BotConfig, "eventHandlers"> {}
 
+/** The command client's options which is an extension of the SimpleClientOptions */
 export interface CommandClientOptions extends SimpleClientOptions {
   /** The prefix for the commands */
   prefix: string | ((message: DiscordenoMessage) => Promise<string> | string);

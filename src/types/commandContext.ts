@@ -1,6 +1,7 @@
 import { DiscordenoGuild, DiscordenoMessage } from "../../deps.ts";
 import { CommandClient } from "../classes/CommandClient.ts";
 
+/** The command context that is used in commands and some events */
 export interface CommandContext {
   /** The command message */
   message: DiscordenoMessage;
