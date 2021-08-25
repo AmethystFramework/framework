@@ -41,7 +41,7 @@ export class CommandClient extends SimpleClient {
   /** Deletes a command */
   deleteCommand(command: Command) {
     this.commands.delete(command.name);
-    this.eventHandlers.commandAdd?.(command);
+    this.eventHandlers.commandRemove?.(command);
   }
 
   /** Loads a command file */
