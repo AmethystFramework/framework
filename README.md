@@ -1,3 +1,3 @@
 # Amethyst
 
-A powerful discordeno framework
+A powerful discordeno framework.
