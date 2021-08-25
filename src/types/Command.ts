@@ -1,5 +1,5 @@
 import { Permission } from "../../deps.ts";
-import { CommandContext } from "./commandContext.ts";
+import { CommandContext } from "./mod.ts";
 
 /** The default command interface */
 export interface Command {

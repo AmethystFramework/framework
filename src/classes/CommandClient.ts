@@ -1,8 +1,10 @@
 import { startBot } from "../../deps.ts";
 import { executeNormalCommand } from "../monitors/mod.ts";
-import { CommandClientOptions } from "../types/clientOptions.ts";
-import { Command } from "../types/Command.ts";
-import { CommandClientEvents } from "../types/eventHandlers.ts";
+import {
+  CommandClientOptions,
+  Command,
+  CommandClientEvents,
+} from "../types/mod.ts";
 import { AmethystCollection } from "../utils/mod.ts";
 import { SimpleClient } from "./SimpleClient.ts";
 

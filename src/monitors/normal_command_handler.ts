@@ -3,10 +3,9 @@ import {
   hasGuildPermissions,
   hasChannelPermissions,
 } from "../../deps.ts";
-import { CommandClient } from "../classes/CommandClient.ts";
-import { Command } from "../types/Command.ts";
-import { CommandContext } from "../types/commandContext.ts";
-import { AmethystError } from "../types/error.ts";
+import { CommandClient } from "../classes/mod.ts";
+import { Command, CommandContext } from "../types/mod.ts";
+import { AmethystError } from "../types/mod.ts";
 
 function parseCommand(client: CommandClient, commandName: string) {
   const command = client.commands.get(commandName);

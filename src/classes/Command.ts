@@ -1,6 +1,5 @@
 import { Permission } from "../../deps.ts";
-import { Command } from "../types/Command.ts";
-import { CommandContext } from "../types/commandContext.ts";
+import { Command, CommandContext } from "../types/mod.ts";
 
 /** The command class which contains all properties from the Command interface */
 export class CommandClass implements Command {

@@ -1,5 +1,5 @@
 import { DiscordenoGuild, DiscordenoMessage } from "../../deps.ts";
-import { CommandClient } from "../classes/CommandClient.ts";
+import { CommandClient } from "../classes/mod.ts";
 
 /** The command context that is used in commands and some events */
 export interface CommandContext {

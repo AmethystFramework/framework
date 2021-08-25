@@ -1,6 +1,5 @@
 import { EventHandlers } from "../../deps.ts";
-import { Command } from "./Command.ts";
-import { CommandContext } from "./commandContext.ts";
+import { CommandContext, Command } from "./mod.ts";
 import { AmethystError } from "./error.ts";
 
 /** The simple client events */

@@ -1,4 +1,4 @@
-import { CommandContext } from "./commandContext.ts";
+import { CommandContext } from "./mod.ts";
 import { Permission } from "../../deps.ts";
 
 /** The error enums */
