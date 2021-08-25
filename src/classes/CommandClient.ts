@@ -1,8 +1,9 @@
-import { Collection, startBot } from "../../deps.ts";
+import { startBot } from "../../deps.ts";
 import { executeNormalCommand } from "../monitors/mod.ts";
 import { CommandClientOptions } from "../types/clientOptions.ts";
 import { Command } from "../types/Command.ts";
 import { CommandClientEvents } from "../types/eventHandlers.ts";
+import { AmethystCollection } from "../utils/mod.ts";
 import { SimpleClient } from "./SimpleClient.ts";
 
 /** The client that is used for creating commands  */
@@ -10,7 +11,8 @@ export class CommandClient extends SimpleClient {
   /** The bot's prefix */
   public readonly prefix: CommandClientOptions["prefix"];
   /** A collection that keeps all the bot's commands */
-  public readonly commands: Collection<string, Command> = new Collection();
+  public readonly commands: AmethystCollection<string, Command> =
+    new AmethystCollection();
   /** The client's options */
   public readonly options: CommandClientOptions;
   /** Checks whether the bot should only respond to commands in guilds */
