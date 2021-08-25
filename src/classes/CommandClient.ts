@@ -21,6 +21,10 @@ export class CommandClient extends SimpleClient {
   public readonly guildsOnly: boolean;
   /** Checks whether the bot should only respond to commands in dms */
   public readonly dmsOnly: boolean;
+  /** A list of user ids that can surpass cooldowns */
+  public readonly ignoreCooldown: bigint[];
+  /** The default cooldown amount */
+  public readonly defaultCooldown: unknown;
   /** An object that contains all the command client's event functions */
   public eventHandlers: Partial<CommandClientEvents> = {};
   constructor(options: CommandClientOptions) {
@@ -31,6 +35,7 @@ export class CommandClient extends SimpleClient {
       throw "The command client can't be dms only and guilds only at the same time";
     this.guildsOnly = options.guildOnly ?? false;
     this.dmsOnly = options.dmOnly ?? false;
+    this.ignoreCooldown = options.ignoreCooldown?.map((e) => BigInt(e)) ?? [];
   }
 
   /** Creates a command */
@@ -80,6 +85,7 @@ export class CommandClient extends SimpleClient {
       this.options.intents.push("DirectMessages");
     if (!this.dmsOnly && !this.options.intents.includes("GuildMessages"))
       this.options.intents.push("GuildMessages");
+    if (this.options.commandDir) this.loadAll(this.options.commandDir);
     return await startBot({
       ...this.options,
       eventHandlers: {

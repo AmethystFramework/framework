@@ -15,4 +15,6 @@ export interface CommandClientOptions extends SimpleClientOptions {
   guildOnly?: boolean;
   /** Whether the bot is dms only */
   dmOnly?: boolean;
+  /** A list of user ids who can surpass cooldowns */
+  ignoreCooldown?: (bigint | string)[];
 }

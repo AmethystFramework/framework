@@ -6,6 +6,59 @@ import {
 import { CommandClient } from "../classes/mod.ts";
 import { Command, CommandContext } from "../types/mod.ts";
 import { AmethystError } from "../types/mod.ts";
+interface Cooldown {
+  used: number;
+  timestamp: number;
+}
+
+const membersInCooldown = new Map<string, Cooldown>();
+
+function handleCooldown(
+  client: CommandClient,
+  author: bigint,
+  command: Command
+) {
+  if (
+    !command.cooldown ||
+    command.ignoreCooldown?.map((e) => BigInt(e)).includes(author) ||
+    client.ignoreCooldown?.map((e) => BigInt(e)).includes(author)
+  )
+    return false;
+
+  const key = `${author}-${command.name}`;
+  const cooldown = membersInCooldown.get(key);
+  if (cooldown) {
+    if (cooldown.used >= (command.cooldown.allowedUses || 1)) {
+      const now = Date.now();
+      if (cooldown.timestamp > now) {
+        return true;
+      } else {
+        cooldown.used = 0;
+      }
+    }
+
+    membersInCooldown.set(key, {
+      used: cooldown.used + 1,
+      timestamp: Date.now() + command.cooldown.seconds * 1000,
+    });
+    return false;
+  }
+
+  membersInCooldown.set(key, {
+    used: 1,
+    timestamp: Date.now() + command.cooldown.seconds * 1000,
+  });
+  return false;
+}
+
+setInterval(() => {
+  const now = Date.now();
+
+  membersInCooldown.forEach((cooldown, key) => {
+    if (cooldown.timestamp > now) return;
+    membersInCooldown.delete(key);
+  });
+}, 30000);
 
 function parseCommand(client: CommandClient, commandName: string) {
   const command = client.commands.get(commandName);
@@ -31,6 +84,17 @@ async function commandAllowed(
   command: Command,
   ctx: CommandContext
 ): Promise<true | AmethystError> {
+  // Checks for cooldowns
+  if (command.cooldown && handleCooldown(client, ctx.message.authorId, command))
+    return {
+      type: 6,
+      context: ctx,
+      value: {
+        expiresAt: Date.now() + command.cooldown.seconds * 1000,
+        executedAt: Date.now(),
+      },
+    };
+
   // Checks if the executor is the owner of the bot
   if (
     command.ownerOnly &&

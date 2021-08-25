@@ -1,6 +1,11 @@
 import { Permission } from "../../deps.ts";
 import { CommandContext } from "./mod.ts";
 
+export interface CommandCooldown {
+  seconds: number;
+  allowedUses: number;
+}
+
 /** The default command interface */
 export interface Command {
   /** Command name */
@@ -27,6 +32,10 @@ export interface Command {
   botServerPermissions?: Permission[];
   /** Checks for bot channel permissions */
   botChannelPermissions?: Permission[];
+  /** The command cooldown */
+  cooldown?: CommandCooldown;
+  /** A list of user ids that can surpass the cooldown for this command */
+  ignoreCooldown?: (bigint | string)[];
   /** Executes the command */
   execute?: (ctx: CommandContext) => Promise<void> | void;
 }

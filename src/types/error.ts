@@ -9,6 +9,7 @@ export enum CommandError {
   GUILDS_ONLY,
   USER_MISSING_PERMISSIONS,
   BOT_MISSING_PERMISSIONS,
+  COOLDOWN,
 }
 
 /** The default format of the error */
@@ -34,8 +35,15 @@ interface BotPermissionsError extends Omit<BaseError, "type"> {
   value: Permission[];
 }
 
+interface CooldownError extends Omit<BaseError, "type"> {
+  type: CommandError.BOT_MISSING_PERMISSIONS;
+  channel: boolean;
+  value: { expiresAt: number; executedAt: number };
+}
+
 /** The overall error type */
 export type AmethystError =
   | BaseError
   | UserPermissionsError
-  | BotPermissionsError;
+  | BotPermissionsError
+  | CooldownError;
