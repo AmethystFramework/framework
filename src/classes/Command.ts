@@ -1,5 +1,5 @@
 import { Permission } from "../../deps.ts";
-import { Command, CommandContext } from "../types/mod.ts";
+import { Command, CommandContext, CommandCooldown } from "../types/mod.ts";
 
 /** The command class which contains all properties from the Command interface */
 export class CommandClass implements Command {
@@ -22,6 +22,10 @@ export class CommandClass implements Command {
   public userServerPermissions?: Permission[];
   /** Checks for user channel permissions */
   public userChannelPermissions?: Permission[];
+  /** The command cooldown */
+  public cooldown?: CommandCooldown;
+  /** A list of user ids that can surpass the cooldown for this command */
+  public ignoreCooldown?: (bigint | string)[];
   /** Executes the command */
   execute?: (ctx: CommandContext) => Promise<void> | void;
   constructor(CommandOptions: Command) {
