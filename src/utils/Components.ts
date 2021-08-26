@@ -57,7 +57,7 @@ export class SelectMenuOptions extends Array<SelectOption> {
 }
 
 /** A class to add components to use in a message */
-export class Components extends Array<ActionRow> {
+export class AmethystComponents extends Array<ActionRow> {
   constructor(...args: ActionRow[]) {
     super(...args);
 
