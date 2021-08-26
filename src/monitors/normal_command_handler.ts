@@ -74,8 +74,11 @@ export async function ParsePrefix(
   client: CommandClient,
   message: DiscordenoMessage
 ) {
+  const [commandNameWithPrefix] = message.content.split(" ");
   // Returns the prefix directly if it's a string else it executes the function for a custom prefix handler
   if (typeof client.prefix == "string") return client.prefix;
+  else if (typeof client.prefix == "object")
+    return client.prefix.find((e) => commandNameWithPrefix.startsWith(e));
   else return await client.prefix(message);
 }
 
@@ -197,6 +200,7 @@ export async function executeNormalCommand(
 ) {
   // Fetch the prefix
   const prefix = await ParsePrefix(client, message);
+  if (!prefix) return;
   const [commandName] = message.content.substring(prefix.length).split(" ");
   // Fetch the command from the command name
   const command = parseCommand(client, commandName);

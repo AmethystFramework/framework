@@ -17,7 +17,7 @@ const embedLimits = {
 };
 
 /** A class to setup a rich embed */
-export class Embed {
+export class AmethystEmbed {
   /** The amount of characters in the embed. */
   currentTotal = 0;
   /** Whether the limits should be enforced or not. */

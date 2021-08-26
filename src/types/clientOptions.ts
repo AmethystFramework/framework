@@ -6,7 +6,12 @@ export interface SimpleClientOptions extends Omit<BotConfig, "eventHandlers"> {}
 /** The command client's options which is an extension of the SimpleClientOptions */
 export interface CommandClientOptions extends SimpleClientOptions {
   /** The prefix for the commands */
-  prefix: string | ((message: DiscordenoMessage) => Promise<string> | string);
+  prefix:
+    | string
+    | string[]
+    | ((
+        message: DiscordenoMessage
+      ) => Promise<string | string[]> | string | string[]);
   /** The owner ids of the bot */
   ownerIds?: (bigint | string)[];
   /** The dir of your command folder */

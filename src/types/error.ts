@@ -10,15 +10,18 @@ export enum CommandError {
   USER_MISSING_PERMISSIONS,
   BOT_MISSING_PERMISSIONS,
   COOLDOWN,
+  MISSING_REQUIRED_ARGUMENT,
 }
 
 /** The default format of the error */
 interface BaseError {
   type: Exclude<
     CommandError,
-    UserPermissionsError["type"] | BotPermissionsError["type"]
+    | UserPermissionsError["type"]
+    | BotPermissionsError["type"]
+    | CooldownError["type"]
   >;
-  context: CommandContext;
+  context: Omit<CommandContext, "arguments">;
 }
 
 /** The error format that is used everytime the user is missing permissions*/
@@ -41,9 +44,15 @@ interface CooldownError extends Omit<BaseError, "type"> {
   value: { expiresAt: number; executedAt: number };
 }
 
+interface MissingRequiredArgument extends Omit<BaseError, "type"> {
+  type: CommandError.MISSING_REQUIRED_ARGUMENT;
+  value: string;
+}
+
 /** The overall error type */
 export type AmethystError =
   | BaseError
   | UserPermissionsError
   | BotPermissionsError
-  | CooldownError;
+  | CooldownError
+  | MissingRequiredArgument;
