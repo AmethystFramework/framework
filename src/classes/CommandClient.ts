@@ -24,7 +24,7 @@ export class CommandClient extends SimpleClient {
   /** A list of user ids that can surpass cooldowns */
   public readonly ignoreCooldown: bigint[];
   /** The default cooldown amount */
-  public readonly defaultCooldown: unknown;
+  public readonly defaultCooldown: number;
   /** An object that contains all the command client's event functions */
   public eventHandlers: Partial<CommandClientEvents> = {};
   constructor(options: CommandClientOptions) {
