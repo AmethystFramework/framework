@@ -89,4 +89,3 @@ export class AmethystCollection<K, V> extends Map<K, V> {
     return this.values().next().value;
   }
 }
-new AmethystCollection();
