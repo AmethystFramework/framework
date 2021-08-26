@@ -79,7 +79,12 @@ export async function ParsePrefix(
   if (typeof client.prefix == "string") return client.prefix;
   else if (typeof client.prefix == "object")
     return client.prefix.find((e) => commandNameWithPrefix.startsWith(e));
-  else return await client.prefix(message);
+  else {
+    const prefix = await client.prefix(message);
+    if (typeof prefix == "object")
+      return prefix.find((e) => commandNameWithPrefix.startsWith(e));
+    return prefix;
+  }
 }
 
 async function commandAllowed(
