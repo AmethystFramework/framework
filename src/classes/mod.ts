@@ -1,3 +1,4 @@
-export * from "./CommandClient.ts";
-export * from "./SimpleClient.ts";
-export * from "./Command.ts";
+export * from "./clients/CommandClient.ts";
+export * from "./clients/SimpleClient.ts";
+export * from "./structures/Command.ts";
+export * from "./structures/eventClass.ts";

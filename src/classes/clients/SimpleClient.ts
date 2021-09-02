@@ -1,5 +1,5 @@
-import { botId, startBot } from "../../deps.ts";
-import { SimpleClientOptions, SimpleClientEvents } from "../types/mod.ts";
+import { botId, startBot } from "../../../deps.ts";
+import { SimpleClientOptions, SimpleClientEvents } from "../../types/mod.ts";
 
 /** A simple client */
 export class SimpleClient {

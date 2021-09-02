@@ -1,13 +1,13 @@
-import { startBot } from "../../deps.ts";
-import { executeNormalCommand } from "../monitors/mod.ts";
+import { startBot } from "../../../deps.ts";
+import { executeNormalCommand } from "../../monitors/mod.ts";
 import {
   CommandClientOptions,
   Command,
   CommandClientEvents,
-} from "../types/mod.ts";
-import { AmethystCollection } from "../utils/mod.ts";
-import { EventClass } from "./eventClass.ts";
-import { CommandClass } from "./mod.ts";
+} from "../../types/mod.ts";
+import { AmethystCollection } from "../../utils/mod.ts";
+import { EventClass } from "../structures/eventClass.ts";
+import { CommandClass } from "../mod.ts";
 import { SimpleClient } from "./SimpleClient.ts";
 
 /** The client that is used for creating commands  */

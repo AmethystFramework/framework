@@ -1,4 +1,4 @@
-import { CommandClientEvents } from "../types/mod.ts";
+import { CommandClientEvents } from "../../types/mod.ts";
 
 export class EventClass<T extends keyof CommandClientEvents> {
   /** The class type */
