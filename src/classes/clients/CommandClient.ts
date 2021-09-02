@@ -60,7 +60,7 @@ export class CommandClient extends SimpleClient {
     if (!Class.default) return;
     const returned: CommandClass = new Class.default();
     // @ts-ignore -
-    this[`add${returned.type}`](returned);
+    this.addCommand(returned);
     return returned;
   }
 
