@@ -6,7 +6,6 @@ import {
   CommandClientEvents,
 } from "../../types/mod.ts";
 import { AmethystCollection } from "../../utils/mod.ts";
-import { EventClass } from "../structures/eventClass.ts";
 import { CommandClass } from "../mod.ts";
 import { SimpleClient } from "./SimpleClient.ts";
 
@@ -55,19 +54,11 @@ export class CommandClient extends SimpleClient {
     this.eventHandlers.commandRemove?.(command);
   }
 
-  /** Adds an event */
-  // deno-lint-ignore no-explicit-any
-  addEvent(event: EventClass<any>) {
-    // @ts-ignore -
-    this.eventHandlers[event.event] = event.execute ?? (() => {});
-    return event;
-  }
-
   /** Loads a command file */
   async load(dir: string) {
     const Class = await import(`file://${Deno.realPathSync(dir)}`);
-    // deno-lint-ignore no-explicit-any
-    const returned: CommandClass | EventClass<any> = new Class.default();
+    if (!Class.default) return;
+    const returned: CommandClass = new Class.default();
     // @ts-ignore -
     this[`add${returned.type}`](returned);
     return returned;
@@ -82,17 +73,7 @@ export class CommandClient extends SimpleClient {
       const currentPath = `${path}/${file.name}`;
       if (file.isFile) {
         if (!currentPath.endsWith(".ts")) continue;
-        const commandOrEvent = await this.load(currentPath);
-        if (
-          commandOrEvent.type == "Event" &&
-          this.options.dirs?.commands == path
-        )
-          throw "You can't create events in the commands dir.";
-        else if (
-          commandOrEvent.type == "Command" &&
-          this.options.dirs?.events == path
-        )
-          throw "You can't create commands in the events dir.";
+        await this.load(currentPath);
         continue;
       }
       this.loadAll(currentPath);
