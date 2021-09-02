@@ -6,6 +6,8 @@ import {
   CommandClientEvents,
 } from "../types/mod.ts";
 import { AmethystCollection } from "../utils/mod.ts";
+import { EventClass } from "./eventClass.ts";
+import { CommandClass } from "./mod.ts";
 import { SimpleClient } from "./SimpleClient.ts";
 
 /** The client that is used for creating commands  */
@@ -53,26 +55,44 @@ export class CommandClient extends SimpleClient {
     this.eventHandlers.commandRemove?.(command);
   }
 
+  /** Adds an event */
+  // deno-lint-ignore no-explicit-any
+  addEvent(event: EventClass<any>) {
+    // @ts-ignore -
+    this.eventHandlers[event.event] = event.execute ?? (() => {});
+    return event;
+  }
+
   /** Loads a command file */
   async load(dir: string) {
-    const cmdClass = await import(`file://${Deno.realPathSync(dir)}`);
-    const cmd: Command = new cmdClass.default();
-    this.addCommand(cmd);
-    return cmd;
+    const Class = await import(`file://${Deno.realPathSync(dir)}`);
+    // deno-lint-ignore no-explicit-any
+    const returned: CommandClass | EventClass<any> = new Class.default();
+    // @ts-ignore -
+    this[`add${returned.type}`](returned);
+    return returned;
   }
 
   /** Load all commands in a directory */
-  async loadAll(path?: string): Promise<void> {
-    if (!path && !this.options.commandDir)
-      throw "You have to specify a path or setup a command dir.";
-    path = (path || this.options.commandDir)!.replaceAll("\\", "/");
+  async loadAll(path: string): Promise<void> {
+    path = path.replaceAll("\\", "/");
     const files = Deno.readDirSync(Deno.realPathSync(path));
     for (const file of files) {
       if (!file.name) continue;
       const currentPath = `${path}/${file.name}`;
       if (file.isFile) {
         if (!currentPath.endsWith(".ts")) continue;
-        await this.load(currentPath);
+        const commandOrEvent = await this.load(currentPath);
+        if (
+          commandOrEvent.type == "Event" &&
+          this.options.dirs?.commands == path
+        )
+          throw "You can't create events in the commands dir.";
+        else if (
+          commandOrEvent.type == "Command" &&
+          this.options.dirs?.events == path
+        )
+          throw "You can't create commands in the events dir.";
         continue;
       }
       this.loadAll(currentPath);
@@ -85,7 +105,10 @@ export class CommandClient extends SimpleClient {
       this.options.intents.push("DirectMessages");
     if (!this.dmsOnly && !this.options.intents.includes("GuildMessages"))
       this.options.intents.push("GuildMessages");
-    if (this.options.commandDir) this.loadAll(this.options.commandDir);
+    if (this.options.dirs)
+      for (const dir of Object.values(this.options.dirs)) {
+        await this.loadAll(dir);
+      }
     return await startBot({
       ...this.options,
       eventHandlers: {

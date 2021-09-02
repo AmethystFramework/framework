@@ -3,6 +3,11 @@ import { BotConfig, DiscordenoMessage } from "../../deps.ts";
 // deno-lint-ignore no-empty-interface
 export interface SimpleClientOptions extends Omit<BotConfig, "eventHandlers"> {}
 
+interface dirs {
+  commands?: string;
+  events?: string;
+}
+
 /** The command client's options which is an extension of the SimpleClientOptions */
 export interface CommandClientOptions extends SimpleClientOptions {
   /** The prefix for the commands */
@@ -15,7 +20,7 @@ export interface CommandClientOptions extends SimpleClientOptions {
   /** The owner ids of the bot */
   ownerIds?: (bigint | string)[];
   /** The dir of your command folder */
-  commandDir?: string;
+  dirs?: dirs;
   /** Whether the bot is guild only */
   guildOnly?: boolean;
   /** Whether the bot is dms only */

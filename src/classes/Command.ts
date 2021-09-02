@@ -3,6 +3,8 @@ import { Command, CommandContext, CommandCooldown } from "../types/mod.ts";
 
 /** The command class which contains all properties from the Command interface */
 export class CommandClass implements Command {
+  /** The class type */
+  public readonly type = "Command";
   /** The command's name */
   // @ts-ignore -
   public name: string;
