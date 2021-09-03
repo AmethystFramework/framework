@@ -1,4 +1,5 @@
 import { BotConfig, DiscordenoMessage } from "../../deps.ts";
+import { Awaited } from "../utils/types.ts";
 /** The simple client's options */
 // deno-lint-ignore no-empty-interface
 export interface SimpleClientOptions extends Omit<BotConfig, "eventHandlers"> {}
@@ -14,9 +15,7 @@ export interface CommandClientOptions extends SimpleClientOptions {
   prefix:
     | string
     | string[]
-    | ((
-        message: DiscordenoMessage
-      ) => Promise<string | string[]> | string | string[]);
+    | ((message: DiscordenoMessage) => Awaited<string | string[]>);
   /** The owner ids of the bot */
   ownerIds?: (bigint | string)[];
   /** The dir of your command folder */

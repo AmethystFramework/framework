@@ -1,4 +1,5 @@
 import { Permission } from "../../deps.ts";
+import { Awaited } from "../utils/types.ts";
 import { CommandContext } from "./mod.ts";
 
 export interface CommandCooldown {
@@ -37,5 +38,5 @@ export interface Command {
   /** A list of user ids that can surpass the cooldown for this command */
   ignoreCooldown?: (bigint | string)[];
   /** Executes the command */
-  execute?: (ctx: CommandContext) => Promise<void> | void;
+  execute?: (ctx: CommandContext) => Awaited<void>;
 }

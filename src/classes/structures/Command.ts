@@ -1,5 +1,6 @@
 import { Permission } from "../../../deps.ts";
 import { Command, CommandContext, CommandCooldown } from "../../types/mod.ts";
+import { Awaited } from "../../utils/types.ts";
 
 /** The command class which contains all properties from the Command interface */
 export class CommandClass implements Command {
@@ -32,7 +33,7 @@ export class CommandClass implements Command {
   /** A list of user ids that can surpass the cooldown for this command */
   public ignoreCooldown?: (bigint | string)[];
   /** Executes the command */
-  execute?: (ctx: CommandContext) => Promise<void> | void;
+  execute?: (ctx: CommandContext) => Awaited<void>;
   constructor(CommandOptions: Command) {
     this.name = CommandOptions.name;
     this.category = CommandOptions.category ?? "misc";
