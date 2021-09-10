@@ -24,8 +24,6 @@ async function parseArguments(
   const args: { [key: string]: unknown } = {};
   if (!command.arguments) return args;
 
-  let missingRequiredArg = false;
-
   // Clone the parameters so we can modify it without editing original array
   const params = [...parameters];
 
@@ -64,12 +62,12 @@ async function parseArguments(
       args[argument.name] = argument.defaultValue;
     else if (!argument.required) args[argument.name] = undefined;
     // Invalid arg provided.
-    else missingRequiredArg = true;
+    else return argument.name as string;
     break;
   }
 
   // If an arg was missing then return false so we can error out as an object {} will always be truthy
-  return missingRequiredArg ? false : args;
+  return args;
 }
 
 function handleCooldown(
@@ -275,6 +273,7 @@ export async function executeNormalCommand(
   const command = parseCommand(client, commandName);
   if (!command) return;
   // Create the command context
+  // @ts-ignore -
   // deno-lint-ignore no-explicit-any
   const context: CommandContext<any> = {
     message,
@@ -283,7 +282,12 @@ export async function executeNormalCommand(
   };
   // Parsed args and validated
   const args = await parseArguments(client, context, command, parameters);
-  if (!args) return;
+  if (typeof args === "string")
+    return client.eventHandlers.commandFail?.(command, {
+      type: 7,
+      context: context,
+      value: args,
+    });
   // @ts-ignore -
   context.arguments = args;
   // Go through multiple checks

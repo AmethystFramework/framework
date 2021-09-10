@@ -20,6 +20,7 @@ interface BaseError {
     | UserPermissionsError["type"]
     | BotPermissionsError["type"]
     | CooldownError["type"]
+    | MissingRequiredArgument["type"]
   >;
   // deno-lint-ignore no-explicit-any
   context: Omit<CommandContext<any>, "arguments">;
