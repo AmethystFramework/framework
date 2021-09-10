@@ -1,4 +1,4 @@
-import { Argument } from "../structures/Argument.ts";
+import { Argument } from "../mod.ts";
 
 export const stringArgument: Argument<string> = {
   name: "string",

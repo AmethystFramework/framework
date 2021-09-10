@@ -1,6 +1,5 @@
 import { AmethystCollection } from "../../utils/mod.ts";
-import { CommandClient } from "../mod.ts";
-import { Argument } from "../structures/Argument.ts";
+import { CommandClient, Argument } from "../mod.ts";
 import { stringArgument } from "./stringArgument.ts";
 import { multiStringArgument } from "./multiStringArgument.ts";
 

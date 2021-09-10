@@ -1,4 +1,4 @@
-import { Argument } from "../structures/Argument.ts";
+import { Argument } from "../mod.ts";
 
 export const multiStringArgument: Argument<string> = {
   name: "...string",
