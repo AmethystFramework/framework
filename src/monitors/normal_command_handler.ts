@@ -13,10 +13,70 @@ interface Cooldown {
 
 const membersInCooldown = new Map<string, Cooldown>();
 
+async function parseArguments(
+  client: CommandClient,
+  // deno-lint-ignore no-explicit-any
+  ctx: CommandContext<any>,
+  // deno-lint-ignore no-explicit-any
+  command: Command<any>,
+  parameters: string[]
+) {
+  const args: { [key: string]: unknown } = {};
+  if (!command.arguments) return args;
+
+  let missingRequiredArg = false;
+
+  // Clone the parameters so we can modify it without editing original array
+  const params = [...parameters];
+
+  // Loop over each argument and validate
+  for (const argument of command.arguments) {
+    const resolver = client.argumentGenerator.arguments.get(
+      argument.type || "string"
+    );
+    if (!resolver) continue;
+
+    const result = await resolver.execute?.({
+      argument,
+      parameters: params,
+      context: ctx,
+    });
+    if (result !== undefined) {
+      // Assign the valid argument
+      args[argument.name] = result;
+      // This will use up all args so immediately exist the loop.
+      if (
+        argument.type &&
+        [
+          "subcommands",
+          "...strings",
+          "...roles",
+          "...emojis",
+          "...snowflakes",
+        ].includes(argument.type)
+      ) {
+        break;
+      }
+      // Remove a param for the next argument
+      params.shift();
+      continue;
+    } else if (argument.defaultValue)
+      args[argument.name] = argument.defaultValue;
+    else if (!argument.required) args[argument.name] = undefined;
+    // Invalid arg provided.
+    else missingRequiredArg = true;
+    break;
+  }
+
+  // If an arg was missing then return false so we can error out as an object {} will always be truthy
+  return missingRequiredArg ? false : args;
+}
+
 function handleCooldown(
   client: CommandClient,
   author: bigint,
-  command: Command
+  // deno-lint-ignore no-explicit-any
+  command: Command<any>
 ) {
   if (
     !command.cooldown ||
@@ -89,8 +149,10 @@ export async function ParsePrefix(
 
 async function commandAllowed(
   client: CommandClient,
-  command: Command,
-  ctx: CommandContext
+  // deno-lint-ignore no-explicit-any
+  command: Command<any>,
+  // deno-lint-ignore no-explicit-any
+  ctx: CommandContext<any>
 ): Promise<true | AmethystError> {
   // Checks for cooldowns
   if (command.cooldown && handleCooldown(client, ctx.message.authorId, command))
@@ -206,16 +268,24 @@ export async function executeNormalCommand(
   // Fetch the prefix
   const prefix = await ParsePrefix(client, message);
   if (!prefix) return;
-  const [commandName] = message.content.substring(prefix.length).split(" ");
+  const [commandName, ...parameters] = message.content
+    .substring(prefix.length)
+    .split(" ");
   // Fetch the command from the command name
   const command = parseCommand(client, commandName);
   if (!command) return;
   // Create the command context
-  const context: CommandContext = {
+  // deno-lint-ignore no-explicit-any
+  const context: CommandContext<any> = {
     message,
     client,
     guild: message.guild,
   };
+  // Parsed args and validated
+  const args = await parseArguments(client, context, command, parameters);
+  if (!args) return;
+  // @ts-ignore -
+  context.arguments = args;
   // Go through multiple checks
   const cmdAllow = await commandAllowed(client, command, context);
   if (cmdAllow !== true)

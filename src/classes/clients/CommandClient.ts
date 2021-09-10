@@ -6,6 +6,7 @@ import {
   CommandClientEvents,
 } from "../../types/mod.ts";
 import { AmethystCollection } from "../../utils/mod.ts";
+import { ArgumentGenerator } from "../arguments/ArgumentGenerator.ts";
 import { CommandClass } from "../mod.ts";
 import { SimpleClient } from "./SimpleClient.ts";
 
@@ -14,8 +15,13 @@ export class CommandClient extends SimpleClient {
   /** The bot's prefix */
   public readonly prefix: CommandClientOptions["prefix"];
   /** A collection that keeps all the bot's commands */
-  public readonly commands: AmethystCollection<string, Command> =
+  // deno-lint-ignore no-explicit-any
+  public readonly commands: AmethystCollection<string, Command<any>> =
     new AmethystCollection();
+  /** A collection of arguments */
+  public readonly argumentGenerator: ArgumentGenerator = new ArgumentGenerator(
+    this
+  );
   /** The client's options */
   public readonly options: CommandClientOptions;
   /** Checks whether the bot should only respond to commands in guilds */
@@ -40,7 +46,8 @@ export class CommandClient extends SimpleClient {
   }
 
   /** Creates a command */
-  addCommand(command: Command) {
+  // deno-lint-ignore no-explicit-any
+  addCommand(command: Command<any>): void {
     this.commands.set(command.name, {
       ...command,
       category: command.category || "misc",
@@ -49,7 +56,8 @@ export class CommandClient extends SimpleClient {
   }
 
   /** Deletes a command */
-  deleteCommand(command: Command) {
+  // deno-lint-ignore no-explicit-any
+  deleteCommand(command: Command<any>) {
     this.commands.delete(command.name);
     this.eventHandlers.commandRemove?.(command);
   }
@@ -58,8 +66,8 @@ export class CommandClient extends SimpleClient {
   async load(dir: string) {
     const Class = await import(`file://${Deno.realPathSync(dir)}`);
     if (!Class.default) return;
-    const returned: CommandClass = new Class.default();
-    // @ts-ignore -
+    // deno-lint-ignore no-explicit-any
+    const returned: CommandClass<any> = new Class.default();
     this.addCommand(returned);
     return returned;
   }

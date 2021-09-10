@@ -1,6 +1,6 @@
 import { Permission } from "../../deps.ts";
-import { Awaited } from "../utils/types.ts";
-import { CommandContext } from "./mod.ts";
+import { Awaited } from "../utils/mod.ts";
+import { CommandContext, ArgumentDefinition } from "./mod.ts";
 
 export interface CommandCooldown {
   seconds: number;
@@ -8,9 +8,13 @@ export interface CommandCooldown {
 }
 
 /** The default command interface */
-export interface Command {
+export interface Command<
+  T extends ArgumentDefinition[] = ArgumentDefinition[]
+> {
   /** Command name */
   name: string;
+  /** Command arguments */
+  arguments?: T;
   /** Command category */
   category?: string;
   /** The command description */
@@ -38,5 +42,5 @@ export interface Command {
   /** A list of user ids that can surpass the cooldown for this command */
   ignoreCooldown?: (bigint | string)[];
   /** Executes the command */
-  execute?: (ctx: CommandContext) => Awaited<void>;
+  execute?: (ctx: CommandContext<T>) => Awaited<void>;
 }

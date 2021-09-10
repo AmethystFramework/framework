@@ -1,41 +1,51 @@
 import { Permission } from "../../../deps.ts";
-import { Command, CommandContext, CommandCooldown } from "../../types/mod.ts";
+import {
+  ArgumentDefinition,
+  Command,
+  CommandContext,
+  CommandCooldown,
+} from "../../types/mod.ts";
 import { Awaited } from "../../utils/types.ts";
 
 /** The command class which contains all properties from the Command interface */
-export class CommandClass implements Command {
+export class CommandClass<T extends ArgumentDefinition[] = ArgumentDefinition[]>
+  implements Command<T>
+{
   /** The class type */
-  public readonly type = "Command";
+  readonly type = "Command";
   /** The command's name */
-  public name: string;
+  name: string;
+  /** The command arguments */
+  arguments?: T;
   /** The command's category */
-  public category?: string;
+  category?: string;
   /** Command aliases */
-  public aliases?: string[];
+  aliases?: string[];
   /** Check whether the command should be dms only */
-  public dmOnly?: boolean;
+  dmOnly?: boolean;
   /** Check whether the command should be guilds only */
-  public guildOnly?: boolean;
+  guildOnly?: boolean;
   /** Checks if the executor is an owner */
-  public ownerOnly?: boolean;
+  ownerOnly?: boolean;
   /** Checks if the channel is nsfw */
-  public nsfw?: boolean;
+  nsfw?: boolean;
   /** Checks for user server permissions */
-  public userServerPermissions?: Permission[];
+  userServerPermissions?: Permission[];
   /** Checks for user channel permissions */
-  public userChannelPermissions?: Permission[];
+  userChannelPermissions?: Permission[];
   /** Checks for user server permissions */
-  public botServerPermissions?: Permission[];
+  botServerPermissions?: Permission[];
   /** Checks for user channel permissions */
-  public botChannelPermissions?: Permission[];
+  botChannelPermissions?: Permission[];
   /** The command cooldown */
-  public cooldown?: CommandCooldown;
+  cooldown?: CommandCooldown;
   /** A list of user ids that can surpass the cooldown for this command */
-  public ignoreCooldown?: (bigint | string)[];
+  ignoreCooldown?: (bigint | string)[];
   /** Executes the command */
-  execute?: (ctx: CommandContext) => Awaited<void>;
-  constructor(CommandOptions: Command) {
+  execute?: (ctx: CommandContext<T>) => Awaited<void>;
+  constructor(CommandOptions: Command<T>) {
     this.name = CommandOptions.name;
+    this.arguments = CommandOptions.arguments;
     this.category = CommandOptions.category ?? "misc";
     this.aliases = CommandOptions.aliases;
     this.dmOnly = CommandOptions.dmOnly;

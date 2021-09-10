@@ -21,7 +21,8 @@ interface BaseError {
     | BotPermissionsError["type"]
     | CooldownError["type"]
   >;
-  context: Omit<CommandContext, "arguments">;
+  // deno-lint-ignore no-explicit-any
+  context: Omit<CommandContext<any>, "arguments">;
 }
 
 /** The error format that is used everytime the user is missing permissions*/
