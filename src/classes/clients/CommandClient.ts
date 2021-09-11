@@ -19,9 +19,8 @@ export class CommandClient extends SimpleClient {
   public readonly commands: AmethystCollection<string, Command<any>> =
     new AmethystCollection();
   /** A collection of arguments */
-  public readonly argumentGenerator: ArgumentGenerator = new ArgumentGenerator(
-    this
-  );
+  public readonly argumentGenerator: ArgumentGenerator =
+    new ArgumentGenerator();
   /** The client's options */
   public readonly options: CommandClientOptions;
   /** Checks whether the bot should only respond to commands in guilds */
