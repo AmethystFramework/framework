@@ -11,7 +11,7 @@ export class Argument<T = unknown> {
   /** Argument name */
   public readonly name: string;
   /** The argument execution */
-  execute?: (data: executeData) => Awaited<T | undefined>;
+  execute: (data: executeData) => Awaited<T | undefined>;
   constructor(options: Omit<Argument<T>, "type">) {
     this.name = options.name;
     this.execute = options.execute;
