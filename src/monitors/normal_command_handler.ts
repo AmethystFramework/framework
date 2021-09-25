@@ -154,12 +154,17 @@ async function commandAllowed(
   ctx: CommandContext<any>
 ): Promise<true | AmethystError> {
   // Checks for cooldowns
-  if (command.cooldown && handleCooldown(client, ctx.message.authorId, command))
+  if (
+    (command.cooldown || client.defaultCooldown) &&
+    handleCooldown(client, ctx.message.authorId, command)
+  )
     return {
       type: 6,
       context: ctx,
       value: {
-        expiresAt: Date.now() + command.cooldown.seconds * 1000,
+        expiresAt:
+          Date.now() +
+          (command.cooldown || client.defaultCooldown)!.seconds * 1000,
         executedAt: Date.now(),
       },
     };
