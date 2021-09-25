@@ -7,6 +7,7 @@ export interface SimpleClientOptions extends Omit<BotConfig, "eventHandlers"> {}
 interface dirs {
   commands?: string;
   events?: string;
+  tasks?: string;
 }
 
 /** The command client's options which is an extension of the SimpleClientOptions */

@@ -6,9 +6,13 @@ import {
   CommandClientEvents,
 } from "../../types/mod.ts";
 import { AmethystCollection } from "../../utils/mod.ts";
-import { ArgumentGenerator } from "../arguments/ArgumentGenerator.ts";
-import { CommandClass } from "../mod.ts";
+import { CommandClass, AmethystTask, ArgumentGenerator } from "../mod.ts";
 import { SimpleClient } from "./SimpleClient.ts";
+
+interface runningInterval {
+  taskName: string;
+  interval: number;
+}
 
 /** The client that is used for creating commands  */
 export class CommandClient extends SimpleClient {
@@ -31,8 +35,18 @@ export class CommandClient extends SimpleClient {
   public readonly ignoreCooldown: bigint[];
   /** The default cooldown amount */
   public readonly defaultCooldown: unknown;
+  /** If all tasks are loaded by the handleTasks */
+  private tasksReady = false;
   /** An object that contains all the command client's event functions */
   public eventHandlers: Partial<CommandClientEvents> = {};
+  /** A collection that contains all available tasks */
+  public tasks: AmethystCollection<string, AmethystTask> =
+    new AmethystCollection();
+  private runningTasks = {
+    initialTimeouts: [] as number[],
+    intervals: [] as runningInterval[],
+  };
+
   constructor(options: CommandClientOptions) {
     super(options);
     this.prefix = options.prefix;
@@ -61,14 +75,58 @@ export class CommandClient extends SimpleClient {
     this.eventHandlers.commandRemove?.(command);
   }
 
+  /** Creates a task */
+  addTask(task: AmethystTask) {
+    this.tasks.set(task.name, task);
+    if (this.tasksReady) {
+      if (task.startOnReady) task.execute();
+      this.runningTasks.initialTimeouts.push(
+        setTimeout(async () => {
+          await task.execute();
+          this.runningTasks.intervals.push({
+            taskName: task.name,
+            interval: setInterval(task.execute, task.interval),
+          });
+        }, task.interval - (Date.now() % task.interval))
+      );
+    }
+  }
+
+  /** Deletes a task */
+  deleteTask(task: AmethystTask) {
+    if (!this.tasks.has(task.name)) return;
+    clearInterval(
+      this.runningTasks.intervals.find((e) => e.taskName == task.name)
+        ?.interval!
+    );
+    this.tasks.delete(task.name);
+  }
+
   /** Loads a command file */
   async load(dir: string) {
     const Class = await import(`file://${Deno.realPathSync(dir)}`);
     if (!Class.default) return;
     // deno-lint-ignore no-explicit-any
-    const returned: CommandClass<any> = new Class.default();
-    this.addCommand(returned);
+    const returned: CommandClass<any> | AmethystTask = new Class.default();
+    if (returned.type == "Command") this.addCommand(returned);
+    else this.addTask(returned);
     return returned;
+  }
+
+  private handleTasks() {
+    this.tasks.forEach(async (task) => {
+      if (task.startOnReady) await task.execute();
+      this.runningTasks.initialTimeouts.push(
+        setTimeout(async () => {
+          await task.execute();
+          this.runningTasks.intervals.push({
+            taskName: task.name,
+            interval: setInterval(task.execute, task.interval),
+          });
+        }, task.interval - (Date.now() % task.interval))
+      );
+    });
+    this.tasksReady = true;
   }
 
   /** Load all commands in a directory */
@@ -101,6 +159,10 @@ export class CommandClient extends SimpleClient {
       ...this.options,
       eventHandlers: {
         ...this.eventHandlers,
+        ready: () => {
+          if (!this.tasksReady) this.handleTasks();
+          this.eventHandlers.ready?.();
+        },
         messageCreate: (message) => {
           executeNormalCommand(this, message);
           this.eventHandlers.messageCreate?.(message);
