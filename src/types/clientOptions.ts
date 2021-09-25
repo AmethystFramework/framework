@@ -1,5 +1,6 @@
 import { BotConfig, DiscordenoMessage } from "../../deps.ts";
 import { Awaited } from "../utils/types.ts";
+import { CommandCooldown } from "./mod.ts";
 /** The simple client's options */
 // deno-lint-ignore no-empty-interface
 export interface SimpleClientOptions extends Omit<BotConfig, "eventHandlers"> {}
@@ -27,4 +28,6 @@ export interface CommandClientOptions extends SimpleClientOptions {
   dmOnly?: boolean;
   /** A list of user ids who can surpass cooldowns */
   ignoreCooldown?: (bigint | string)[];
+  /** The default cooldown amount */
+  defaultCooldown?: CommandCooldown;
 }

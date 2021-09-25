@@ -76,8 +76,9 @@ function handleCooldown(
   // deno-lint-ignore no-explicit-any
   command: Command<any>
 ) {
+  const commandCooldown = command.cooldown || client.defaultCooldown;
   if (
-    !command.cooldown ||
+    !commandCooldown ||
     command.ignoreCooldown?.map((e) => BigInt(e)).includes(author) ||
     client.ignoreCooldown?.map((e) => BigInt(e)).includes(author)
   )
@@ -86,7 +87,7 @@ function handleCooldown(
   const key = `${author}-${command.name}`;
   const cooldown = membersInCooldown.get(key);
   if (cooldown) {
-    if (cooldown.used >= (command.cooldown.allowedUses || 1)) {
+    if (cooldown.used >= (commandCooldown.allowedUses || 1)) {
       const now = Date.now();
       if (cooldown.timestamp > now) {
         return true;
@@ -97,14 +98,14 @@ function handleCooldown(
 
     membersInCooldown.set(key, {
       used: cooldown.used + 1,
-      timestamp: Date.now() + command.cooldown.seconds * 1000,
+      timestamp: Date.now() + commandCooldown.seconds * 1000,
     });
     return false;
   }
 
   membersInCooldown.set(key, {
     used: 1,
-    timestamp: Date.now() + command.cooldown.seconds * 1000,
+    timestamp: Date.now() + commandCooldown.seconds * 1000,
   });
   return false;
 }

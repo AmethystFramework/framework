@@ -4,6 +4,7 @@ import {
   CommandClientOptions,
   Command,
   CommandClientEvents,
+  CommandCooldown,
 } from "../../types/mod.ts";
 import { AmethystCollection } from "../../utils/mod.ts";
 import { CommandClass, AmethystTask, ArgumentGenerator } from "../mod.ts";
@@ -34,7 +35,7 @@ export class CommandClient extends SimpleClient {
   /** A list of user ids that can surpass cooldowns */
   public readonly ignoreCooldown: bigint[];
   /** The default cooldown amount */
-  public readonly defaultCooldown: unknown;
+  public readonly defaultCooldown?: CommandCooldown;
   /** If all tasks are loaded by the handleTasks */
   private tasksReady = false;
   /** An object that contains all the command client's event functions */
@@ -56,6 +57,7 @@ export class CommandClient extends SimpleClient {
     this.guildsOnly = options.guildOnly ?? false;
     this.dmsOnly = options.dmOnly ?? false;
     this.ignoreCooldown = options.ignoreCooldown?.map((e) => BigInt(e)) ?? [];
+    this.defaultCooldown = options.defaultCooldown;
   }
 
   /** Creates a command */
