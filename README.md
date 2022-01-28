@@ -10,5 +10,3 @@ Amethyst is a powerful and flexible [Discordeno](https://github.com/discordeno/d
 4. More awesome things about our framework for you to discover.
 
 For an example / information please visit our [Example Directory](https://github.com/AmethystFramework/examples)!
-
-**Our docs are currently in progress and will be made eventually.**
