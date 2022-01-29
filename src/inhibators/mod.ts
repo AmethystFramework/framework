@@ -1,0 +1,223 @@
+import {
+  getMissingChannelPermissions,
+  getMissingGuildPermissions,
+} from "../../deps.ts";
+import { AmethystBot } from "../interfaces/bot.ts";
+import { BaseCommand } from "../interfaces/command.ts";
+import { AmethystError, Errors } from "../interfaces/errors.ts";
+import { AmethystCollection } from "../utils/AmethystCollection.ts";
+
+export const inhibitors = new AmethystCollection<
+  string,
+  <T extends BaseCommand = BaseCommand>(
+    bot: AmethystBot,
+    command: T,
+    options?: { memberId?: bigint; guildId?: bigint; channelId: bigint }
+  ) => true | AmethystError
+>();
+
+const membersInCooldown = new Map<string, Cooldown>();
+
+interface Cooldown {
+  used: number;
+  timestamp: number;
+}
+
+inhibitors.set("hasRole", (bot, command, options) => {
+  if (!command.hasRoles?.length || !options?.guildId) return true;
+  if (!options?.memberId)
+    return { type: Errors.MISSING_REQUIRED_ROLES, value: command.hasRoles };
+  const member = bot.members.get(
+    bot.transformers.snowflake(`${options.memberId}${options.guildId}`)
+  );
+  if (command.hasRoles?.some((e) => !member?.roles.includes(e)))
+    return {
+      type: Errors.MISSING_REQUIRED_ROLES,
+      value: command.hasRoles?.filter((e) => !member?.roles.includes(e)),
+    };
+  return true;
+});
+
+inhibitors.set("cooldown", (bot, command, options) => {
+  const commandCooldown = command.cooldown || bot.defaultCooldown;
+  if (
+    !commandCooldown ||
+    (options?.memberId &&
+      (bot.ignoreCooldown?.includes(options?.memberId) ||
+        command.ignoreCooldown?.includes(options.memberId)))
+  )
+    return true;
+
+  const key = `${options!.memberId!}-${command.name}`;
+  const cooldown = membersInCooldown.get(key);
+  if (cooldown) {
+    if (cooldown.used >= (commandCooldown.allowedUses || 1)) {
+      const now = Date.now();
+      if (cooldown.timestamp > now) {
+        return {
+          type: Errors.COOLDOWN,
+          value: {
+            expiresAt: Date.now() + commandCooldown.seconds * 1000,
+            executedAt: Date.now(),
+          },
+        };
+      } else {
+        cooldown.used = 0;
+      }
+    }
+
+    membersInCooldown.set(key, {
+      used: cooldown.used + 1,
+      timestamp: Date.now() + commandCooldown.seconds * 1000,
+    });
+    return {
+      type: Errors.COOLDOWN,
+      value: {
+        expiresAt: Date.now() + commandCooldown.seconds * 1000,
+        executedAt: Date.now(),
+      },
+    };
+  }
+
+  membersInCooldown.set(key, {
+    used: 1,
+    timestamp: Date.now() + commandCooldown.seconds * 1000,
+  });
+  return true;
+});
+
+setInterval(() => {
+  const now = Date.now();
+
+  membersInCooldown.forEach((cooldown, key) => {
+    if (cooldown.timestamp > now) return;
+    membersInCooldown.delete(key);
+  });
+}, 30000);
+
+inhibitors.set("nsfw", (bot, command, options) => {
+  if (
+    !options?.guildId ||
+    !options?.channelId ||
+    !bot.channels.has(options.channelId)
+  )
+    return { type: Errors.NSFW };
+  const channel = bot.channels.get(options.channelId)!;
+  if (!command.nsfw && channel.nsfw) return { type: Errors.NSFW };
+  return true;
+});
+
+inhibitors.set("ownerOnly", (bot, command, options) => {
+  if (
+    command.ownerOnly &&
+    (!options?.memberId || !bot.owners?.includes(options.memberId))
+  )
+    return { type: Errors.OWNER_ONLY };
+  return true;
+});
+
+inhibitors.set("botPermissions", (bot, command, options) => {
+  if (
+    command.botGuildPermissions?.length &&
+    (!options?.guildId ||
+      getMissingGuildPermissions(
+        bot,
+        options.guildId,
+        bot.id,
+        command.botGuildPermissions
+      ).length)
+  )
+    return {
+      type: Errors.BOT_MISSING_PERMISSIONS,
+      channel: false,
+      value: getMissingGuildPermissions(
+        bot,
+        options!.guildId!,
+        bot.id,
+        command.botGuildPermissions
+      ),
+    };
+  if (
+    command.botChannelPermissions?.length &&
+    (!options?.channelId ||
+      getMissingChannelPermissions(
+        bot,
+        options.channelId,
+        bot.id,
+        command.botChannelPermissions
+      ).length)
+  )
+    return {
+      type: Errors.BOT_MISSING_PERMISSIONS,
+      channel: true,
+      value: getMissingChannelPermissions(
+        bot,
+        options!.channelId!,
+        bot.id,
+        command.botChannelPermissions
+      ),
+    };
+  return true;
+});
+
+inhibitors.set("userPermissions", (bot, command, options) => {
+  if (
+    command.userGuildPermissions?.length &&
+    (!options?.guildId ||
+      !options.memberId ||
+      getMissingGuildPermissions(
+        bot,
+        options.guildId,
+        options.memberId,
+        command.userGuildPermissions
+      ).length)
+  )
+    return {
+      type: Errors.USER_MISSING_PERMISSIONS,
+      channel: false,
+      value: getMissingGuildPermissions(
+        bot,
+        options!.guildId!,
+        options!.memberId!,
+        command.userGuildPermissions
+      ),
+    };
+  if (
+    command.userChannelPermissions?.length &&
+    (!options?.memberId ||
+      !options?.channelId ||
+      getMissingChannelPermissions(
+        bot,
+        options.channelId,
+        options.memberId,
+        command.userChannelPermissions
+      ).length)
+  )
+    return {
+      type: Errors.USER_MISSING_PERMISSIONS,
+      channel: true,
+      value: getMissingGuildPermissions(
+        bot,
+        options!.guildId!,
+        options!.memberId!,
+        command.userChannelPermissions
+      ),
+    };
+  return true;
+});
+
+inhibitors.set("guildOrDmOnly", (bot, command, options) => {
+  if (
+    (!options?.guildId && command.guildOnly) ||
+    (options?.guildId && command.dmOnly) ||
+    (!options?.guildId && bot.guildOnly) ||
+    (options?.guildId && bot.dmOnly)
+  )
+    return {
+      type:
+        command.guildOnly && !options?.guildId
+          ? Errors.GUILDS_ONLY
+          : Errors.DMS_ONLY,
+    };
+  return true;
+});

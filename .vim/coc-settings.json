@@ -1,0 +1,6 @@
+{
+"deno.enable": true,
+"coc.preferences.formatOnSaveFiletypes": ["typescript"],
+"deno.lint": true,
+"tsserver.enable": false
+}
