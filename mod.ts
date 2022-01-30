@@ -11,6 +11,7 @@ import { handleSlash } from "./src/handlers/slashCommands.ts";
 import { inhibitors } from "./src/inhibators/mod.ts";
 import { AmethystBotOptions } from "./src/interfaces/AmethystBotOptions.ts";
 import { AmethystBot } from "./src/interfaces/bot.ts";
+import { SlashSubcommand } from "./src/interfaces/command.ts";
 import { AmethystTask } from "./src/interfaces/tasks.ts";
 import { AmethystCollection } from "./src/utils/AmethystCollection.ts";
 import {
@@ -138,32 +139,37 @@ export function enableAmethystPlugin<B extends BotWithCache = BotWithCache>(
     if (Ready) return;
     const bot = raw as AmethystBot;
     registerTasks(bot);
-    console.log(bot.slashCommands);
+
     const globalCommands: MakeRequired<EditGlobalApplicationCommand, "name">[] =
-      bot.slashCommands
-        .filter((e) => !e.scope || e.scope == "global")
-        .map((e) => {
-          return {
-            name: e.name,
-            description: e.description,
-            type: e.type || 1,
-            defaultPermission: e.defaultPermission,
-            options: [
-              ...(e.options || []),
-              ...(e.subcommands?.map((e) =>
-                e.SubcommandType === "subcommand"
-                  ? ({
-                      name: e.name,
-                      description: e.description,
-                      options: e.options,
+      [];
+    const perGuildCommands: MakeRequired<
+      EditGlobalApplicationCommand,
+      "name"
+    >[] = [];
+
+    for (const command of bot.slashCommands.values()) {
+      const slashCmd = {
+        name: command.name,
+        description: command.type == 1 ? command.description : undefined,
+        type: command.type ?? 1,
+        options:
+          command.type == 1
+            ? ([
+                ...(command.options ?? []),
+                ...(command.subcommands?.map((cmd) => {
+                  if (!cmd.SubcommandType || cmd.SubcommandType == "subcommand")
+                    return {
+                      name: cmd.name,
+                      description: cmd.description,
+                      options: (cmd as SlashSubcommand).options,
                       type: 1,
-                    } as ApplicationCommandOption)
-                  : e.SubcommandType == "subcommandGroup"
-                  ? {
-                      name: e.name,
-                      description: e.description,
+                    };
+                  else if (cmd.SubcommandType == "subcommandGroup")
+                    return {
+                      name: cmd.name,
+                      description: cmd.description,
                       type: 2,
-                      options: e.subcommands!.map((e) => {
+                      options: cmd.subcommands?.map((e) => {
                         return {
                           name: e.name,
                           description: e.description,
@@ -171,55 +177,19 @@ export function enableAmethystPlugin<B extends BotWithCache = BotWithCache>(
                           type: 1,
                         };
                       }),
-                    }
-                  : ({} as unknown as ApplicationCommandOption)
-              ) || []),
-            ],
-          };
-        });
-    const perGuildCommands: MakeRequired<
-      EditGlobalApplicationCommand,
-      "name"
-    >[] = bot.slashCommands
-      .filter((e) => e.scope == "guild")
-      .map((e) => {
-        return {
-          name: e.name,
-          description: e.description,
-          type: e.type || 1,
-          defaultPermission: e.defaultPermission,
-          options: [
-            ...(e.options || []),
-            ...(e.subcommands?.map((e) =>
-              e.SubcommandType === "subcommand"
-                ? ({
-                    name: e.name,
-                    description: e.description,
-                    options: e.options,
-                    type: 1,
-                  } as ApplicationCommandOption)
-                : e.SubcommandType == "subcommandGroup"
-                ? {
-                    name: e.name,
-                    description: e.description,
-                    type: 2,
-                    options: e.subcommands!.map((e) => {
-                      return {
-                        name: e.name,
-                        description: e.description,
-                        options: e.options,
-                        type: 1,
-                      };
-                    }),
-                  }
-                : ({} as unknown as ApplicationCommandOption)
-            ) || []),
-          ],
-        };
-      });
-    await bot.helpers.upsertApplicationCommands(globalCommands).catch((e) => {
-      throw e;
-    });
+                    };
+                }) ?? []),
+              ] as ApplicationCommandOption[])
+            : undefined,
+      };
+      if (command.scope === "guild") {
+        perGuildCommands.push(slashCmd);
+      } else if (command.scope === "global") {
+        globalCommands.push(slashCmd);
+      }
+    }
+
+    await bot.helpers.upsertApplicationCommands(globalCommands);
 
     perGuildCommands
       .filter((e) => Boolean(bot.slashCommands.get(e.name)?.guildIds?.length))
