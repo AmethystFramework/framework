@@ -2,6 +2,9 @@ import { ActionRow, ButtonStyles } from "../../deps.ts";
 
 const snowflakeRegex = /[0-9]{17,19}/;
 
+/*
+ * This is a class to help you with creating components
+ */
 export class Components extends Array<ActionRow> {
   constructor(...args: ActionRow[]) {
     super(...args);

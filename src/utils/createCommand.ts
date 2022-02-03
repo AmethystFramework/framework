@@ -7,6 +7,7 @@ import {
   MessageCommand,
 } from "../interfaces/command.ts";
 
+/*Creates a message command*/
 export function createMessageCommand<T extends readonly ArgumentDefinition[]>(
   bot: AmethystBot,
   command: MessageCommand<T>
@@ -14,6 +15,7 @@ export function createMessageCommand<T extends readonly ArgumentDefinition[]>(
   bot.messageCommands.set(command.name, command);
 }
 
+/*Creates a subcommand for a valid message command*/
 export function createMessageSubcommand<
   T extends readonly ArgumentDefinition[]
 >(
@@ -67,10 +69,11 @@ export function createMessageSubcommand<
   command.subcommands.set(subcommand.name, subcommand);
 }
 
+/*Creates a slash command*/
 export function createSlashCommand(bot: AmethystBot, command: SlashSubcommand) {
   bot.slashCommands.set(command.name, command);
 }
-
+/*Creates a subcommand group for a slash command*/
 export async function createSlashSubcommandGroup(
   bot: AmethystBot,
   command: string,
@@ -103,6 +106,7 @@ export async function createSlashSubcommandGroup(
       });
 }
 
+/*Creates a subcommand for a slash command or slash subcommand group*/
 export async function createSlashSubcommand(
   bot: AmethystBot,
   command: string,

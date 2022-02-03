@@ -67,7 +67,7 @@ export async function handleSlash(
   if (
     bot.inhibitors.some(
       (e) =>
-        e(bot, command?.command, {
+        e(bot, command?.command as SlashCommand, {
           guildId: data.guildId,
           channelId: data.channelId!,
           memberId: data.user.id,
@@ -78,7 +78,7 @@ export async function handleSlash(
       data,
       error: bot.inhibitors
         .map((e) =>
-          e(bot, command?.command, {
+          e(bot, command?.command as SlashCommand, {
             guildId: data.guildId,
             channelId: data.channelId!,
             memberId: data.user.id,
@@ -87,7 +87,7 @@ export async function handleSlash(
         .find((e) => typeof e !== "boolean")! as AmethystError,
     });
   try {
-    bot.events.commandStart?.(bot, command!.command!, data);
+    bot.events.commandStart?.(bot, command!.command! as SlashCommand, data);
     command?.command.execute?.(
       bot,
       command.type === "command"
@@ -96,7 +96,7 @@ export async function handleSlash(
         ? { ...data, data: data.data.options?.[0] }
         : { ...data, data: data.data.options?.[0].options?.[0] }
     );
-    bot.events.commandEnd?.(bot, command!.command!, data);
+    bot.events.commandEnd?.(bot, command!.command! as SlashCommand, data);
   } catch (e) {
     if (bot.events.commandError)
       bot.events.commandError(bot, {

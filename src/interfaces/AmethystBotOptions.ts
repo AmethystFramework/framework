@@ -3,7 +3,8 @@ import { Async } from "../utils/types.ts";
 import { AmethystBot } from "./bot.ts";
 import { CommandCooldown } from "./command.ts";
 
-export interface AmethystBotOptions {
+/**A list of options for the amethyst bot*/
+export type AmethystBotOptions = {
   owners?: (bigint | string)[];
   prefix?:
     | string
@@ -15,6 +16,13 @@ export interface AmethystBotOptions {
   botMentionAsPrefix?: boolean;
   defaultCooldown?: CommandCooldown;
   ignoreCooldown?: (string | bigint)[];
-  guildOnly?: boolean;
-  dmOnly?: boolean;
-}
+} & (
+  | {
+      guildOnly?: true;
+      dmOnly?: false;
+    }
+  | {
+      guildOnly?: false;
+      dmOnly: true;
+    }
+);

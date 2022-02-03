@@ -36,6 +36,9 @@ export * from "./src/interfaces/command.ts";
 export * from "./src/interfaces/arguments.ts";
 export * from "./src/interfaces/AmethystBotOptions.ts";
 
+/**
+ * Adds a task to run in an interval
+ */
 export function createTask(bot: AmethystBot, task: AmethystTask) {
   bot.tasks.set(task.name, task);
 }
@@ -65,6 +68,9 @@ function registerTasks(bot: AmethystBot) {
   }
 }
 
+/**
+ * Clears all running tasks
+ */
 export function clearTasks(bot: AmethystBot) {
   for (const timeout of bot.runningTasks.initialTimeouts) clearTimeout(timeout);
   for (const task of bot.runningTasks.intervals) clearInterval(task);
@@ -73,6 +79,9 @@ export function clearTasks(bot: AmethystBot) {
   bot.runningTasks = { initialTimeouts: [], intervals: [] };
 }
 
+/**
+ * Creates the amethyst bot with all it's features
+ */
 export function enableAmethystPlugin<B extends BotWithCache = BotWithCache>(
   rawBot: B,
   options?: AmethystBotOptions
@@ -135,7 +144,8 @@ export function enableAmethystPlugin<B extends BotWithCache = BotWithCache>(
     handleSlash(_ as AmethystBot, data);
   };
   bot.events.ready = async (raw, payload, rawPayload) => {
-    ready(raw, payload, rawPayload);
+    await ready(raw, payload, rawPayload);
+    console.log("hi");
     if (Ready) return;
     const bot = raw as AmethystBot;
     registerTasks(bot);
@@ -192,19 +202,24 @@ export function enableAmethystPlugin<B extends BotWithCache = BotWithCache>(
     await bot.helpers.upsertApplicationCommands(globalCommands);
 
     perGuildCommands
-      .filter((e) => Boolean(bot.slashCommands.get(e.name)?.guildIds?.length))
+      .filter((e) => {
+        const command = bot.slashCommands.get(e.name);
+        return Boolean(command?.scope == "guild" && command?.guildIds?.length);
+      })
       .forEach((cmd) => {
-        bot.slashCommands.get(cmd.name)!.guildIds!.forEach(async (guildId) => {
+        const command = bot.slashCommands.get(cmd.name);
+        if (!command || !("guildIds" in command)) return;
+        command.guildIds.forEach(async (guildId) => {
           await bot.helpers.upsertApplicationCommands([cmd], guildId);
         });
       });
     payload.guilds.forEach(
       async (guildId) =>
         await bot.helpers.upsertApplicationCommands(
-          perGuildCommands.filter(
-            (e) => !bot.slashCommands.get(e.name)?.guildIds?.length,
-            guildId
-          )
+          perGuildCommands.filter((e) => {
+            const command = bot.slashCommands.get(e.name);
+            return command?.scope == "guild" && !command.guildIds?.length;
+          }, guildId)
         )
     );
     Ready = true;

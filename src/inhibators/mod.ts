@@ -24,7 +24,8 @@ interface Cooldown {
 }
 
 inhibitors.set("hasRole", (bot, command, options) => {
-  if (!command.hasRoles?.length || !options?.guildId) return true;
+  if (command.dmOnly || !command.hasRoles?.length || !options?.guildId)
+    return true;
   if (!options?.memberId)
     return { type: Errors.MISSING_REQUIRED_ROLES, value: command.hasRoles };
   const member = bot.members.get(
@@ -117,6 +118,7 @@ inhibitors.set("ownerOnly", (bot, command, options) => {
 });
 
 inhibitors.set("botPermissions", (bot, command, options) => {
+  if (command.dmOnly) return true;
   if (
     command.botGuildPermissions?.length &&
     (!options?.guildId ||
@@ -161,6 +163,7 @@ inhibitors.set("botPermissions", (bot, command, options) => {
 });
 
 inhibitors.set("userPermissions", (bot, command, options) => {
+  if (command.dmOnly) return true;
   if (
     command.userGuildPermissions?.length &&
     (!options?.guildId ||

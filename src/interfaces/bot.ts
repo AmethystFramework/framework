@@ -23,6 +23,7 @@ interface runningTasks {
   intervals: number[];
 }
 
+/**An extended version of BotWithCache with a command handler and extra utils*/
 export type AmethystBot<B extends BotWithCache = BotWithCache> = B &
   AmethystProps & { utils: AmethystUtils };
 
