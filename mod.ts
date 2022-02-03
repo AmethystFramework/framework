@@ -171,7 +171,6 @@ export function enableAmethystPlugin<B extends BotWithCache = BotWithCache>(
   };
   bot.events.ready = async (raw, payload, rawPayload) => {
     await ready(raw, payload, rawPayload);
-    console.log("hi");
     if (Ready) return;
     const bot = raw as AmethystBot;
     registerTasks(bot);
