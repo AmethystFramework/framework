@@ -12,7 +12,8 @@ export function createMessageCommand<T extends readonly ArgumentDefinition[]>(
   bot: AmethystBot,
   command: MessageCommand<T>
 ) {
-  bot.messageCommands.set(command.name, command);
+  // deno-lint-ignore no-explicit-any
+  bot.messageCommands.set(command.name, command as MessageCommand<any>);
 }
 
 /*Creates a subcommand for a valid message command*/
@@ -25,8 +26,9 @@ export function createMessageSubcommand<
   retries = 0
 ) {
   const names = commandName.split("-");
-
-  let command = bot.messageCommands.get(commandName)!;
+  let command: MessageCommand<T> | typeof subcommand = bot.messageCommands.get(
+    commandName
+  )! as MessageCommand<T>;
 
   if (names.length > 1) {
     for (const name of names) {
@@ -44,7 +46,7 @@ export function createMessageSubcommand<
         return;
       }
 
-      command = validCommand;
+      command = validCommand as MessageCommand<T>;
     }
   }
 
@@ -71,6 +73,7 @@ export function createMessageSubcommand<
 
 /*Creates a slash command*/
 export function createSlashCommand(bot: AmethystBot, command: SlashSubcommand) {
+  // @ts-ignore -
   bot.slashCommands.set(command.name, command);
 }
 /*Creates a subcommand group for a slash command*/

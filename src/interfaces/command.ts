@@ -122,7 +122,10 @@ export interface SlashSubcommandGroup {
 }
 
 /**The interface for slash subcommands*/
-export interface SlashSubcommand extends Omit<SlashCommand, "subcommands"> {
+export type SlashSubcommand = BaseCommand & {
+  /**A list of options for the subcommand*/
+  options?: ApplicationCommandOption[];
   /**The subcommand type*/
   SubcommandType?: "subcommand";
-}
+  execute?: (bot: AmethystBot, data: DiscordenoInteraction) => unknown;
+};
