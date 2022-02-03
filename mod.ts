@@ -235,7 +235,7 @@ export function enableAmethystPlugin<B extends BotWithCache = BotWithCache>(
       .forEach((cmd) => {
         const command = bot.slashCommands.get(cmd.name);
         if (!command || !("guildIds" in command)) return;
-        command.guildIds.forEach(async (guildId) => {
+        command.guildIds?.forEach(async (guildId) => {
           await bot.helpers.upsertApplicationCommands([cmd], guildId);
         });
       });

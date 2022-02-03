@@ -103,7 +103,7 @@ export type SlashCommand = MakeRequired<BaseCommand, "description"> & {
          * @default "global"*/
         scope: "guild";
         /**A list of guild ids that will have the command*/
-        guildIds: bigint[];
+        guildIds?: bigint[];
         /**If the command can only be used in dms*/
         dmOnly?: false;
       }
