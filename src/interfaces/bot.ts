@@ -70,6 +70,15 @@ interface AmethystUtils {
   ): void;
   createTask(task: AmethystTask): void;
   clearTasks(): void;
+  createInhibitor<T extends BaseCommand = BaseCommand>(
+    name: string,
+    inhibitor: (
+      bot: AmethystBot,
+      command: T,
+      options?: { memberId?: bigint; guildId?: bigint; channelId: bigint }
+    ) => true | AmethystError
+  ): void;
+  deleteInhibitor(name: string): void;
 }
 
 interface AmethystProps extends BotWithCache {

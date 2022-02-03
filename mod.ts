@@ -11,7 +11,8 @@ import { handleSlash } from "./src/handlers/slashCommands.ts";
 import { inhibitors } from "./src/inhibators/mod.ts";
 import { AmethystBotOptions } from "./src/interfaces/AmethystBotOptions.ts";
 import { AmethystBot } from "./src/interfaces/bot.ts";
-import { SlashSubcommand } from "./src/interfaces/command.ts";
+import { BaseCommand, SlashSubcommand } from "./src/interfaces/command.ts";
+import { AmethystError } from "./src/interfaces/errors.ts";
 import { AmethystTask } from "./src/interfaces/tasks.ts";
 import { AmethystCollection } from "./src/utils/AmethystCollection.ts";
 import {
@@ -79,6 +80,25 @@ export function clearTasks(bot: AmethystBot) {
   bot.runningTasks = { initialTimeouts: [], intervals: [] };
 }
 
+/**Create a custom inhibitor*/
+export function createInhibitor<T extends BaseCommand = BaseCommand>(
+  bot: AmethystBot,
+  name: string,
+  inhibitor: (
+    bot: AmethystBot,
+    command: T,
+    options?: { memberId?: bigint; guildId?: bigint; channelId: bigint }
+  ) => true | AmethystError
+) {
+  // @ts-ignore -
+  bot.inhibitors.set(name, inhibitor);
+}
+
+/**Delete an unwanted inhibitor*/
+export function deleteInhibitor(bot: AmethystBot, name: string) {
+  bot.inhibitors.delete(name);
+}
+
 /**
  * Creates the amethyst bot with all it's features
  */
@@ -111,6 +131,12 @@ export function enableAmethystPlugin<B extends BotWithCache = BotWithCache>(
     },
     createMessageSubcommand: (commandName, sub, retries) => {
       createMessageSubcommand(bot, commandName, sub, retries);
+    },
+    createInhibitor: (name, inhibitor) => {
+      createInhibitor(bot, name, inhibitor);
+    },
+    deleteInhibitor: (name) => {
+      deleteInhibitor(bot, name);
     },
   };
   bot.tasks = new AmethystCollection();
