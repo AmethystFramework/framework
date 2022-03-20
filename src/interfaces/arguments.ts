@@ -1,9 +1,4 @@
-import {
-  DiscordenoChannel,
-  DiscordenoMember,
-  DiscordenoMessage,
-  DiscordenoRole,
-} from "../../deps.ts";
+import { Channel, Member, Message, Role } from "../../deps.ts";
 import { AmethystBot } from "./bot.ts";
 import { MessageCommand } from "./command.ts";
 
@@ -18,7 +13,7 @@ type Identity<T> = { [P in keyof T]: T[P] };
 
 // Define each of the types here
 type BaseDefinition = {
-  missing?: (bot: AmethystBot, message: DiscordenoMessage) => unknown;
+  missing?: (bot: AmethystBot, message: Message) => unknown;
   lowercase?: boolean;
   minimum?: number;
   maximum?: number;
@@ -140,21 +135,21 @@ export type ConvertArgumentDefinitionsToArgs<
         : T[P] extends NumberArgumentDefinition<infer N>
         ? { [_ in N]: number }
         : T[P] extends MemberOptionalArgumentDefinition<infer N>
-        ? { [_ in N]?: DiscordenoMember }
+        ? { [_ in N]?: Member }
         : T[P] extends MemberArgumentDefinition<infer N>
-        ? { [_ in N]: DiscordenoMember }
+        ? { [_ in N]: Member }
         : T[P] extends RoleOptionalArgumentDefinition<infer N>
-        ? { [_ in N]?: DiscordenoRole }
+        ? { [_ in N]?: Role }
         : T[P] extends RoleArgumentDefinition<infer N>
-        ? { [_ in N]: DiscordenoRole }
+        ? { [_ in N]: Role }
         : T[P] extends MultiRoleOptionalArgumentDefinition<infer N>
-        ? { [_ in N]?: DiscordenoRole[] }
+        ? { [_ in N]?: Role[] }
         : T[P] extends MultiRoleArgumentDefinition<infer N>
-        ? { [_ in N]: DiscordenoRole[] }
+        ? { [_ in N]: Role[] }
         : T[P] extends ChannelOptionalArgumentDefinition<infer N>
-        ? { [_ in N]?: DiscordenoChannel }
+        ? { [_ in N]?: Channel }
         : T[P] extends ChannelArgumentDefinition<infer N>
-        ? { [_ in N]: DiscordenoChannel }
+        ? { [_ in N]: Channel }
         : never;
     }[number]
   >
@@ -166,7 +161,7 @@ export interface Argument {
     bot: AmethystBot,
     arg: CommandArgument,
     parameter: string[],
-    message: DiscordenoMessage,
+    message: Message,
     command: MessageCommand<T>
   ): unknown;
 }
@@ -185,7 +180,7 @@ export interface CommandArgument {
     | "guildtextchannel";
 
   /** The function that runs if this argument is required and is missing. */
-  missing?: (bot: AmethystBot, message: DiscordenoMessage) => unknown;
+  missing?: (bot: AmethystBot, message: Message) => unknown;
   /** Whether or not this argument is required. Defaults to true. */
   required?: boolean;
   /** If the type is string, this will force this argument to be lowercase. */

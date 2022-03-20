@@ -1,11 +1,11 @@
 import {
-  DiscordenoInteraction,
+  Interaction,
   ApplicationCommandTypes,
   ApplicationCommandOption,
   Collection,
-  Permission,
+  PermissionStrings,
   MakeRequired,
-  DiscordenoMessage,
+  Message,
 } from "../../deps.ts";
 import {
   ArgumentDefinition,
@@ -45,13 +45,13 @@ export type BaseCommand = {
       /**Checks if the member has the necessary roles to run the command*/
       hasRoles?: bigint[];
       /**The channel permissions needed by the member to execute the command*/
-      userChannelPermissions?: Permission[];
+      userChannelPermissions?: PermissionStrings[];
       /**The guild permissions needed by the member to execute the command*/
-      userGuildPermissions?: Permission[];
+      userGuildPermissions?: PermissionStrings[];
       /**The channel permissions needed by the bot to execute the command*/
-      botChannelPermissions?: Permission[];
+      botChannelPermissions?: PermissionStrings[];
       /**The guild permissions needed by the bot to execute the command*/
-      botGuildPermissions?: Permission[];
+      botGuildPermissions?: PermissionStrings[];
     }
   | {
       /**If the command can only be used in dms*/
@@ -74,7 +74,7 @@ export type MessageCommand<T extends readonly ArgumentDefinition[]> =
     subcommands?: Collection<string, Omit<MessageCommand<T>, "category">>;
     execute?: (
       bot: AmethystBot,
-      message: DiscordenoMessage,
+      message: Message,
       args: ConvertArgumentDefinitionsToArgs<T>
     ) => unknown;
   };
@@ -91,7 +91,7 @@ export type SlashCommand = MakeRequired<BaseCommand, "description"> & {
   options?: ApplicationCommandOption[];
   /**A collection of */
   subcommands?: Collection<string, SlashSubcommandGroup | SlashSubcommand>;
-  execute?: (bot: AmethystBot, data: DiscordenoInteraction) => unknown;
+  execute?: (bot: AmethystBot, data: Interaction) => unknown;
 } & (
     | {
         /**The command scope
@@ -127,5 +127,5 @@ export type SlashSubcommand = BaseCommand & {
   options?: ApplicationCommandOption[];
   /**The subcommand type*/
   SubcommandType?: "subcommand";
-  execute?: (bot: AmethystBot, data: DiscordenoInteraction) => unknown;
+  execute?: (bot: AmethystBot, data: Interaction) => unknown;
 };

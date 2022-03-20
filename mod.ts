@@ -3,6 +3,7 @@ import {
   MakeRequired,
   EditGlobalApplicationCommand,
   Collection,
+  ApplicationCommandOption,
 } from "./deps.ts";
 import { commandArguments } from "./src/arguments/mod.ts";
 import { handleMessageCommands } from "./src/handlers/messageCommands.ts";
@@ -47,12 +48,7 @@ function registerTasks(bot: AmethystBot) {
   for (const task of bot.tasks.values()) {
     bot.runningTasks.initialTimeouts.push(
       setTimeout(async () => {
-        try {
-          await task.execute();
-        } catch (error) {
-          throw error;
-        }
-
+        await task.execute();
         bot.runningTasks.initialTimeouts.push(
           setInterval(async () => {
             if (!Ready) return;
@@ -164,12 +160,6 @@ export function enableAmethystPlugin<B extends BotWithCache = BotWithCache>(
   bot.events.guildCreate = (raw, guild) => {
     guildCreate(raw, guild);
     const bot = raw as AmethystBot;
-    console.log(
-      "hi",
-      bot.slashCommands.filter(
-        (e) => e.scope === "guild" && !e.guildIds?.length
-      )
-    );
     bot.slashCommands
       .filter((cmd) => cmd.scope === "guild" && !cmd.guildIds?.length)
       .forEach((cmd) => {
@@ -192,11 +182,13 @@ export function enableAmethystPlugin<B extends BotWithCache = BotWithCache>(
                               name: cmd.name,
                               description: sub.description!,
                               options: cmd.options,
+                              required: true,
                               type: 1,
                             }
                           : {
                               name: cmd.name,
                               description: sub.description!,
+                              required: true,
                               options: (
                                 sub as SlashSubcommandGroup
                               ).subcommands!.map((sub) => {
@@ -204,6 +196,7 @@ export function enableAmethystPlugin<B extends BotWithCache = BotWithCache>(
                                   name: sub.name,
                                   description: sub.description!,
                                   options: sub.options,
+                                  required: true,
                                   type: 1,
                                 };
                               }),
@@ -249,7 +242,7 @@ export function enableAmethystPlugin<B extends BotWithCache = BotWithCache>(
             : undefined,
         options:
           command.type == 1 || command.type === undefined
-            ? [
+            ? ([
                 ...(command.options || []),
                 ...(command.subcommands?.map((sub) =>
                   sub.SubcommandType == "subcommand"
@@ -275,7 +268,7 @@ export function enableAmethystPlugin<B extends BotWithCache = BotWithCache>(
                         type: 2,
                       }
                 ) || []),
-              ]
+              ] as ApplicationCommandOption[])
             : undefined,
       };
       if (!command.scope || command.scope === "global")

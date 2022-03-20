@@ -1,8 +1,8 @@
 import {
-  EmbedAuthor,
-  EmbedField,
-  EmbedFooter,
-  EmbedImage,
+  DiscordEmbedAuthor,
+  DiscordEmbedField,
+  DiscordEmbedFooter,
+  DiscordEmbedImage,
 } from "../../deps.ts";
 
 const embedLimits = {
@@ -26,14 +26,14 @@ export class AmethystEmbed {
   file?: EmbedFile;
 
   color = 0x41ebf4;
-  fields: EmbedField[] = [];
-  author?: EmbedAuthor;
+  fields: DiscordEmbedField[] = [];
+  author?: DiscordEmbedAuthor;
   description?: string;
-  footer?: EmbedFooter;
-  image?: EmbedImage;
+  footer?: DiscordEmbedFooter;
+  image?: DiscordEmbedImage;
   timestamp?: string;
   title?: string;
-  thumbnail?: EmbedImage;
+  thumbnail?: DiscordEmbedImage;
   url?: string;
 
   constructor(enforceLimits = true) {
@@ -62,7 +62,7 @@ export class AmethystEmbed {
     const finalName = this.enforceLimits
       ? this.fitData(name, embedLimits.authorName)
       : name;
-    this.author = { name: finalName, iconUrl: icon, url };
+    this.author = { name: finalName, icon_url: icon, url };
 
     return this;
   }
@@ -114,7 +114,7 @@ export class AmethystEmbed {
   setFooter(text: string, icon?: string) {
     this.footer = {
       text: this.fitData(text, embedLimits.footerText),
-      iconUrl: icon,
+      icon_url: icon,
     };
 
     return this;

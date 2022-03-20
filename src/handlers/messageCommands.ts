@@ -1,4 +1,4 @@
-import { DiscordenoMessage } from "../../deps.ts";
+import { Message } from "../../deps.ts";
 import { AmethystBot } from "../interfaces/bot.ts";
 import { MessageCommand } from "../interfaces/command.ts";
 import {
@@ -9,7 +9,7 @@ import {
 
 async function parseArguments(
   bot: AmethystBot,
-  message: DiscordenoMessage,
+  message: Message,
   // deno-lint-ignore no-explicit-any
   command: MessageCommand<any>,
   parameters: string[]
@@ -85,7 +85,7 @@ async function parseArguments(
 
 async function executeCommand(
   bot: AmethystBot,
-  message: DiscordenoMessage,
+  message: Message,
   // deno-lint-ignore no-explicit-any
   command: MessageCommand<any>,
   args: string[]
@@ -154,7 +154,7 @@ async function executeCommand(
 
 export async function handleMessageCommands(
   bot: AmethystBot,
-  message: DiscordenoMessage
+  message: Message
 ) {
   const guildPrefix =
     typeof bot.prefix == "function"

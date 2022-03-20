@@ -1,4 +1,4 @@
-import { DiscordenoInteraction } from "../../deps.ts";
+import { Interaction } from "../../deps.ts";
 import { AmethystBot } from "../interfaces/bot.ts";
 import {
   SlashCommand,
@@ -13,34 +13,31 @@ interface commandFetch {
 }
 
 function fetchCommand(
-  data: DiscordenoInteraction,
+  data: Interaction,
   command: SlashCommand
 ): commandFetch | undefined {
   if (!command.subcommands?.size) return { type: "command", command };
   const subGroup: SlashSubcommandGroup | undefined = command.subcommands.find(
     (e) =>
-      data.data!.options![0].type == 2 &&
-      e.name == data.data!.options![0].name &&
+      data.data!.options![0]!.type == 2 &&
+      e.name == data.data!.options![0]!.name &&
       e.SubcommandType == "subcommandGroup"
   ) as SlashSubcommandGroup | undefined;
   if (subGroup)
     return {
       type: "subcommandGroup",
       command: subGroup.subcommands?.get(
-        data.data!.options![0].options![0].name
+        data.data!.options![0]!.options![0]!.name!
       )!,
     };
 
-  const sub = command.subcommands.get(data.data!.options![0].name) as
+  const sub = command.subcommands.get(data.data!.options![0]!.name!) as
     | SlashSubcommand
     | undefined;
   if (sub) return { type: "subcommand", command: sub };
 }
 
-export async function handleSlash(
-  bot: AmethystBot,
-  data: DiscordenoInteraction
-) {
+export async function handleSlash(bot: AmethystBot, data: Interaction) {
   if (
     data.type !== 2 ||
     !data.data?.name ||
@@ -94,7 +91,7 @@ export async function handleSlash(
         ? data
         : command.type === "subcommand"
         ? { ...data, data: data.data.options?.[0] }
-        : { ...data, data: data.data.options?.[0].options?.[0] }
+        : { ...data, data: data.data.options?.[0]?.options?.[0] }
     );
     bot.events.commandEnd?.(bot, command!.command! as SlashCommand, data);
   } catch (e) {

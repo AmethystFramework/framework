@@ -1,4 +1,4 @@
-import { Permission } from "../../deps.ts";
+import { PermissionStrings } from "../../deps.ts";
 
 export enum Errors {
   OWNER_ONLY,
@@ -42,13 +42,13 @@ export interface CooldownError {
 export interface UserPermissionsError {
   type: Errors.USER_MISSING_PERMISSIONS;
   channel: boolean;
-  value: Permission[];
+  value: PermissionStrings[];
 }
 
 export interface BotPermissionsError {
   type: Errors.BOT_MISSING_PERMISSIONS;
   channel: boolean;
-  value: Permission[];
+  value: PermissionStrings[];
 }
 
 export type AmethystError =

@@ -1,7 +1,7 @@
 import {
   BotWithCache,
-  DiscordenoInteraction,
-  DiscordenoMessage,
+  Interaction,
+  Message,
   EventHandlers,
 } from "../../deps.ts";
 import { AmethystCollection } from "../utils/AmethystCollection.ts";
@@ -32,19 +32,19 @@ export interface AmethystEvents extends EventHandlers {
     bot: AmethystBot,
     data: {
       error: AmethystError;
-      data?: DiscordenoInteraction;
-      message?: DiscordenoMessage;
+      data?: Interaction;
+      message?: Message;
     }
   ): unknown;
   commandStart<E extends BaseCommand = BaseCommand>(
     bot: AmethystBot,
     command: E,
-    dataOrMessage: DiscordenoInteraction | DiscordenoMessage
+    dataOrMessage: Interaction | Message
   ): unknown;
   commandEnd<E extends BaseCommand = BaseCommand>(
     bot: AmethystBot,
     command: E,
-    dataOrMessage: DiscordenoInteraction | DiscordenoMessage
+    dataOrMessage: Interaction | Message
   ): unknown;
 }
 
@@ -106,8 +106,5 @@ interface AmethystProps extends BotWithCache {
   prefix?:
     | string
     | string[]
-    | ((
-        bot: AmethystBot,
-        message: DiscordenoMessage
-      ) => Async<string | string[]>);
+    | ((bot: AmethystBot, message: Message) => Async<string | string[]>);
 }
