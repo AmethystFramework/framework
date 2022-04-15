@@ -31,7 +31,7 @@ export class AmethystEmbed {
   description?: string;
   footer?: DiscordEmbedFooter;
   image?: DiscordEmbedImage;
-  timestamp?: string;
+  timestamp?: number;
   title?: string;
   thumbnail?: DiscordEmbedImage;
   url?: string;
