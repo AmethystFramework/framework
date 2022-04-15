@@ -299,14 +299,14 @@ export function enableAmethystPlugin<B extends BotWithCache = BotWithCache>(
                     ...(cmd.subcommands?.map((sub) =>
                       sub.SubcommandType == "subcommand"
                         ? {
-                            name: cmd.name,
+                            name: sub.name,
                             description: sub.description!,
                             options: cmd.options,
                             required: true,
                             type: 1,
                           }
                         : {
-                            name: cmd.name,
+                            name: sub.name,
                             description: sub.description!,
                             required: true,
                             options: (
@@ -371,13 +371,13 @@ export function enableAmethystPlugin<B extends BotWithCache = BotWithCache>(
                 ...(command.subcommands?.map((sub) =>
                   sub.SubcommandType == "subcommand" || !sub.SubcommandType
                     ? {
-                        name: command.name,
+                        name: sub.name,
                         description: sub.description!,
                         options: command.options,
                         type: 1,
                       }
                     : {
-                        name: command.name,
+                        name: sub.name,
                         description: sub.description!,
                         options: (sub as SlashSubcommandGroup).subcommands!.map(
                           (sub) => {
