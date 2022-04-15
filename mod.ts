@@ -15,7 +15,11 @@ import { handleSlash } from "./src/handlers/slashCommands.ts";
 import { inhibitors } from "./src/inhibators/mod.ts";
 import { AmethystBotOptions } from "./src/interfaces/AmethystBotOptions.ts";
 import { AmethystBot } from "./src/interfaces/bot.ts";
-import { BaseCommand, SlashSubcommandGroup } from "./src/interfaces/command.ts";
+import {
+  BaseCommand,
+  SlashSubcommand,
+  SlashSubcommandGroup,
+} from "./src/interfaces/command.ts";
 import { AmethystError } from "./src/interfaces/errors.ts";
 import { AmethystTask } from "./src/interfaces/tasks.ts";
 import { AmethystCollection } from "./src/utils/AmethystCollection.ts";
@@ -297,11 +301,11 @@ export function enableAmethystPlugin<B extends BotWithCache = BotWithCache>(
                   options: [
                     ...(cmd.options || []),
                     ...(cmd.subcommands?.map((sub) =>
-                      sub.SubcommandType == "subcommand"
+                      sub.SubcommandType == "subcommand" || !sub.SubcommandType
                         ? {
                             name: sub.name,
                             description: sub.description!,
-                            options: cmd.options,
+                            options: (sub as SlashSubcommand).options,
                             required: true,
                             type: 1,
                           }
@@ -373,7 +377,7 @@ export function enableAmethystPlugin<B extends BotWithCache = BotWithCache>(
                     ? {
                         name: sub.name,
                         description: sub.description!,
-                        options: command.options,
+                        options: (sub as SlashSubcommand).options,
                         type: 1,
                       }
                     : {
