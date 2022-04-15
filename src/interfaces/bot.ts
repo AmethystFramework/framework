@@ -8,6 +8,15 @@ import { AmethystCollection } from "../utils/AmethystCollection.ts";
 import { Async } from "../utils/types.ts";
 import { Argument, ArgumentDefinition } from "./arguments.ts";
 import {
+  AmethystReaction,
+  ComponentCollector,
+  ComponentCollectorOptions,
+  MessageCollector,
+  MessageCollectorOptions,
+  ReactionCollector,
+  ReactionCollectorOptions,
+} from "./collectors.ts";
+import {
   BaseCommand,
   CommandCooldown,
   MessageCommand,
@@ -49,6 +58,45 @@ export interface AmethystEvents extends EventHandlers {
 }
 
 interface AmethystUtils {
+  awaitComponent(
+    messageId: bigint,
+    options?: ComponentCollectorOptions & { maxUsage?: 1 }
+  ): Promise<Interaction>;
+  awaitComponent(
+    messageId: bigint,
+    options?: ComponentCollectorOptions & { maxUsage?: number }
+  ): Promise<Interaction[]>;
+  awaitComponent(
+    messageId: bigint,
+    options?: ComponentCollectorOptions
+  ): Promise<Interaction>;
+  awaitReaction(
+    messageId: bigint,
+    options?: ReactionCollectorOptions & { maxUsage?: 1 }
+  ): Promise<AmethystReaction>;
+  awaitReaction(
+    messageId: bigint,
+    options?: ReactionCollectorOptions & { maxUsage?: number }
+  ): Promise<AmethystReaction[]>;
+  awaitReaction(
+    messageId: bigint,
+    options?: ReactionCollectorOptions
+  ): Promise<AmethystReaction>;
+  awaitMessage(
+    memberId: bigint,
+    channelId: bigint,
+    options?: MessageCollectorOptions & { maxUsage?: 1 }
+  ): Promise<Message>;
+  awaitMessage(
+    memberId: bigint,
+    channelId: bigint,
+    options?: MessageCollectorOptions & { maxUsage?: number }
+  ): Promise<Message[]>;
+  awaitMessage(
+    memberId: bigint,
+    channelId: bigint,
+    options?: MessageCollectorOptions
+  ): Promise<Message>;
   createMessageCommand<T extends readonly ArgumentDefinition[]>(
     command: MessageCommand<T>
   ): void;
@@ -83,6 +131,9 @@ interface AmethystUtils {
 
 interface AmethystProps extends BotWithCache {
   events: AmethystEvents;
+  messageCollectors: AmethystCollection<string, MessageCollector>;
+  componentCollectors: AmethystCollection<bigint, ComponentCollector>;
+  reactionCollectors: AmethystCollection<bigint, ReactionCollector>;
   runningTasks: runningTasks;
   tasks: AmethystCollection<string, AmethystTask>;
   slashCommands: AmethystCollection<string, SlashCommand>;

@@ -1,9 +1,13 @@
 import {
   BotWithCache,
   MakeRequired,
-  EditGlobalApplicationCommand,
   Collection,
+  CreateApplicationCommand,
+  CreateContextApplicationCommand,
   ApplicationCommandOption,
+  Message,
+  Interaction,
+  Emoji,
 } from "./deps.ts";
 import { commandArguments } from "./src/arguments/mod.ts";
 import { handleMessageCommands } from "./src/handlers/messageCommands.ts";
@@ -15,6 +19,11 @@ import { BaseCommand, SlashSubcommandGroup } from "./src/interfaces/command.ts";
 import { AmethystError } from "./src/interfaces/errors.ts";
 import { AmethystTask } from "./src/interfaces/tasks.ts";
 import { AmethystCollection } from "./src/utils/AmethystCollection.ts";
+import {
+  awaitComponent,
+  awaitMessage,
+  awaitReaction,
+} from "./src/utils/Collectors.ts";
 import {
   createSlashCommand,
   createSlashSubcommandGroup,
@@ -42,6 +51,86 @@ export * from "./src/interfaces/AmethystBotOptions.ts";
  */
 export function createTask(bot: AmethystBot, task: AmethystTask) {
   bot.tasks.set(task.name, task);
+}
+
+function handleMessageCollector(bot: AmethystBot, message: Message) {
+  const collector = bot.messageCollectors.get(
+    `${message.authorId}-${message.channelId}`
+  );
+  // This user has no collectors pending or the message is in a different channel
+  if (!collector || message.channelId !== collector.channelId) return;
+  // This message is a response to a collector. Now running the filter function.
+  if (!collector.filter(bot, message)) return;
+
+  // If the necessary amount has been collected
+  if (
+    collector.maxUsage === 1 ||
+    collector.maxUsage === collector.messages.length + 1
+  ) {
+    // Remove the collector
+    bot.messageCollectors.delete(`${message.authorId}-${message.channelId}`);
+    // Resolve the collector
+    return collector.resolve([...collector.messages, message]);
+  }
+
+  // More messages still need to be collected
+  collector.messages.push(message);
+}
+function handleReactionCollector(
+  bot: AmethystBot,
+  payload: {
+    messageId: bigint;
+    userId: bigint;
+    channelId: bigint;
+    guildId?: bigint;
+    emoji: Emoji;
+  }
+) {
+  const collector = bot.reactionCollectors.get(payload.messageId);
+  if (!collector || !payload.emoji.name || !payload.emoji.id) return;
+  if (!collector.filter(bot, payload)) return;
+
+  if (
+    collector.maxUsage === 1 ||
+    collector.maxUsage === collector.reactions.length + 1
+  ) {
+    bot.componentCollectors.delete(collector.key);
+    return collector.resolve([
+      ...collector.reactions,
+      {
+        name: payload.emoji.name,
+        id: payload.emoji.id,
+        userId: payload.userId,
+        channelId: payload.channelId,
+        messageId: payload.messageId,
+        guildId: payload.guildId,
+      },
+    ]);
+  }
+
+  collector.reactions.push({
+    userId: payload.userId,
+    channelId: payload.channelId,
+    messageId: payload.messageId,
+    guildId: payload.guildId,
+    name: payload.emoji.name,
+    id: payload.emoji.id,
+  });
+}
+function handleComponentCollector(bot: AmethystBot, data: Interaction) {
+  const collector = bot.componentCollectors.get(data.message?.id || 0n);
+  if (!collector) return;
+  if (!collector.filter(bot, data)) return;
+
+  if (
+    collector.maxUsage === 1 ||
+    collector.maxUsage === collector.components.length + 1
+  ) {
+    bot.componentCollectors.delete(collector.key);
+    return collector.resolve([...collector.components, data]);
+  }
+
+  collector.components.push(data);
 }
 
 function registerTasks(bot: AmethystBot) {
@@ -106,6 +195,18 @@ export function enableAmethystPlugin<B extends BotWithCache = BotWithCache>(
   bot.runningTasks = { intervals: [], initialTimeouts: [] };
   bot.utils = {
     ...bot.utils,
+    //@ts-ignore -
+    awaitMessage: (memberId, channelId, options) => {
+      return awaitMessage(bot, memberId, channelId, options);
+    },
+    //@ts-ignore -
+    awaitReaction: (messageId, options) => {
+      return awaitReaction(bot, messageId, options);
+    },
+    //@ts-ignore -
+    awaitComponent: (messageId, options) => {
+      return awaitComponent(bot, messageId, options);
+    },
     clearTasks: () => {
       clearTasks(bot);
     },
@@ -134,7 +235,30 @@ export function enableAmethystPlugin<B extends BotWithCache = BotWithCache>(
       deleteInhibitor(bot, name);
     },
   };
-  bot.tasks = new AmethystCollection();
+  bot.tasks = new AmethystCollection([
+    [
+      "collector",
+      {
+        name: "collector",
+        interval: 600000,
+        execute: () => {
+          const now = Date.now();
+          bot.messageCollectors.forEach((collector, key) => {
+            // This collector has not finished yet.
+            if (collector.createdAt + collector.timeout > now) return;
+
+            // Remove the collector
+            bot.messageCollectors.delete(key);
+            // Reject the promise so code can continue in commands.
+            return collector.reject("User did not send a message in time.");
+          });
+        },
+      },
+    ],
+  ]);
+  bot.messageCollectors = new AmethystCollection();
+  bot.componentCollectors = new AmethystCollection();
+  bot.reactionCollectors = new AmethystCollection();
   bot.slashCommands = new AmethystCollection();
   bot.messageCommands = new AmethystCollection();
   bot.owners = options?.owners?.map((e) =>
@@ -155,7 +279,7 @@ export function enableAmethystPlugin<B extends BotWithCache = BotWithCache>(
     bot.prefix = options.prefix;
   }
   bot.arguments = commandArguments;
-  const { ready, interactionCreate, guildCreate, messageCreate } =
+  const { ready, interactionCreate, guildCreate, messageCreate, reactionAdd } =
     rawBot.events;
   bot.events.guildCreate = (raw, guild) => {
     guildCreate(raw, guild);
@@ -165,47 +289,43 @@ export function enableAmethystPlugin<B extends BotWithCache = BotWithCache>(
       .forEach((cmd) => {
         bot.helpers.upsertApplicationCommands(
           [
-            {
-              name: cmd.name,
-              type: cmd.type,
-              description:
-                cmd.type == 1 || cmd.type === undefined
-                  ? cmd.description
-                  : undefined,
-              options:
-                cmd.type == 1 || cmd.type === undefined
-                  ? [
-                      ...(cmd.options || []),
-                      ...(cmd.subcommands?.map((sub) =>
-                        sub.SubcommandType == "subcommand"
-                          ? {
-                              name: cmd.name,
-                              description: sub.description!,
-                              options: cmd.options,
-                              required: true,
-                              type: 1,
-                            }
-                          : {
-                              name: cmd.name,
-                              description: sub.description!,
-                              required: true,
-                              options: (
-                                sub as SlashSubcommandGroup
-                              ).subcommands!.map((sub) => {
-                                return {
-                                  name: sub.name,
-                                  description: sub.description!,
-                                  options: sub.options,
-                                  required: true,
-                                  type: 1,
-                                };
-                              }),
-                              type: 2,
-                            }
-                      ) || []),
-                    ]
-                  : undefined,
-            },
+            cmd.type == 1 || !cmd.type
+              ? {
+                  name: cmd.name,
+                  type: cmd.type,
+                  description: cmd.description,
+                  options: [
+                    ...(cmd.options || []),
+                    ...(cmd.subcommands?.map((sub) =>
+                      sub.SubcommandType == "subcommand"
+                        ? {
+                            name: cmd.name,
+                            description: sub.description!,
+                            options: cmd.options,
+                            required: true,
+                            type: 1,
+                          }
+                        : {
+                            name: cmd.name,
+                            description: sub.description!,
+                            required: true,
+                            options: (
+                              sub as SlashSubcommandGroup
+                            ).subcommands!.map((sub) => {
+                              return {
+                                name: sub.name,
+                                description: sub.description!,
+                                options: sub.options,
+                                required: true,
+                                type: 1,
+                              };
+                            }),
+                            type: 2,
+                          }
+                    ) || []),
+                  ],
+                }
+              : { name: cmd.name, type: cmd.type },
           ],
           guild.id
         );
@@ -214,10 +334,16 @@ export function enableAmethystPlugin<B extends BotWithCache = BotWithCache>(
   bot.events.messageCreate = (_, msg) => {
     messageCreate(_, msg);
     handleMessageCommands(_ as AmethystBot, msg);
+    handleMessageCollector(_ as AmethystBot, msg);
+  };
+  bot.events.reactionAdd = (_, payload) => {
+    reactionAdd(_, payload);
+    handleReactionCollector(_ as AmethystBot, payload);
   };
   bot.events.interactionCreate = (_, data) => {
     interactionCreate(_, data);
     handleSlash(_ as AmethystBot, data);
+    if (data.type === 3) handleComponentCollector(_ as AmethystBot, data);
   };
   bot.events.ready = async (raw, payload, rawPayload) => {
     await ready(raw, payload, rawPayload);
@@ -225,27 +351,25 @@ export function enableAmethystPlugin<B extends BotWithCache = BotWithCache>(
     const bot = raw as AmethystBot;
     registerTasks(bot);
 
-    const globalCommands: MakeRequired<EditGlobalApplicationCommand, "name">[] =
-      [];
-    const perGuildCommands: MakeRequired<
-      EditGlobalApplicationCommand,
+    const globalCommands: MakeRequired<
+      CreateApplicationCommand | CreateContextApplicationCommand,
       "name"
     >[] = [];
-
+    const perGuildCommands: MakeRequired<
+      CreateContextApplicationCommand | CreateApplicationCommand,
+      "name"
+    >[] = [];
     for (const command of bot.slashCommands.values()) {
-      const slashCmd = {
-        name: command.name,
-        type: command.type,
-        description:
-          command.type === undefined || command.type == 1
-            ? command.description
-            : undefined,
-        options:
-          command.type == 1 || command.type === undefined
-            ? ([
+      const slashCmd =
+        command.type == 1 || !command.type
+          ? {
+              name: command.name,
+              type: command.type,
+              description: command.description,
+              options: [
                 ...(command.options || []),
                 ...(command.subcommands?.map((sub) =>
-                  sub.SubcommandType == "subcommand"
+                  sub.SubcommandType == "subcommand" || !sub.SubcommandType
                     ? {
                         name: command.name,
                         description: sub.description!,
@@ -268,9 +392,9 @@ export function enableAmethystPlugin<B extends BotWithCache = BotWithCache>(
                         type: 2,
                       }
                 ) || []),
-              ] as ApplicationCommandOption[])
-            : undefined,
-      };
+              ] as ApplicationCommandOption[],
+            }
+          : { name: command.name, type: command.type };
       if (!command.scope || command.scope === "global")
         globalCommands.push(slashCmd);
       else if (command.scope === "guild") perGuildCommands.push(slashCmd);
