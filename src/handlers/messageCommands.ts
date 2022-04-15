@@ -99,7 +99,6 @@ async function executeCommand(
   const [argument] =
     // deno-lint-ignore no-explicit-any
     command.arguments?.filter((e: any) => e.type == "subcommand") || [];
-  console.log(argument);
   const subcommand = argument
     ? ((Args as { [key: string]: unknown })[
         argument.name
@@ -135,10 +134,8 @@ async function executeCommand(
     } else if (
       ![subcommand?.name, ...(subcommand?.aliases || [])].includes(args[0])
     ) {
-      console.log("hi");
       executeCommand(bot, message, subcommand!, args);
     } else {
-      console.log("pls");
       const subArgs = args.slice(1);
       executeCommand(bot, message, subcommand!, subArgs);
     }

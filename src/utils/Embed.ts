@@ -31,7 +31,7 @@ export class AmethystEmbed {
   description?: string;
   footer?: DiscordEmbedFooter;
   image?: DiscordEmbedImage;
-  timestamp?: string;
+  timestamp?: number;
   title?: string;
   thumbnail?: DiscordEmbedImage;
   url?: string;
@@ -127,7 +127,7 @@ export class AmethystEmbed {
   }
 
   setTimestamp(time = Date.now()) {
-    this.timestamp = new Date(time).toISOString();
+    this.timestamp = time;
 
     return this;
   }
