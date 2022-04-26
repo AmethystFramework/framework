@@ -4,7 +4,6 @@ import {
   Collection,
   CreateApplicationCommand,
   CreateContextApplicationCommand,
-  ApplicationCommandOption,
   Message,
   Interaction,
   Emoji,
@@ -15,11 +14,7 @@ import { handleSlash } from "./src/handlers/slashCommands.ts";
 import { inhibitors } from "./src/inhibators/mod.ts";
 import { AmethystBotOptions } from "./src/interfaces/AmethystBotOptions.ts";
 import { AmethystBot } from "./src/interfaces/bot.ts";
-import {
-  BaseCommand,
-  SlashSubcommand,
-  SlashSubcommandGroup,
-} from "./src/interfaces/command.ts";
+import { BaseCommand } from "./src/interfaces/command.ts";
 import { AmethystError } from "./src/interfaces/errors.ts";
 import { AmethystTask } from "./src/interfaces/tasks.ts";
 import { AmethystCollection } from "./src/utils/AmethystCollection.ts";
@@ -287,52 +282,12 @@ export function enableAmethystPlugin<B extends BotWithCache = BotWithCache>(
     rawBot.events;
   bot.events.guildCreate = (raw, guild) => {
     guildCreate(raw, guild);
+    console.log("hi");
     const bot = raw as AmethystBot;
     bot.slashCommands
       .filter((cmd) => cmd.scope === "guild" && !cmd.guildIds?.length)
       .forEach((cmd) => {
-        bot.helpers.upsertApplicationCommands(
-          [
-            cmd.type == 1 || !cmd.type
-              ? {
-                  name: cmd.name,
-                  type: cmd.type,
-                  description: cmd.description,
-                  options: [
-                    ...(cmd.options || []),
-                    ...(cmd.subcommands?.map((sub) =>
-                      sub.SubcommandType == "subcommand" || !sub.SubcommandType
-                        ? {
-                            name: sub.name,
-                            description: sub.description!,
-                            options: (sub as SlashSubcommand).options,
-                            required: true,
-                            type: 1,
-                          }
-                        : {
-                            name: sub.name,
-                            description: sub.description!,
-                            required: true,
-                            options: (
-                              sub as SlashSubcommandGroup
-                            ).subcommands!.map((sub) => {
-                              return {
-                                name: sub.name,
-                                description: sub.description!,
-                                options: sub.options,
-                                required: true,
-                                type: 1,
-                              };
-                            }),
-                            type: 2,
-                          }
-                    ) || []),
-                  ],
-                }
-              : { name: cmd.name, type: cmd.type },
-          ],
-          guild.id
-        );
+        bot.helpers.upsertApplicationCommands([cmd], guild.id);
       });
   };
   bot.events.messageCreate = (_, msg) => {
@@ -358,52 +313,14 @@ export function enableAmethystPlugin<B extends BotWithCache = BotWithCache>(
     const globalCommands: MakeRequired<
       CreateApplicationCommand | CreateContextApplicationCommand,
       "name"
-    >[] = [];
+    >[] = bot.slashCommands
+      .filter((e) => !e.scope || e.scope == "global")
+      .array();
     const perGuildCommands: MakeRequired<
       CreateContextApplicationCommand | CreateApplicationCommand,
       "name"
-    >[] = [];
-    for (const command of bot.slashCommands.values()) {
-      const slashCmd =
-        command.type == 1 || !command.type
-          ? {
-              name: command.name,
-              type: command.type,
-              description: command.description,
-              options: [
-                ...(command.options || []),
-                ...(command.subcommands?.map((sub) =>
-                  sub.SubcommandType == "subcommand" || !sub.SubcommandType
-                    ? {
-                        name: sub.name,
-                        description: sub.description!,
-                        options: (sub as SlashSubcommand).options,
-                        type: 1,
-                      }
-                    : {
-                        name: sub.name,
-                        description: sub.description!,
-                        options: (sub as SlashSubcommandGroup).subcommands!.map(
-                          (sub) => {
-                            return {
-                              name: sub.name,
-                              description: sub.description!,
-                              options: sub.options,
-                              type: 1,
-                            };
-                          }
-                        ),
-                        type: 2,
-                      }
-                ) || []),
-              ] as ApplicationCommandOption[],
-            }
-          : { name: command.name, type: command.type };
-      if (!command.scope || command.scope === "global")
-        globalCommands.push(slashCmd);
-      else if (command.scope === "guild") perGuildCommands.push(slashCmd);
-    }
-
+    >[] = bot.slashCommands.filter((e) => e.scope == "guild").array();
+    console.log(bot.slashCommands.get("lol"));
     await bot.helpers.upsertApplicationCommands(globalCommands);
 
     perGuildCommands
@@ -420,13 +337,15 @@ export function enableAmethystPlugin<B extends BotWithCache = BotWithCache>(
       });
     payload.guilds.forEach(
       async (guildId) =>
-        await bot.helpers.upsertApplicationCommands(
-          perGuildCommands.filter((e) => {
-            const command = bot.slashCommands.get(e.name);
-            return command?.scope == "guild" && !command.guildIds?.length;
-          }),
-          guildId
-        )
+        await bot.helpers
+          .upsertApplicationCommands(
+            perGuildCommands.filter((e) => {
+              const command = bot.slashCommands.get(e.name);
+              return command?.scope == "guild" && !command.guildIds?.length;
+            }),
+            guildId
+          )
+          .catch(() => {})
     );
     Ready = true;
   };

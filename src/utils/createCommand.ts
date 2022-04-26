@@ -1,4 +1,4 @@
-import { delay, Collection } from "../../deps.ts";
+import { delay, Collection, ApplicationCommandOption } from "../../deps.ts";
 import { ArgumentDefinition } from "../interfaces/arguments.ts";
 import { AmethystBot } from "../interfaces/bot.ts";
 import {
@@ -96,6 +96,12 @@ export async function createSlashSubcommandGroup(
         retries ? retries + 1 : 1
       );
     }
+  cmd.options?.push({
+    name: subcommand.name,
+    description: subcommand.description,
+    options: [],
+    type: 2,
+  } as unknown as ApplicationCommandOption);
   cmd?.subcommands
     ? cmd.subcommands.set(subcommand.name, subcommand)
     : bot.slashCommands.set(command, {
@@ -153,6 +159,22 @@ export async function createSlashSubcommand(
         ]));
     bot.slashCommands.set(commandNames[0], {
       ...cmd,
+      options: [
+        ...(cmd.options?.filter((e) => e.name !== subcommandGroup.name) || []),
+        {
+          name: subcommandGroup.name,
+          type: 2,
+          description: subcommandGroup.description,
+          options: subcommandGroup.subcommands!.map((e) => {
+            return {
+              name: e.name,
+              description: e.description,
+              type: 1,
+              options: e.options,
+            } as ApplicationCommandOption;
+          }),
+        } as ApplicationCommandOption,
+      ],
       subcommands: new Collection([
         ...(cmd.subcommands?.entries() ?? []),
         [
@@ -164,6 +186,14 @@ export async function createSlashSubcommand(
       ]),
     });
   } else {
+    if (!cmd.options) cmd.options = [];
+    cmd.options.push({
+      name: subcommand.name,
+      description: subcommand.description!,
+      type: 1,
+      options: subcommand.options,
+    } as ApplicationCommandOption);
+
     cmd.subcommands
       ? cmd.subcommands.set(subcommand.name, subcommand)
       : bot.slashCommands.set(command, {
