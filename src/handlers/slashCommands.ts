@@ -54,11 +54,13 @@ export async function handleSlash(bot: AmethystBot, data: Interaction) {
       bot.transformers.snowflake(`${data.user.id}${data.guildId}`),
       await bot.helpers.getMember(data.guildId, data.user.id)
     );
-  if (data.channelId && !bot.channels.has(data.channelId))
+  if (data.channelId && !bot.channels.has(data.channelId)){
+    const channel = await bot.helpers.getChannel(data.channelId)
+    if (!channel) throw "There was an issue fetching the command's channel"
     bot.channels.set(
       data.channelId,
-      await bot.helpers.getChannel(data.channelId)
-    );
+      channel
+    );}
   const cmd = bot.slashCommands.get(data.data.name)!;
   const command = fetchCommand(data, cmd)!;
   if (

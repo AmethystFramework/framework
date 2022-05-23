@@ -184,11 +184,14 @@ export async function handleMessageCommands(
       message.guildId,
       await bot.helpers.getGuild(message.guildId, { counts: true })
     );
-  if (!bot.channels.has(message.channelId))
+  if (!bot.channels.has(message.channelId)){
+    const channel = await bot.helpers.getChannel(message.channelId)
+    if (!channel) throw "There was an issue fetching the message channel"
     bot.channels.set(
       message.channelId,
-      await bot.helpers.getChannel(message.channelId)
+      channel
     );
+  }
   bot.events.commandStart?.(bot, command, message);
   executeCommand(bot, message, command, args);
   bot.events.commandEnd?.(bot, command, message);
