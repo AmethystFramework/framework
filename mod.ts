@@ -1,12 +1,12 @@
 import {
   BotWithCache,
-  MakeRequired,
   Collection,
   CreateApplicationCommand,
   CreateContextApplicationCommand,
-  Message,
-  Interaction,
   Emoji,
+  Interaction,
+  MakeRequired,
+  Message,
 } from "./deps.ts";
 import { commandArguments } from "./src/arguments/mod.ts";
 import { handleMessageCommands } from "./src/handlers/messageCommands.ts";
@@ -24,11 +24,11 @@ import {
   awaitReaction,
 } from "./src/utils/Collectors.ts";
 import {
-  createSlashCommand,
-  createSlashSubcommandGroup,
-  createSlashSubcommand,
   createMessageCommand,
   createMessageSubcommand,
+  createSlashCommand,
+  createSlashSubcommand,
+  createSlashSubcommandGroup,
 } from "./src/utils/createCommand.ts";
 
 let Ready = false;
@@ -54,7 +54,7 @@ export function createTask(bot: AmethystBot, task: AmethystTask) {
 
 function handleMessageCollector(bot: AmethystBot, message: Message) {
   const collector = bot.messageCollectors.get(
-    `${message.authorId}-${message.channelId}`
+    `${message.authorId}-${message.channelId}`,
   );
   // This user has no collectors pending or the message is in a different channel
   if (!collector || message.channelId !== collector.channelId) return;
@@ -83,7 +83,7 @@ function handleReactionCollector(
     channelId: bigint;
     guildId?: bigint;
     emoji: Emoji;
-  }
+  },
 ) {
   const collector = bot.reactionCollectors.get(payload.messageId);
   if (!collector || !payload.emoji.name || !payload.emoji.id) return;
@@ -145,9 +145,9 @@ function registerTasks(bot: AmethystBot) {
             } catch (error) {
               throw error;
             }
-          }, task.interval)
+          }, task.interval),
         );
-      }, task.interval - (Date.now() % task.interval))
+      }, task.interval - (Date.now() % task.interval)),
     );
   }
 }
@@ -170,8 +170,8 @@ export function createInhibitor<T extends BaseCommand = BaseCommand>(
   inhibitor: (
     bot: AmethystBot,
     command: T,
-    options?: { memberId?: bigint; guildId?: bigint; channelId: bigint }
-  ) => true | AmethystError
+    options?: { memberId?: bigint; guildId?: bigint; channelId: bigint },
+  ) => true | AmethystError,
 ) {
   // @ts-ignore -
   bot.inhibitors.set(name, inhibitor);
@@ -187,7 +187,7 @@ export function deleteInhibitor(bot: AmethystBot, name: string) {
  */
 export function enableAmethystPlugin<B extends BotWithCache = BotWithCache>(
   rawBot: B,
-  options?: AmethystBotOptions
+  options?: AmethystBotOptions,
 ) {
   rawBot.enabledPlugins.add("AMETHYST");
   const bot = rawBot as AmethystBot<B>;
@@ -268,10 +268,11 @@ export function enableAmethystPlugin<B extends BotWithCache = BotWithCache>(
   bot.ignoreCooldown = options?.ignoreCooldown?.map((e) => BigInt(e));
   bot.guildOnly = options?.guildOnly;
   bot.dmOnly = options?.dmOnly;
-  if (bot.guildOnly && bot.dmOnly)
+  if (bot.guildOnly && bot.dmOnly) {
     throw new Error(
-      "You can't have both guild only and dm only options enabled at the same time"
+      "You can't have both guild only and dm only options enabled at the same time",
     );
+  }
   bot.inhibitors = inhibitors;
   if (options?.prefix) {
     bot.arguments = new AmethystCollection();
@@ -343,9 +344,9 @@ export function enableAmethystPlugin<B extends BotWithCache = BotWithCache>(
               const command = bot.slashCommands.get(e.name);
               return command?.scope == "guild" && !command.guildIds?.length;
             }),
-            guildId
+            guildId,
           )
-          .catch(() => {})
+          .catch(() => {}),
     );
     Ready = true;
   };

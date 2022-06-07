@@ -1,4 +1,4 @@
-import { build } from "https://deno.land/x/dnt@0.17.0/mod.ts";
+import { build } from "https://deno.land/x/dnt@0.25.2/mod.ts";
 
 await Deno.remove("npm", { recursive: true }).catch((_) => {});
 
@@ -6,20 +6,6 @@ await build({
   shims: {
     deno: true,
     timers: true,
-    custom: [
-      {
-        package: {
-          name: "ws",
-          version: "^8.4.0",
-        },
-        globalNames: [
-          {
-            name: "WebSocket",
-            exportName: "default",
-          },
-        ],
-      },
-    ],
   },
   package: {
     author: "some-boi",
@@ -41,9 +27,9 @@ await build({
   },
   entryPoints: ["./mod.ts"],
   mappings: {
-    "https://deno.land/x/discordeno@13.0.0-rc35/mod.ts": {
+    "https://deno.land/x/discordeno@13.0.0-rc45/mod.ts": {
       name: "discordeno",
-      version: "13.0.0-rc35",
+      version: "13.0.0-rc45",
     },
   },
   outDir: "./npm",
