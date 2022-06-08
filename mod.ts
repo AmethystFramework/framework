@@ -1,11 +1,8 @@
 import {
   BotWithCache,
   Collection,
-  CreateApplicationCommand,
-  CreateContextApplicationCommand,
   Emoji,
   Interaction,
-  MakeRequired,
   Message,
 } from "./deps.ts";
 import { commandArguments } from "./src/arguments/mod.ts";
@@ -283,7 +280,6 @@ export function enableAmethystPlugin<B extends BotWithCache = BotWithCache>(
     rawBot.events;
   bot.events.guildCreate = (raw, guild) => {
     guildCreate(raw, guild);
-    console.log("hi");
     const bot = raw as AmethystBot;
     bot.slashCommands
       .filter((cmd) => cmd.scope === "guild" && !cmd.guildIds?.length)
@@ -310,44 +306,23 @@ export function enableAmethystPlugin<B extends BotWithCache = BotWithCache>(
     if (Ready) return;
     const bot = raw as AmethystBot;
     registerTasks(bot);
-
-    const globalCommands: MakeRequired<
-      CreateApplicationCommand | CreateContextApplicationCommand,
-      "name"
-    >[] = bot.slashCommands
-      .filter((e) => !e.scope || e.scope == "global")
-      .array();
-    const perGuildCommands: MakeRequired<
-      CreateContextApplicationCommand | CreateApplicationCommand,
-      "name"
-    >[] = bot.slashCommands.filter((e) => e.scope == "guild").array();
-    console.log(bot.slashCommands.get("lol"));
-    await bot.helpers.upsertApplicationCommands(globalCommands);
-
-    perGuildCommands
-      .filter((e) => {
-        const command = bot.slashCommands.get(e.name);
-        return Boolean(command?.scope == "guild" && command?.guildIds?.length);
-      })
-      .forEach((cmd) => {
-        const command = bot.slashCommands.get(cmd.name);
-        if (!command || command.scope !== "guild") return;
-        command.guildIds?.forEach(async (guildId) => {
-          await bot.helpers.upsertApplicationCommands([cmd], guildId);
-        });
-      });
-    payload.guilds.forEach(
-      async (guildId) =>
-        await bot.helpers
-          .upsertApplicationCommands(
-            perGuildCommands.filter((e) => {
-              const command = bot.slashCommands.get(e.name);
-              return command?.scope == "guild" && !command.guildIds?.length;
-            }),
-            guildId,
-          )
-          .catch(() => {}),
+    bot.helpers.upsertApplicationCommands(
+      bot.slashCommands.filter((e) => !e.scope || e.scope == "global").array(),
     );
+    payload.guilds.forEach((guildId) => {
+      bot.helpers.upsertApplicationCommands(
+        bot.slashCommands.filter((e) =>
+          e.scope == "guild" && !e.guildIds?.length
+        ).array(),
+        guildId,
+      );
+    });
+    bot.slashCommands.forEach((cmd) => {
+      if (cmd.scope != "guild" || !cmd.guildIds?.length) return;
+      cmd.guildIds.forEach((guildId) =>
+        bot.helpers.upsertApplicationCommands([cmd], guildId)
+      );
+    });
     Ready = true;
   };
   return bot;
