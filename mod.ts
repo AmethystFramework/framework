@@ -27,6 +27,11 @@ import {
   createSlashSubcommand,
   createSlashSubcommandGroup,
 } from "./src/utils/createCommand.ts";
+import {
+  loadCommands,
+  loadEvents,
+  loadInhibitors,
+} from "./src/utils/fileLoader.ts";
 
 let Ready = false;
 
@@ -278,53 +283,63 @@ export function enableAmethystPlugin<
     bot.prefix = options.prefix;
   }
   bot.arguments = commandArguments;
-  const { ready, interactionCreate, guildCreate, messageCreate, reactionAdd } =
-    bot.events;
-  bot.events.guildCreate = (bot, guild) => {
-    guildCreate(bot, guild);
-    bot.slashCommands
-      .filter((cmd) => cmd.scope === "guild" && !cmd.guildIds?.length)
-      .forEach((cmd) => {
-        bot.helpers.upsertApplicationCommands([cmd], guild.id);
-      });
-  };
-  bot.events.messageCreate = (_, msg) => {
-    messageCreate(_, msg);
-    handleMessageCommands(_ as AmethystBot, msg);
-    handleMessageCollector(_ as AmethystBot, msg);
-  };
-  bot.events.reactionAdd = (_, payload) => {
-    reactionAdd(_, payload);
-    handleReactionCollector(_ as AmethystBot, payload);
-  };
-  bot.events.interactionCreate = (_, data) => {
-    interactionCreate(_, data);
-    handleSlash(_ as AmethystBot, data);
-    if (data.type === 3) handleComponentCollector(_ as AmethystBot, data);
-  };
-  bot.events.ready = async (raw, payload, rawPayload) => {
-    await ready(raw, payload, rawPayload);
-    if (Ready) return;
-    const bot = raw as AmethystBot;
-    registerTasks(bot);
-    bot.helpers.upsertApplicationCommands(
-      bot.slashCommands.filter((e) => !e.scope || e.scope == "global").array(),
-    );
-    payload.guilds.forEach((guildId) => {
+  (async () => {
+    if (options?.eventDir) await loadEvents(bot, options.eventDir);
+    if (options?.commandDir) await loadCommands(bot, options.commandDir);
+    if (options?.inhibitorDir) await loadInhibitors(bot, options.inhibitorDir);
+    const {
+      ready,
+      interactionCreate,
+      guildCreate,
+      messageCreate,
+      reactionAdd,
+    } = bot.events;
+    bot.events.guildCreate = (bot, guild) => {
+      guildCreate(bot, guild);
+      bot.slashCommands
+        .filter((cmd) => cmd.scope === "guild" && !cmd.guildIds?.length)
+        .forEach((cmd) => {
+          bot.helpers.upsertApplicationCommands([cmd], guild.id);
+        });
+    };
+    bot.events.messageCreate = (_, msg) => {
+      messageCreate(_, msg);
+      handleMessageCommands(_, msg);
+      handleMessageCollector(_, msg);
+    };
+    bot.events.reactionAdd = (_, payload) => {
+      reactionAdd(_, payload);
+      handleReactionCollector(_, payload);
+    };
+    bot.events.interactionCreate = (_, data) => {
+      interactionCreate(_, data);
+      handleSlash(_, data);
+      if (data.type === 3) handleComponentCollector(_, data);
+    };
+    bot.events.ready = (bot, payload, rawPayload) => {
+      ready(bot, payload, rawPayload);
+      if (Ready) return;
+      registerTasks(bot);
       bot.helpers.upsertApplicationCommands(
-        bot.slashCommands.filter((e) =>
-          e.scope == "guild" && !e.guildIds?.length
-        ).array(),
-        guildId,
+        bot.slashCommands.filter((e) => !e.scope || e.scope == "global")
+          .array(),
       );
-    });
-    bot.slashCommands.forEach((cmd) => {
-      if (cmd.scope != "guild" || !cmd.guildIds?.length) return;
-      cmd.guildIds.forEach((guildId) =>
-        bot.helpers.upsertApplicationCommands([cmd], guildId)
-      );
-    });
-    Ready = true;
-  };
+      payload.guilds.forEach((guildId) => {
+        bot.helpers.upsertApplicationCommands(
+          bot.slashCommands.filter((e) =>
+            e.scope == "guild" && !e.guildIds?.length
+          ).array(),
+          guildId,
+        );
+      });
+      bot.slashCommands.forEach((cmd) => {
+        if (cmd.scope != "guild" || !cmd.guildIds?.length) return;
+        cmd.guildIds.forEach((guildId) =>
+          bot.helpers.upsertApplicationCommands([cmd], guildId)
+        );
+      });
+      Ready = true;
+    };
+  })();
   return bot;
 }

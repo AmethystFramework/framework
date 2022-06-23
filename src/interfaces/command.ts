@@ -36,7 +36,7 @@ export type BaseCommand =
     /**A list of member and role ids that can bypass the command cooldown*/
     ignoreCooldown?: bigint[];
     /** Execute the command */
-    execute(bot: AmethystBot, ctx: context): unknown;
+    //    execute(bot: AmethystBot, ctx: context): unknown;
   }
   & (
     | {

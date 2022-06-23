@@ -16,6 +16,7 @@ export type AmethystBotOptions =
     ignoreCooldown?: (string | bigint)[];
     commandDir?: string;
     eventDir?: string;
+    inhibitorDir?: string;
   }
   & (
     | {
