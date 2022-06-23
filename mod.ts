@@ -182,7 +182,9 @@ export function deleteInhibitor(bot: AmethystBot, name: string) {
 /**
  * Creates the amethyst bot with all it's features
  */
-export function enableAmethystPlugin<B extends BotWithCache = BotWithCache>(
+export function enableAmethystPlugin<
+  B extends Omit<BotWithCache, "events"> = Omit<BotWithCache, "events">,
+>(
   rawBot: B,
   options?: AmethystBotOptions,
 ) {
@@ -277,10 +279,9 @@ export function enableAmethystPlugin<B extends BotWithCache = BotWithCache>(
   }
   bot.arguments = commandArguments;
   const { ready, interactionCreate, guildCreate, messageCreate, reactionAdd } =
-    rawBot.events;
-  bot.events.guildCreate = (raw, guild) => {
-    guildCreate(raw, guild);
-    const bot = raw as AmethystBot;
+    bot.events;
+  bot.events.guildCreate = (bot, guild) => {
+    guildCreate(bot, guild);
     bot.slashCommands
       .filter((cmd) => cmd.scope === "guild" && !cmd.guildIds?.length)
       .forEach((cmd) => {
