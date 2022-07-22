@@ -1,17 +1,18 @@
 import { Message } from "../../deps.ts";
 import { AmethystBot } from "../interfaces/bot.ts";
-import { MessageCommand } from "../interfaces/command.ts";
+import { Command } from "../interfaces/command.ts";
 import {
-  AmethystError,
+  //AmethystError,
   Errors,
-  MissingRequiredArguments,
+  //MissingRequiredArguments,
 } from "../interfaces/errors.ts";
+import { createContext } from "../utils/createContext.ts";
 
-async function parseArguments(
+/*async function parseArguments(
   bot: AmethystBot,
   message: Message,
   // deno-lint-ignore no-explicit-any
-  command: MessageCommand<any>,
+  command: BaseCommand<"message">,
   parameters: string[],
 ) {
   const args: { [key: string]: unknown } = {};
@@ -81,33 +82,31 @@ async function parseArguments(
       value: missedRequiredArgs[0],
     } as MissingRequiredArguments)
     : args;
-}
+}*/
 
-async function executeCommand(
+function executeCommand(
   bot: AmethystBot,
   message: Message,
-  // deno-lint-ignore no-explicit-any
-  command: MessageCommand<any>,
-  args: string[],
+  command: Command<"message">
+  //  args: string[],
 ) {
-  const Args = await parseArguments(bot, message, command, args);
+  /*const Args = await parseArguments(bot, message, command, args);
   if (Args.value) {
     return bot.events.commandError?.(bot, {
       message,
       error: Args as unknown as AmethystError,
     });
-  }
-  const [argument] =
-    // deno-lint-ignore no-explicit-any
-    command.arguments?.filter((e: any) => e.type == "subcommand") || [];
-  const subcommand = argument
+  }*/
+  //const [argument] =
+  //command.arguments?.filter((e: any) => e.type == "subcommand") || [];
+  /*const subcommand = argument
     ? ((Args as { [key: string]: unknown })[
       argument.name
       // deno-lint-ignore no-explicit-any
     ] as MessageCommand<any>)
-    : undefined;
+    : undefined;*/
   try {
-    if (!argument || argument.type !== "subcommand" || !subcommand) {
+    /*if (!argument || argument.type !== "subcommand" || !subcommand) {
       if (
         bot.inhibitors.some(
           (e) =>
@@ -130,17 +129,17 @@ async function executeCommand(
             )
             .find((e) => typeof e !== "boolean")! as AmethystError,
         });
-      }
-      // @ts-ignore -
-      command.execute?.(bot, message, Args);
-    } else if (
+      }*/
+    // @ts-ignore -
+    command.execute?.(bot, createContext({ message }));
+    /*} else if (
       ![subcommand?.name, ...(subcommand?.aliases || [])].includes(args[0])
     ) {
       executeCommand(bot, message, subcommand!, args);
     } else {
       const subArgs = args.slice(1);
       executeCommand(bot, message, subcommand!, subArgs);
-    }
+    }*/
   } catch (e) {
     if (bot.events.commandError) {
       bot.events.commandError(bot, {
@@ -153,14 +152,16 @@ async function executeCommand(
 
 export async function handleMessageCommands(
   bot: AmethystBot,
-  message: Message,
+  message: Message
 ) {
-  const guildPrefix = typeof bot.prefix == "function"
-    ? await bot.prefix(bot, message)
-    : bot.prefix;
-  let prefix = typeof guildPrefix == "string"
-    ? guildPrefix
-    : guildPrefix?.find((e) => message.content.startsWith(e));
+  const guildPrefix =
+    typeof bot.prefix == "function"
+      ? await bot.prefix(bot, message)
+      : bot.prefix;
+  let prefix =
+    typeof guildPrefix == "string"
+      ? guildPrefix
+      : guildPrefix?.find((e) => message.content.startsWith(e));
   if (!prefix && bot.botMentionAsPrefix) prefix = `<@${bot.id}>`;
   if (
     !prefix ||
@@ -170,34 +171,28 @@ export async function handleMessageCommands(
   }
   const args = message.content.split(" ").filter((e) => Boolean(e.length));
   const commandName = args.shift()?.slice(prefix.length);
-  const command = bot.messageCommands.find((cmd) =>
-    Boolean(cmd.name == commandName || cmd.aliases?.includes(commandName!))
+  const command = bot.commands.find((cmd) =>
+    Boolean(cmd.name == commandName /*|| cmd.aliases?.includes(commandName!)*/)
   );
   if (!command) return;
   if (message.guildId && !bot.members.has(message.authorId)) {
     bot.members.set(
       bot.transformers.snowflake(`${message.guildId}${message.guildId}`),
       message.member ??
-        (await bot.helpers.getMember(message.guildId, message.authorId)),
+        (await bot.helpers.getMember(message.guildId, message.authorId))
     );
   }
   if (message.guildId && !bot.guilds.has(message.guildId)) {
     const guild = await bot.helpers.getGuild(message.guildId, { counts: true });
     if (!guild) throw "there was an issue fetching the guild.";
-    bot.guilds.set(
-      message.guildId,
-      guild,
-    );
+    bot.guilds.set(message.guildId, guild);
   }
   if (!bot.channels.has(message.channelId)) {
     const channel = await bot.helpers.getChannel(message.channelId);
     if (!channel) throw "There was an issue fetching the message channel";
-    bot.channels.set(
-      message.channelId,
-      channel,
-    );
+    bot.channels.set(message.channelId, channel);
   }
   bot.events.commandStart?.(bot, command, message);
-  executeCommand(bot, message, command, args);
+  executeCommand(bot, message, command);
   bot.events.commandEnd?.(bot, command, message);
 }

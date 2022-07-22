@@ -1,5 +1,5 @@
 import { AmethystBot } from "../interfaces/bot.ts";
-import { BaseCommand, SlashCommand } from "../interfaces/command.ts";
+import { Command } from "../interfaces/command.ts";
 import { AmethystError } from "../interfaces/errors.ts";
 import { AmethystEvent, AmethystEvents } from "../interfaces/event.ts";
 import { RecAsyncGen } from "./types.ts";
@@ -23,7 +23,7 @@ export async function* load<T extends Module>(dir: string): RecAsyncGen<T> {
 
 export async function loadEvents(bot: AmethystBot, dir: string) {
   const eventFiles = load<{ default?: AmethystEvent<keyof AmethystEvents> }>(
-    dir,
+    dir
   );
   for await (const eventFile of eventFiles) {
     if (eventFile.default) {
@@ -35,22 +35,20 @@ export async function loadEvents(bot: AmethystBot, dir: string) {
 // Just for test
 // Soon enough there will be just 1 command type that has support for both slash and message command
 export async function loadCommands(bot: AmethystBot, dir: string) {
-  const commandFiles = load<{ default?: SlashCommand }>(
-    dir,
-  );
+  const commandFiles = load<{ default?: Command }>(dir);
   for await (const commandFile of commandFiles) {
     if (commandFile.default) {
-      bot.utils.createSlashCommand(commandFile.default);
+      bot.utils.createCommand(commandFile.default);
     }
   }
 }
 
 interface inhibitor {
   name: string;
-  execute: <T extends BaseCommand = BaseCommand>(
+  execute: <T extends Command = Command>(
     bot: AmethystBot,
     command: T,
-    options?: { memberId?: bigint; guildId?: bigint; channelId: bigint },
+    options?: { memberId?: bigint; guildId?: bigint; channelId: bigint }
   ) => true | AmethystError;
 }
 
@@ -60,7 +58,7 @@ export async function loadInhibitors(bot: AmethystBot, dir: string) {
     if (inhibitorFile.default) {
       bot.inhibitors.set(
         inhibitorFile.default.name,
-        inhibitorFile.default.execute,
+        inhibitorFile.default.execute
       );
     }
   }

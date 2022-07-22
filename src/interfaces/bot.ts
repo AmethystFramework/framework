@@ -1,7 +1,6 @@
 import { BotWithCache, Interaction, Message } from "../../deps.ts";
 import { AmethystCollection } from "../utils/AmethystCollection.ts";
 import { Async } from "../utils/types.ts";
-import { Argument, ArgumentDefinition } from "./arguments.ts";
 import {
   AmethystReaction,
   ComponentCollector,
@@ -12,12 +11,10 @@ import {
   ReactionCollectorOptions,
 } from "./collectors.ts";
 import {
-  BaseCommand,
+  Command,
   CommandCooldown,
-  MessageCommand,
-  SlashCommand,
-  SlashSubcommand,
-  SlashSubcommandGroup,
+  subcommand,
+  subcommandGroup,
 } from "./command.ts";
 import { AmethystError } from "./errors.ts";
 import { AmethystEvents } from "./event.ts";
@@ -30,80 +27,69 @@ interface runningTasks {
 
 /**An extended version of BotWithCache with a command handler and extra utils*/
 export type AmethystBot<
-  B extends Omit<BotWithCache, "events"> = Omit<BotWithCache, "events">,
-> =
-  & B
-  & AmethystProps
-  & { utils: AmethystUtils };
+  B extends Omit<BotWithCache, "events"> = Omit<BotWithCache, "events">
+> = B & AmethystProps & { utils: AmethystUtils };
 
 interface AmethystUtils {
   awaitComponent(
     messageId: bigint,
-    options?: ComponentCollectorOptions & { maxUsage?: 1 },
+    options?: ComponentCollectorOptions & { maxUsage?: 1 }
   ): Promise<Interaction>;
   awaitComponent(
     messageId: bigint,
-    options?: ComponentCollectorOptions & { maxUsage?: number },
+    options?: ComponentCollectorOptions & { maxUsage?: number }
   ): Promise<Interaction[]>;
   awaitComponent(
     messageId: bigint,
-    options?: ComponentCollectorOptions,
+    options?: ComponentCollectorOptions
   ): Promise<Interaction>;
   awaitReaction(
     messageId: bigint,
-    options?: ReactionCollectorOptions & { maxUsage?: 1 },
+    options?: ReactionCollectorOptions & { maxUsage?: 1 }
   ): Promise<AmethystReaction>;
   awaitReaction(
     messageId: bigint,
-    options?: ReactionCollectorOptions & { maxUsage?: number },
+    options?: ReactionCollectorOptions & { maxUsage?: number }
   ): Promise<AmethystReaction[]>;
   awaitReaction(
     messageId: bigint,
-    options?: ReactionCollectorOptions,
+    options?: ReactionCollectorOptions
   ): Promise<AmethystReaction>;
   awaitMessage(
     memberId: bigint,
     channelId: bigint,
-    options?: MessageCollectorOptions & { maxUsage?: 1 },
+    options?: MessageCollectorOptions & { maxUsage?: 1 }
   ): Promise<Message>;
   awaitMessage(
     memberId: bigint,
     channelId: bigint,
-    options?: MessageCollectorOptions & { maxUsage?: number },
+    options?: MessageCollectorOptions & { maxUsage?: number }
   ): Promise<Message[]>;
   awaitMessage(
     memberId: bigint,
     channelId: bigint,
-    options?: MessageCollectorOptions,
+    options?: MessageCollectorOptions
   ): Promise<Message>;
-  createMessageCommand<T extends readonly ArgumentDefinition[]>(
-    command: MessageCommand<T>,
-  ): void;
-  createMessageSubcommand<T extends readonly ArgumentDefinition[]>(
+  createSubcommandGroup(
     command: string,
-    subcommand: Omit<MessageCommand<T>, "category">,
-    retries?: number,
+    subcommandGroup: subcommandGroup,
+    retries?: number
   ): void;
-  createSlashCommand(command: SlashCommand): void;
-  createSlashSubcommandGroup(
+  createSubcommand(
     command: string,
-    subcommandGroup: SlashSubcommandGroup,
-    retries?: number,
+    subcommandGroup: subcommand,
+    options?: { split?: boolean; retries?: number }
   ): void;
-  createSlashSubcommand(
-    command: string,
-    subcommandGroup: SlashSubcommand,
-    options?: { split?: boolean; retries?: number },
-  ): void;
+  createCommand(command: Command): void;
   createTask(task: AmethystTask): void;
   clearTasks(): void;
-  createInhibitor<T extends BaseCommand = BaseCommand>(
+  createInhibitor<T extends Command = Command>(
     name: string,
     inhibitor: (
       bot: AmethystBot,
       command: T,
-      options?: { memberId?: bigint; guildId?: bigint; channelId: bigint },
-    ) => true | AmethystError,
+      options?: { memberId?: bigint; guildId?: bigint; channelId: bigint }
+    ) => true | AmethystError
   ): void;
   deleteInhibitor(name: string): void;
 }
@@ -115,22 +101,19 @@ interface AmethystProps extends Omit<BotWithCache, "events"> {
   reactionCollectors: AmethystCollection<bigint, ReactionCollector>;
   runningTasks: runningTasks;
   tasks: AmethystCollection<string, AmethystTask>;
-  slashCommands: AmethystCollection<string, SlashCommand>;
-  // deno-lint-ignore no-explicit-any
-  messageCommands: AmethystCollection<string, MessageCommand<any>>;
+  commands: AmethystCollection<string, Command>;
   inhibitors: AmethystCollection<
     string,
-    <T extends BaseCommand = BaseCommand>(
+    <T extends Command = Command>(
       bot: AmethystBot,
       command: T,
-      options: { memberId?: bigint; channelId: bigint; guildId?: bigint },
+      options: { memberId?: bigint; channelId: bigint; guildId?: bigint }
     ) => true | AmethystError
   >;
   owners?: bigint[];
   botMentionAsPrefix?: boolean;
   defaultCooldown?: CommandCooldown;
   ignoreCooldown?: bigint[];
-  arguments?: AmethystCollection<string, Argument>;
   guildOnly?: boolean;
   dmOnly?: boolean;
   prefix?:
