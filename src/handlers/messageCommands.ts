@@ -175,13 +175,23 @@ export async function handleMessageCommands(
   let prefix =
     typeof guildPrefix == "string"
       ? guildPrefix
-      : guildPrefix?.find((e) => message.content.toLowerCase().startsWith(e));
+      : guildPrefix?.find((e) =>
+          bot.prefixCaseSensitive
+            ? message.content.startsWith(e)
+            : message.content.toLowerCase().startsWith(e.toLowerCase())
+        );
+
+  //If prefix is a string and not a array
+  if (typeof prefix == "string")
+    if (bot.prefixCaseSensitive)
+      if (!message.content.startsWith(prefix)) prefix = undefined;
+      else if (!message.content.toLowerCase().startsWith(prefix.toLowerCase()))
+        prefix = undefined;
 
   //If the bot.botMentionAsPrefix is a prefix.
   if (!prefix && bot.botMentionAsPrefix) {
-    if (message.content.toLowerCase().startsWith(`<@${bot.id}>`))
-      prefix = `<@${bot.id}>`;
-    else if (message.content.toLowerCase().startsWith(`<@!${bot.id}>`))
+    if (message.content.startsWith(`<@${bot.id}>`)) prefix = `<@${bot.id}>`;
+    else if (message.content.startsWith(`<@!${bot.id}>`))
       prefix = `<@!${bot.id}>`;
   }
 
