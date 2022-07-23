@@ -84,6 +84,12 @@ import { createContext } from "../utils/createContext.ts";
     : args;
 }*/
 
+/**
+ * Execute a message command.
+ * @param bot
+ * @param message
+ * @param command
+ */
 function executeCommand(
   bot: AmethystBot,
   message: Message,
@@ -149,32 +155,61 @@ function executeCommand(
     } else throw e;
   }
 }
-
+/**
+ * Handling of incoming messageCommands.
+ * @param bot
+ * @param message
+ * @returns
+ */
 export async function handleMessageCommands(
   bot: AmethystBot,
   message: Message
 ) {
+  //Get prefix for this guild if the prefix is a function.
   const guildPrefix =
     typeof bot.prefix == "function"
       ? await bot.prefix(bot, message)
       : bot.prefix;
+
+  //Else get the string prefix and check if it works.
   let prefix =
     typeof guildPrefix == "string"
       ? guildPrefix
-      : guildPrefix?.find((e) => message.content.startsWith(e));
-  if (!prefix && bot.botMentionAsPrefix) prefix = `<@${bot.id}>`;
-  if (
-    !prefix ||
-    (typeof bot.prefix == "string" && !message.content.startsWith(prefix))
-  ) {
-    return;
+      : guildPrefix?.find((e) =>
+          bot.prefixCaseSensitive
+            ? message.content.startsWith(e)
+            : message.content.toLowerCase().startsWith(e.toLowerCase())
+        );
+
+  //If prefix is a string and not a array
+  if (typeof prefix == "string")
+    if (bot.prefixCaseSensitive)
+      if (!message.content.startsWith(prefix)) prefix = undefined;
+      else if (!message.content.toLowerCase().startsWith(prefix.toLowerCase()))
+        prefix = undefined;
+
+  //If the bot.botMentionAsPrefix is a prefix.
+  if (!prefix && bot.botMentionAsPrefix) {
+    if (message.content.startsWith(`<@${bot.id}>`)) prefix = `<@${bot.id}>`;
+    else if (message.content.startsWith(`<@!${bot.id}>`))
+      prefix = `<@!${bot.id}>`;
   }
+
+  if (prefix === undefined) return bot.events.notMessageCommand?.(bot, message);
+
   const args = message.content.split(" ").filter((e) => Boolean(e.length));
   const commandName = args.shift()?.slice(prefix.length);
   const command = bot.commands.find((cmd) =>
     Boolean(cmd.name == commandName /*|| cmd.aliases?.includes(commandName!)*/)
   );
-  if (!command) return;
+
+  if (!command)
+    return bot.events.commandNotFound?.(
+      bot,
+      message,
+      commandName,
+      message.prefix
+    );
   if (message.guildId && !bot.members.has(message.authorId)) {
     bot.members.set(
       bot.transformers.snowflake(`${message.guildId}${message.guildId}`),
