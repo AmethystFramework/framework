@@ -84,6 +84,12 @@ import { createContext } from "../utils/createContext.ts";
     : args;
 }*/
 
+/**
+ * Execute a message command.
+ * @param bot
+ * @param message
+ * @param command
+ */
 function executeCommand(
   bot: AmethystBot,
   message: Message,
@@ -149,7 +155,12 @@ function executeCommand(
     } else throw e;
   }
 }
-
+/**
+ * Handling of incoming messageCommands.
+ * @param bot
+ * @param message
+ * @returns
+ */
 export async function handleMessageCommands(
   bot: AmethystBot,
   message: Message
@@ -174,7 +185,7 @@ export async function handleMessageCommands(
   const command = bot.commands.find((cmd) =>
     Boolean(cmd.name == commandName /*|| cmd.aliases?.includes(commandName!)*/)
   );
-  if (!command) return;
+  if (!command) return bot.events.commandNotFound?.(bot, message.prefix);
   if (message.guildId && !bot.members.has(message.authorId)) {
     bot.members.set(
       bot.transformers.snowflake(`${message.guildId}${message.guildId}`),
