@@ -165,27 +165,45 @@ export async function handleMessageCommands(
   bot: AmethystBot,
   message: Message
 ) {
+  //Get prefix for this guild.
   const guildPrefix =
     typeof bot.prefix == "function"
       ? await bot.prefix(bot, message)
       : bot.prefix;
+
+  //
   let prefix =
     typeof guildPrefix == "string"
       ? guildPrefix
-      : guildPrefix?.find((e) => message.content.startsWith(e));
-  if (!prefix && bot.botMentionAsPrefix) prefix = `<@${bot.id}>`;
+      : guildPrefix?.find((e) => message.content.toLowerCase().startsWith(e));
+  if (!prefix && bot.botMentionAsPrefix) {
+    if (message.content.toLowerCase().startsWith(`<@${bot.id}>`))
+      prefix = `<@${bot.id}>`;
+    else if (message.content.toLowerCase().startsWith(`<@!${bot.id}>`))
+      prefix = `<@!${bot.id}>`;
+  }
+
   if (
     !prefix ||
-    (typeof bot.prefix == "string" && !message.content.startsWith(prefix))
+    (typeof bot.prefix == "string" &&
+      !message.content.toLowerCase().startsWith(prefix))
   ) {
     return;
   }
+
   const args = message.content.split(" ").filter((e) => Boolean(e.length));
   const commandName = args.shift()?.slice(prefix.length);
   const command = bot.commands.find((cmd) =>
     Boolean(cmd.name == commandName /*|| cmd.aliases?.includes(commandName!)*/)
   );
-  if (!command) return bot.events.commandNotFound?.(bot, message.prefix);
+
+  if (!command)
+    return bot.events.commandNotFound?.(
+      bot,
+      message,
+      commandName,
+      message.prefix
+    );
   if (message.guildId && !bot.members.has(message.authorId)) {
     bot.members.set(
       bot.transformers.snowflake(`${message.guildId}${message.guildId}`),
