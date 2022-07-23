@@ -165,17 +165,19 @@ export async function handleMessageCommands(
   bot: AmethystBot,
   message: Message
 ) {
-  //Get prefix for this guild.
+  //Get prefix for this guild if the prefix is a function.
   const guildPrefix =
     typeof bot.prefix == "function"
       ? await bot.prefix(bot, message)
       : bot.prefix;
 
-  //
+  //Else get the string prefix and check if it works.
   let prefix =
     typeof guildPrefix == "string"
       ? guildPrefix
       : guildPrefix?.find((e) => message.content.toLowerCase().startsWith(e));
+
+  //If the bot.botMentionAsPrefix is a prefix.
   if (!prefix && bot.botMentionAsPrefix) {
     if (message.content.toLowerCase().startsWith(`<@${bot.id}>`))
       prefix = `<@${bot.id}>`;
@@ -183,13 +185,7 @@ export async function handleMessageCommands(
       prefix = `<@!${bot.id}>`;
   }
 
-  if (
-    !prefix ||
-    (typeof bot.prefix == "string" &&
-      !message.content.toLowerCase().startsWith(prefix))
-  ) {
-    return;
-  }
+  if (prefix === undefined) return bot.events.notMessageCommand?.(bot, message);
 
   const args = message.content.split(" ").filter((e) => Boolean(e.length));
   const commandName = args.shift()?.slice(prefix.length);
