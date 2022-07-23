@@ -227,6 +227,25 @@ export function enableAmethystPlugin<
         interval: 600000,
         execute: () => {
           const now = Date.now();
+          bot.componentCollectors.forEach((collector, key) => {
+            // This collector has not finished yet.
+            if (collector.createdAt + collector.timeout > now) return;
+
+            // Remove the collector
+            bot.componentCollectors.delete(key);
+            // Reject the promise so code can continue in commands.
+            return collector.reject("User did not use the component in time.");
+          });
+          bot.reactionCollectors.forEach((collector, key) => {
+            // This collector has not finished yet.
+            if (collector.createdAt + collector.timeout > now) return;
+
+            // Remove the collector
+            bot.reactionCollectors.delete(key);
+            // Reject the promise so code can continue in commands.
+            return collector.reject("User did not react in time.");
+          });
+
           bot.messageCollectors.forEach((collector, key) => {
             // This collector has not finished yet.
             if (collector.createdAt + collector.timeout > now) return;
