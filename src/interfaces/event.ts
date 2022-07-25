@@ -6,7 +6,7 @@ import {
   Message,
 } from "../../deps.ts";
 import { AmethystBot } from "./bot.ts";
-import { BaseCommand } from "./command.ts";
+import { Command } from "./command.ts";
 import { AmethystError } from "./errors.ts";
 
 export type Events = {
@@ -14,8 +14,9 @@ export type Events = {
     bot: infer T,
     ...rest: infer R
   ) => infer U
-    ? (BotWithCache<Bot> extends T ? (bot: AmethystBot, ...rest: R) => U
-      : (...rest: Parameters<EventHandlers[K]>) => U)
+    ? BotWithCache<Bot> extends T
+      ? (bot: AmethystBot, ...rest: R) => U
+      : (...rest: Parameters<EventHandlers[K]>) => U
     : never;
 };
 
@@ -26,17 +27,22 @@ export interface AmethystEvents extends Events {
       error: AmethystError;
       data?: Interaction;
       message?: Message;
-    },
+    }
   ): unknown;
-  commandStart<E extends BaseCommand = BaseCommand>(
+  commandNotFound(
+    bot: AmethystBot,
+    message: Message,
+    commandName: string
+  ): unknown;
+  commandStart<E extends Command = Command>(
     bot: AmethystBot,
     command: E,
-    dataOrMessage: Interaction | Message,
+    dataOrMessage: Interaction | Message
   ): unknown;
-  commandEnd<E extends BaseCommand = BaseCommand>(
+  commandEnd<E extends Command = Command>(
     bot: AmethystBot,
     command: E,
-    dataOrMessage: Interaction | Message,
+    dataOrMessage: Interaction | Message
   ): unknown;
 }
 

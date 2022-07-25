@@ -1,5 +1,6 @@
 import { CreateMessage, Interaction, Message } from "../../deps.ts";
 import { AmethystBot } from "../../mod.ts";
+import { optionResults } from "./commandOptions.ts";
 
 // This type is still not used but it is still expiremental
 export type context<T extends "application" | "message" = never> = {
@@ -7,6 +8,7 @@ export type context<T extends "application" | "message" = never> = {
   guildId?: bigint;
   authorId: bigint;
   member?: Message["member"];
+  options?: optionResults;
   respond(
     bot: AmethystBot,
     content: CreateMessage & {

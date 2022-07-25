@@ -56,4 +56,5 @@ export type AmethystError =
   | UserPermissionsError
   | BotPermissionsError
   | CooldownError
-  | MissingRequiredRoles;
+  | MissingRequiredRoles
+  | MissingRequiredArguments;

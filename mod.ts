@@ -1,4 +1,11 @@
-import { BotWithCache, Emoji, Interaction, Message } from "./deps.ts";
+import {
+  ApplicationCommandOptionTypes,
+  BotWithCache,
+  ChannelTypes,
+  Emoji,
+  Interaction,
+  Message,
+} from "./deps.ts";
 import { handleMessageCommands } from "./src/handlers/messageCommands.ts";
 import { handleSlash } from "./src/handlers/slashCommands.ts";
 import { inhibitors } from "./src/inhibators/mod.ts";
@@ -306,7 +313,24 @@ export function enableAmethystPlugin<
         })
         .forEach((cmd) => {
           bot.helpers.upsertApplicationCommands(
-            [cmd as Command<"application">],
+            [
+              {
+                ...(cmd as Command<"application">),
+                options: cmd.options.map((e) => {
+                  return {
+                    ...e,
+                    description: e.description ?? "A slash command option",
+                    channelTypes: e.channelTypes?.map((f) =>
+                      typeof f == "string" ? ChannelTypes[f] : f
+                    ),
+                    type:
+                      typeof e.type == "number"
+                        ? e.type
+                        : ApplicationCommandOptionTypes[e.type],
+                  };
+                }),
+              },
+            ],
             guild.id
           );
         });
@@ -335,7 +359,24 @@ export function enableAmethystPlugin<
             //@ts-ignore -
             (e: Command<"application">) => !e.scope || e.scope == "global"
           )
-          .array() as Command<"application">[]
+          .map((cmd) => {
+            return {
+              ...(cmd as Command<"application">),
+              options: cmd.options.map((e) => {
+                return {
+                  ...e,
+                  description: e.description ?? "A slash command option",
+                  channelTypes: e.channelTypes?.map((f) =>
+                    typeof f == "string" ? ChannelTypes[f] : f
+                  ),
+                  type:
+                    typeof e.type == "number"
+                      ? e.type
+                      : ApplicationCommandOptionTypes[e.type],
+                };
+              }),
+            };
+          })
       );
       payload.guilds.forEach((guildId) => {
         bot.helpers.upsertApplicationCommands(
@@ -345,7 +386,24 @@ export function enableAmethystPlugin<
               (e: Command<"application">) =>
                 e.scope == "guild" && !e.guildIds?.length
             )
-            .array() as Command<"application">[],
+            .map((cmd) => {
+              return {
+                ...(cmd as Command<"application">),
+                options: cmd.options.map((e) => {
+                  return {
+                    ...e,
+                    description: e.description ?? "A slash command option",
+                    channelTypes: e.channelTypes?.map((f) =>
+                      typeof f == "string" ? ChannelTypes[f] : f
+                    ),
+                    type:
+                      typeof e.type == "number"
+                        ? e.type
+                        : ApplicationCommandOptionTypes[e.type],
+                  };
+                }),
+              };
+            }),
           guildId
         );
       });
@@ -353,7 +411,27 @@ export function enableAmethystPlugin<
       bot.commands.forEach((cmd: Command<"application">) => {
         if (cmd.scope != "guild" || !cmd.guildIds?.length) return;
         cmd.guildIds.forEach((guildId) =>
-          bot.helpers.upsertApplicationCommands([cmd], guildId)
+          bot.helpers.upsertApplicationCommands(
+            [
+              {
+                ...(cmd as Command<"application">),
+                options: cmd.options.map((e) => {
+                  return {
+                    ...e,
+                    description: e.description ?? "A slash command option",
+                    channelTypes: e.channelTypes?.map((f) =>
+                      typeof f == "string" ? ChannelTypes[f] : f
+                    ),
+                    type:
+                      typeof e.type == "number"
+                        ? e.type
+                        : ApplicationCommandOptionTypes[e.type],
+                  };
+                }),
+              },
+            ],
+            guildId
+          )
         );
       });
       Ready = true;

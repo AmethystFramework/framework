@@ -3,6 +3,7 @@ import { AmethystBot } from "../interfaces/bot.ts";
 import { Command, subcommand, subcommandGroup } from "../interfaces/command.ts";
 import { AmethystError, Errors } from "../interfaces/errors.ts";
 import { createContext } from "../utils/createContext.ts";
+import { createOptionResults } from "../utils/createOptionResults.ts";
 
 interface commandFetch {
   type: "command" | "subcommand" | "subcommandGroup";
@@ -87,17 +88,19 @@ export async function handleSlash(bot: AmethystBot, data: Interaction) {
   }
   try {
     bot.events.commandStart?.(bot, command!.command! as Command, data);
-    command?.command.execute?.(
-      bot,
-      createContext({
+    command?.command.execute?.(bot, {
+      ...createContext({
         interaction:
           command.type === "command"
             ? data
             : command.type === "subcommand"
             ? { ...data, data: data.data.options?.[0] }
             : { ...data, data: data.data.options?.[0]?.options?.[0] },
-      })
-    );
+      }),
+      options: createOptionResults(bot, command.command.options, {
+        interaction: data,
+      }),
+    });
     bot.events.commandEnd?.(bot, command!.command! as Command, data);
   } catch (e) {
     if (bot.events.commandError) {

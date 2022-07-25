@@ -5,6 +5,7 @@ import {
 } from "../../deps.ts";
 import { AmethystCollection } from "../utils/AmethystCollection.ts";
 import { AmethystBot } from "./bot.ts";
+import { commandOption } from "./commandOptions.ts";
 import { context } from "./context.ts";
 
 export interface CommandCooldown {
@@ -46,6 +47,8 @@ export type Command<T extends "application" | "message" = never> =
           | ["message", "application"]
           | ["message"]
           | ["application"];
+    /**The command options*/
+    options: commandOption[];
     /**The command description*/
     description?: string;
     /**The category that can be used to organize commands*/
