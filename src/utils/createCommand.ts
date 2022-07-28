@@ -1,151 +1,81 @@
-import { delay, Collection, ApplicationCommandOption } from "../../deps.ts";
-import { ArgumentDefinition } from "../interfaces/arguments.ts";
+import { Collection, delay } from "../../deps.ts";
 import { AmethystBot } from "../interfaces/bot.ts";
-import {
-  SlashSubcommandGroup,
-  SlashSubcommand,
-  MessageCommand,
-} from "../interfaces/command.ts";
+import { Command, subcommand, subcommandGroup } from "../interfaces/command.ts";
 
-/*Creates a message command*/
-export function createMessageCommand<T extends readonly ArgumentDefinition[]>(
-  bot: AmethystBot,
-  command: MessageCommand<T>
-) {
-  // deno-lint-ignore no-explicit-any
-  bot.messageCommands.set(command.name, command as MessageCommand<any>);
+export function createCommand(bot: AmethystBot, command: Command) {
+  bot.commands.set(command.name, command);
 }
 
-/*Creates a subcommand for a valid message command*/
-export function createMessageSubcommand<
-  T extends readonly ArgumentDefinition[]
->(
-  bot: AmethystBot,
-  commandName: string,
-  subcommand: Omit<MessageCommand<T>, "category">,
-  retries = 0
-) {
-  const names = commandName.split("-");
-  let command: MessageCommand<T> | typeof subcommand = bot.messageCommands.get(
-    commandName
-  )! as MessageCommand<T>;
-
-  if (names.length > 1) {
-    for (const name of names) {
-      const validCommand = command
-        ? command.subcommands?.get(name)
-        : bot.messageCommands.get(name);
-
-      if (!validCommand) {
-        if (retries === 20) break;
-        setTimeout(
-          () =>
-            createMessageSubcommand(bot, commandName, subcommand, retries++),
-          10000
-        );
-        return;
-      }
-
-      command = validCommand as MessageCommand<T>;
-    }
-  }
-
-  if (!command) {
-    // If 10 minutes have passed something must have been wrong
-    if (retries === 20)
-      throw `The command with name "${command}" does not exist!`;
-
-    // Try again in 10 seconds in case this command file just has not been loaded yet.
-    setTimeout(
-      () => createMessageSubcommand(bot, commandName, subcommand, retries++),
-      10000
-    );
-    return;
-  }
-
-  if (!command.subcommands) {
-    command.subcommands = new Collection();
-  }
-
-  // log.debug("Creating subcommand", command.name, subcommand.name);
-  command.subcommands.set(subcommand.name, subcommand);
-}
-
-/*Creates a slash command*/
-export function createSlashCommand(bot: AmethystBot, command: SlashSubcommand) {
-  // @ts-ignore -
-  bot.slashCommands.set(command.name, command);
-}
-/*Creates a subcommand group for a slash command*/
-export async function createSlashSubcommandGroup(
+/*Creates a subcommand group*/
+export async function createSubcommandGroup(
   bot: AmethystBot,
   command: string,
-  subcommand: SlashSubcommandGroup,
+  subcommand: subcommandGroup,
   retries?: number
 ): Promise<void> {
-  const cmd = bot.slashCommands.get(command);
-  if (!cmd)
-    if (retries == 20)
+  const cmd = bot.commands.get(command);
+  if (!cmd) {
+    if (retries == 20) {
       throw `The command with name "${command}" does not exist!`;
-    else {
+    } else {
       await delay(500);
-      return createSlashSubcommandGroup(
+      return createSubcommandGroup(
         bot,
         command,
         subcommand,
         retries ? retries + 1 : 1
       );
     }
-  cmd.options?.push({
+  }
+  /*cmd.options?.push({
     name: subcommand.name,
     description: subcommand.description,
     options: [],
     type: 2,
-  } as unknown as ApplicationCommandOption);
+  } as unknown as ApplicationCommandOption);*/
   cmd?.subcommands
     ? cmd.subcommands.set(subcommand.name, subcommand)
-    : bot.slashCommands.set(command, {
+    : bot.commands.set(command, {
         ...cmd!,
         subcommands: new Collection([
-          [
-            subcommand.name,
-            subcommand as SlashSubcommandGroup | SlashSubcommand,
-          ],
+          [subcommand.name, subcommand as subcommandGroup | subcommand],
         ]),
       });
 }
 
 /*Creates a subcommand for a slash command or slash subcommand group*/
-export async function createSlashSubcommand(
+export async function createSubcommand(
   bot: AmethystBot,
   command: string,
-  subcommand: SlashSubcommand,
+  subcommand: subcommand,
   options?: { split?: boolean; retries?: number }
 ): Promise<void> {
   options = options ?? {};
   options.split = options.split ?? true;
   const commandNames = command.split("-", 2);
-  const cmd = bot.slashCommands.get(options.split ? commandNames[0] : command);
-  if (!cmd)
-    if (options.retries == 20)
+  const cmd = bot.commands.get(options.split ? commandNames[0] : command);
+  if (!cmd) {
+    if (options.retries == 20) {
       throw `The command with name "${command}" does not exist!`;
-    else {
+    } else {
       await delay(500);
-      return createSlashSubcommand(bot, command, subcommand, {
+      return createSubcommand(bot, command, subcommand, {
         ...options,
         retries: options.retries ? options.retries + 1 : 1,
       });
     }
+  }
   if (options.split && commandNames.length > 1) {
     const subcommandGroup = cmd.subcommands?.get(
       `${commandNames[1]}${command.slice(commandNames.join("-").length)}`
-    ) as SlashSubcommandGroup | undefined;
-    if (!subcommandGroup)
+    ) as subcommandGroup | undefined;
+    if (!subcommandGroup) {
       return console.error(
         `The subcommand group with name "${`${commandNames[1]}${command.slice(
           commandNames.join("-").length
         )}`}" does not exist!`
       );
+    }
     subcommandGroup.subcommands
       ? subcommandGroup.subcommands.set(subcommand.name, {
           ...subcommand,
@@ -154,10 +84,10 @@ export async function createSlashSubcommand(
       : (subcommandGroup.subcommands = new Collection([
           [
             subcommand.name,
-            { ...subcommand, SubcommandType: "subcommand" } as SlashSubcommand,
+            { ...subcommand, SubcommandType: "subcommand" } as subcommand,
           ],
         ]));
-    bot.slashCommands.set(commandNames[0], {
+    /*bot.commands.set(commandNames[0], {
       ...cmd,
       options: [
         ...(cmd.options?.filter((e) => e.name !== subcommandGroup.name) || []),
@@ -197,15 +127,16 @@ export async function createSlashSubcommand(
     cmd.subcommands
       ? cmd.subcommands.set(subcommand.name, subcommand)
       : bot.slashCommands.set(command, {
-          ...cmd,
-          subcommands: new Collection([
-            [
-              subcommand.name,
-              { ...subcommand, SubcommandType: "subcommand" } as
-                | SlashSubcommandGroup
-                | SlashSubcommand,
-            ],
-          ]),
-        });
+        ...cmd,
+        subcommands: new Collection([
+          [
+            subcommand.name,
+            { ...subcommand, SubcommandType: "subcommand" } as
+              | SlashSubcommandGroup
+              | SlashSubcommand,
+          ],
+        ]),
+      });
+  }*/
   }
 }

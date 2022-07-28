@@ -1,12 +1,6 @@
-import {
-  BotWithCache,
-  Interaction,
-  Message,
-  EventHandlers,
-} from "../../deps.ts";
+import { BotWithCache, Interaction, Message } from "../../deps.ts";
 import { AmethystCollection } from "../utils/AmethystCollection.ts";
 import { Async } from "../utils/types.ts";
-import { Argument, ArgumentDefinition } from "./arguments.ts";
 import {
   AmethystReaction,
   ComponentCollector,
@@ -17,14 +11,13 @@ import {
   ReactionCollectorOptions,
 } from "./collectors.ts";
 import {
-  BaseCommand,
+  Command,
   CommandCooldown,
-  MessageCommand,
-  SlashCommand,
-  SlashSubcommand,
-  SlashSubcommandGroup,
+  subcommand,
+  subcommandGroup,
 } from "./command.ts";
 import { AmethystError } from "./errors.ts";
+import { AmethystEvents } from "./event.ts";
 import { AmethystTask } from "./tasks.ts";
 
 interface runningTasks {
@@ -33,29 +26,9 @@ interface runningTasks {
 }
 
 /**An extended version of BotWithCache with a command handler and extra utils*/
-export type AmethystBot<B extends BotWithCache = BotWithCache> = B &
-  AmethystProps & { utils: AmethystUtils };
-
-export interface AmethystEvents extends EventHandlers {
-  commandError(
-    bot: AmethystBot,
-    data: {
-      error: AmethystError;
-      data?: Interaction;
-      message?: Message;
-    }
-  ): unknown;
-  commandStart<E extends BaseCommand = BaseCommand>(
-    bot: AmethystBot,
-    command: E,
-    dataOrMessage: Interaction | Message
-  ): unknown;
-  commandEnd<E extends BaseCommand = BaseCommand>(
-    bot: AmethystBot,
-    command: E,
-    dataOrMessage: Interaction | Message
-  ): unknown;
-}
+export type AmethystBot<
+  B extends Omit<BotWithCache, "events"> = Omit<BotWithCache, "events">
+> = B & AmethystProps & { utils: AmethystUtils };
 
 interface AmethystUtils {
   awaitComponent(
@@ -97,28 +70,20 @@ interface AmethystUtils {
     channelId: bigint,
     options?: MessageCollectorOptions
   ): Promise<Message>;
-  createMessageCommand<T extends readonly ArgumentDefinition[]>(
-    command: MessageCommand<T>
-  ): void;
-  createMessageSubcommand<T extends readonly ArgumentDefinition[]>(
+  createSubcommandGroup(
     command: string,
-    subcommand: Omit<MessageCommand<T>, "category">,
+    subcommandGroup: subcommandGroup,
     retries?: number
   ): void;
-  createSlashCommand(command: SlashCommand): void;
-  createSlashSubcommandGroup(
+  createSubcommand(
     command: string,
-    subcommandGroup: SlashSubcommandGroup,
-    retries?: number
-  ): void;
-  createSlashSubcommand(
-    command: string,
-    subcommandGroup: SlashSubcommand,
+    subcommandGroup: subcommand,
     options?: { split?: boolean; retries?: number }
   ): void;
+  createCommand(command: Command): void;
   createTask(task: AmethystTask): void;
   clearTasks(): void;
-  createInhibitor<T extends BaseCommand = BaseCommand>(
+  createInhibitor<T extends Command = Command>(
     name: string,
     inhibitor: (
       bot: AmethystBot,
@@ -129,19 +94,17 @@ interface AmethystUtils {
   deleteInhibitor(name: string): void;
 }
 
-interface AmethystProps extends BotWithCache {
+interface AmethystProps extends Omit<BotWithCache, "events"> {
   events: AmethystEvents;
   messageCollectors: AmethystCollection<string, MessageCollector>;
   componentCollectors: AmethystCollection<bigint, ComponentCollector>;
   reactionCollectors: AmethystCollection<bigint, ReactionCollector>;
   runningTasks: runningTasks;
   tasks: AmethystCollection<string, AmethystTask>;
-  slashCommands: AmethystCollection<string, SlashCommand>;
-  // deno-lint-ignore no-explicit-any
-  messageCommands: AmethystCollection<string, MessageCommand<any>>;
+  commands: AmethystCollection<string, Command>;
   inhibitors: AmethystCollection<
     string,
-    <T extends BaseCommand = BaseCommand>(
+    <T extends Command = Command>(
       bot: AmethystBot,
       command: T,
       options: { memberId?: bigint; channelId: bigint; guildId?: bigint }
@@ -149,10 +112,11 @@ interface AmethystProps extends BotWithCache {
   >;
   owners?: bigint[];
   botMentionAsPrefix?: boolean;
+  prefixCaseSensitive?: boolean;
   defaultCooldown?: CommandCooldown;
   ignoreCooldown?: bigint[];
-  arguments?: AmethystCollection<string, Argument>;
   guildOnly?: boolean;
+  messageQuotedArguments?: boolean;
   dmOnly?: boolean;
   prefix?:
     | string

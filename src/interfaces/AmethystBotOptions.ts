@@ -11,8 +11,13 @@ export type AmethystBotOptions = {
     | string[]
     | ((bot: AmethystBot, message: Message) => Async<string | string[]>);
   botMentionAsPrefix?: boolean;
+  messageQuotedArguments?: boolean;
   defaultCooldown?: CommandCooldown;
   ignoreCooldown?: (string | bigint)[];
+  commandDir?: string;
+  eventDir?: string;
+  inhibitorDir?: string;
+  prefixCaseSensitive?: boolean;
 } & (
   | {
       guildOnly?: true;
