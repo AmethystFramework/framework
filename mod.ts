@@ -327,7 +327,9 @@ export function enableAmethystPlugin<
                     type:
                       typeof e.type == "number"
                         ? e.type
-                        : ApplicationCommandOptionTypes[e.type],
+                        : ApplicationCommandOptionTypes[
+                            e.type as keyof typeof ApplicationCommandOptionTypes
+                          ],
                   };
                 }),
               },
@@ -373,7 +375,9 @@ export function enableAmethystPlugin<
                   type:
                     typeof e.type == "number"
                       ? e.type
-                      : ApplicationCommandOptionTypes[e.type],
+                      : ApplicationCommandOptionTypes[
+                          e.type as keyof typeof ApplicationCommandOptionTypes
+                        ],
                 };
               }),
             };
@@ -400,7 +404,9 @@ export function enableAmethystPlugin<
                     type:
                       typeof e.type == "number"
                         ? e.type
-                        : ApplicationCommandOptionTypes[e.type],
+                        : ApplicationCommandOptionTypes[
+                            e.type as keyof typeof ApplicationCommandOptionTypes
+                          ],
                   };
                 }),
               };
@@ -426,7 +432,9 @@ export function enableAmethystPlugin<
                     type:
                       typeof e.type == "number"
                         ? e.type
-                        : ApplicationCommandOptionTypes[e.type],
+                        : ApplicationCommandOptionTypes[
+                            e.type as keyof typeof ApplicationCommandOptionTypes
+                          ],
                   };
                 }),
               },
