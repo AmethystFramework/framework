@@ -90,6 +90,12 @@ export type Command<T extends "application" | "message" = never> = {
             dmOnly?: false;
           }
       )
+    : Record<never, never>) &
+  ("message" extends T
+    ? {
+        aliases?: string[];
+        quotedArguments?: boolean;
+      }
     : Record<never, never>);
 
 /**The interface for slash subcommands groups*/

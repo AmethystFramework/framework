@@ -75,14 +75,28 @@ export async function handleMessageCommands(
 
   if (prefix === undefined) return;
 
-  const args = message.content.split(" ").filter((e) => Boolean(e.length));
+  let args = message.content.split(" ").filter((e) => Boolean(e.length));
   const commandName = args.shift()?.slice(prefix.length);
   if (!commandName) return;
   const command = bot.commands.find((cmd) =>
-    Boolean(cmd.name == commandName /*|| cmd.aliases?.includes(commandName!)*/)
-  );
-
+    Boolean(
+      cmd.name == commandName ||
+        (cmd as Command<"message">).aliases?.includes(commandName!)
+    )
+  ) as Command<"message">;
   if (!command) return bot.events.commandNotFound?.(bot, message, commandName);
+  args =
+    command.quotedArguments === true ||
+    (command.quotedArguments === undefined && bot.messageQuotedArguments)
+      ? args
+          .join(" ")
+          .match(/\w+|"[^"]+"/g)
+          ?.map((str) =>
+            str.startsWith('"') && str.endsWith('"')
+              ? str.replaceAll('"', "")
+              : str
+          ) || args
+      : args;
   if (message.guildId && !bot.members.has(message.authorId)) {
     bot.members.set(
       bot.transformers.snowflake(`${message.guildId}${message.guildId}`),
@@ -100,7 +114,7 @@ export async function handleMessageCommands(
     if (!channel) throw "There was an issue fetching the message channel";
     bot.channels.set(message.channelId, channel);
   }
-  bot.events.commandStart?.(bot, command, message);
+  bot.events.commandStart?.(bot, command as Command, message);
   executeCommand(bot, message, command as Command<"message">, args);
-  bot.events.commandEnd?.(bot, command, message);
+  bot.events.commandEnd?.(bot, command as Command, message);
 }
