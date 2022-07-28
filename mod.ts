@@ -266,6 +266,7 @@ export function enableAmethystPlugin<
       },
     ],
   ]);
+  bot.messageQuotedArguments = options?.messageQuotedArguments ?? false;
   bot.messageCollectors = new AmethystCollection();
   bot.componentCollectors = new AmethystCollection();
   bot.reactionCollectors = new AmethystCollection();
