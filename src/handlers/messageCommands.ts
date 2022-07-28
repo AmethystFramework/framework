@@ -20,7 +20,7 @@ function executeCommand(
   try {
     command.execute?.(bot, {
       ...createContext({ message }),
-      options: createOptionResults(bot, command.options, {
+      options: createOptionResults(bot, command.options || [], {
         message: { ...message, args },
       }),
     });

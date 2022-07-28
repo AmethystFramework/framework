@@ -24,25 +24,28 @@ export function createOptionResults(
       ? data.interaction.data?.options.map((e) => {
           return { ...e, value: e.value! };
         })
-      : data.message?.content
-      ? data.message.args.map((arg, index) => {
-          const option = options.filter(
-            (e) => ![11, "Attachment"].includes(e.type as string | number)
-          )[index];
-          return {
-            name: option.name,
-            value: arg,
-            type:
-              typeof option.type == "string"
-                ? ApplicationCommandOptionTypes[option.type]
-                : option.type,
-          };
-        })
+      : data.message?.args.length && options?.length
+      ? data.message.args
+          .slice(0, -(data.message.args.length - options.length))
+          .map((arg, index) => {
+            const option = options?.filter(
+              (e) => ![11, "Attachment"].includes(e.type as string | number)
+            )[index];
+            console.log(arg, index, data.message?.args);
+            return {
+              name: option.name,
+              value: arg,
+              type:
+                typeof option.type == "string"
+                  ? ApplicationCommandOptionTypes[option.type]
+                  : option.type,
+            };
+          })
       : []) as result[],
     get(name, required) {
       const res = this.results.find((e) => e.name == name);
       if (!res && required) {
-        const option = options.find((e) => e.name == name);
+        const option = options?.find((e) => e.name == name);
         if (option?.missing && data.message)
           option.missing(bot, data.message, name);
         if (bot.events.commandError)
@@ -58,7 +61,7 @@ export function createOptionResults(
     getString(name, required) {
       const res = this.results.find((e) => e.name == name && e.type == 3);
       if (!res?.value && required) {
-        const option = options.find((e) => e.name == name);
+        const option = options?.find((e) => e.name == name);
         if (option?.missing && data.message)
           option.missing(bot, data.message, name);
         if (bot.events.commandError)
@@ -74,7 +77,7 @@ export function createOptionResults(
     getNumber(name, required) {
       const res = this.results.find((e) => e.name == name && e.type == 10);
       if (isNaN(Number(res?.value)) && required) {
-        const option = options.find((e) => e.name == name);
+        const option = options?.find((e) => e.name == name);
         if (option?.missing && data.message)
           option.missing(bot, data.message, name);
         if (bot.events.commandError)
@@ -88,10 +91,28 @@ export function createOptionResults(
       if (data.interaction) return res?.value as number;
       return Number(res!.value);
     },
+    getLongString(name, required) {
+      if (data.interaction)
+        return this.getString(name, required as false) as string;
+      const str = data.message?.content.split(" ").slice(1).join(" ");
+      if (!str && required) {
+        const option = options?.find((e) => e.name == name);
+        if (option?.missing && data.message)
+          option.missing(bot, data.message, name);
+        if (bot.events.commandError)
+          bot.events.commandError(bot, {
+            error: { type: Errors.MISSING_REQUIRED_ARGUMENTS, value: name },
+            message: data.message,
+          });
+        if (!(option?.missing && data.message) && !bot.events.commandError)
+          throw `"${name}" was a required argument that wasn't given.`;
+      }
+      return str as string;
+    },
     getInteger(name, required) {
       const res = this.results.find((e) => e.name == name && e.type == 4);
       if (isNaN(Number(res?.value)) && required) {
-        const option = options.find((e) => e.name == name);
+        const option = options?.find((e) => e.name == name);
         if (option?.missing && data.message)
           option.missing(bot, data.message, name);
         if (bot.events.commandError)
@@ -116,7 +137,7 @@ export function createOptionResults(
             : undefined
           : (res?.value as boolean | undefined);
       if (bool === undefined && required) {
-        const option = options.find((e) => e.name == name);
+        const option = options?.find((e) => e.name == name);
         if (option?.missing && data.message)
           option.missing(bot, data.message, name);
         if (bot.events.commandError)
@@ -155,7 +176,7 @@ export function createOptionResults(
               `${e.username}#${e.discriminator}` == userId;
       });
       if (!user && required) {
-        const option = options.find((e) => e.name == name);
+        const option = options?.find((e) => e.name == name);
         if (option?.missing && data.message)
           option.missing(bot, data.message, name);
         if (bot.events.commandError)
@@ -188,7 +209,7 @@ export function createOptionResults(
           (force ? await bot.helpers.getMember(guildId, user.id) : undefined)
         : undefined;
       if (!member && required) {
-        const option = options.find((e) => e.name == name);
+        const option = options?.find((e) => e.name == name);
         if (option?.missing && data.message)
           option.missing(bot, data.message, name);
         if (bot.events.commandError)
@@ -214,7 +235,7 @@ export function createOptionResults(
             : undefined
         ) as Role;
       if (!res?.value && required) {
-        const option = options.find((e) => e.name == name);
+        const option = options?.find((e) => e.name == name);
         if (option?.missing && data.message)
           option.missing(bot, data.message, name);
         if (bot.events.commandError)
@@ -276,7 +297,7 @@ export function createOptionResults(
           );
 
       if (!returned && required) {
-        const option = options.find((e) => e.name == name);
+        const option = options?.find((e) => e.name == name);
         if (option?.missing && data.message)
           option.missing(bot, data.message, name);
         if (bot.events.commandError)
@@ -297,7 +318,7 @@ export function createOptionResults(
         ) as Attachment;
       const attachment = data.message?.attachments[0];
       if (!attachment && required) {
-        const option = options.find((e) => e.name == name);
+        const option = options?.find((e) => e.name == name);
         if (option?.missing && data.message)
           option.missing(bot, data.message, name);
         if (bot.events.commandError)
@@ -334,7 +355,7 @@ export function createOptionResults(
             : e.name == channelId)
       );
       if (!channel && required) {
-        const option = options.find((e) => e.name == name);
+        const option = options?.find((e) => e.name == name);
         if (option?.missing && data.message)
           option.missing(bot, data.message, name);
         if (bot.events.commandError)

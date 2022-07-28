@@ -30,7 +30,7 @@ export type Command<T extends "application" | "message" = never> = {
         | ["message"]
         | ["application"];
   /**The command options*/
-  options: commandOption[];
+  options?: commandOption[];
   /**The command description*/
   description?: string;
   /**The category that can be used to organize commands*/

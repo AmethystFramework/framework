@@ -64,6 +64,9 @@ export interface optionResults {
   /**Will get the string option*/
   getString(name: string, required?: false): string | undefined;
   getString(name: string, required: true): string;
+  /**Gtes the entire message content, only useful for message commands, but for slash it will do the same thing as getString*/
+  getLongString(name: string, required?: false): string | undefined;
+  getLongString(name: string, required: true): string;
   /**Will get the number option*/
   getNumber(name: string, required?: false): number | undefined;
   getNumber(name: string, required: true): number;

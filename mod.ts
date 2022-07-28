@@ -317,21 +317,23 @@ export function enableAmethystPlugin<
             [
               {
                 ...(cmd as Command<"application">),
-                options: cmd.options.map((e) => {
-                  return {
-                    ...e,
-                    description: e.description ?? "A slash command option",
-                    channelTypes: e.channelTypes?.map((f) =>
-                      typeof f == "string" ? ChannelTypes[f] : f
-                    ),
-                    type:
-                      typeof e.type == "number"
-                        ? e.type
-                        : ApplicationCommandOptionTypes[
-                            e.type as keyof typeof ApplicationCommandOptionTypes
-                          ],
-                  };
-                }),
+                options: cmd.options?.length
+                  ? cmd.options.map((e) => {
+                      return {
+                        ...e,
+                        description: e.description ?? "A slash command option",
+                        channelTypes: e.channelTypes?.map((f) =>
+                          typeof f == "string" ? ChannelTypes[f] : f
+                        ),
+                        type:
+                          typeof e.type == "number"
+                            ? e.type
+                            : ApplicationCommandOptionTypes[
+                                e.type as keyof typeof ApplicationCommandOptionTypes
+                              ],
+                      };
+                    })
+                  : [],
               },
             ],
             guild.id
@@ -365,21 +367,23 @@ export function enableAmethystPlugin<
           .map((cmd) => {
             return {
               ...(cmd as Command<"application">),
-              options: cmd.options.map((e) => {
-                return {
-                  ...e,
-                  description: e.description ?? "A slash command option",
-                  channelTypes: e.channelTypes?.map((f) =>
-                    typeof f == "string" ? ChannelTypes[f] : f
-                  ),
-                  type:
-                    typeof e.type == "number"
-                      ? e.type
-                      : ApplicationCommandOptionTypes[
-                          e.type as keyof typeof ApplicationCommandOptionTypes
-                        ],
-                };
-              }),
+              options: cmd.options?.length
+                ? cmd.options.map((e) => {
+                    return {
+                      ...e,
+                      description: e.description ?? "A slash command option",
+                      channelTypes: e.channelTypes?.map((f) =>
+                        typeof f == "string" ? ChannelTypes[f] : f
+                      ),
+                      type:
+                        typeof e.type == "number"
+                          ? e.type
+                          : ApplicationCommandOptionTypes[
+                              e.type as keyof typeof ApplicationCommandOptionTypes
+                            ],
+                    };
+                  })
+                : [],
             };
           })
       );
@@ -394,21 +398,23 @@ export function enableAmethystPlugin<
             .map((cmd) => {
               return {
                 ...(cmd as Command<"application">),
-                options: cmd.options.map((e) => {
-                  return {
-                    ...e,
-                    description: e.description ?? "A slash command option",
-                    channelTypes: e.channelTypes?.map((f) =>
-                      typeof f == "string" ? ChannelTypes[f] : f
-                    ),
-                    type:
-                      typeof e.type == "number"
-                        ? e.type
-                        : ApplicationCommandOptionTypes[
-                            e.type as keyof typeof ApplicationCommandOptionTypes
-                          ],
-                  };
-                }),
+                options: cmd.options?.length
+                  ? cmd.options.map((e) => {
+                      return {
+                        ...e,
+                        description: e.description ?? "A slash command option",
+                        channelTypes: e.channelTypes?.map((f) =>
+                          typeof f == "string" ? ChannelTypes[f] : f
+                        ),
+                        type:
+                          typeof e.type == "number"
+                            ? e.type
+                            : ApplicationCommandOptionTypes[
+                                e.type as keyof typeof ApplicationCommandOptionTypes
+                              ],
+                      };
+                    })
+                  : [],
               };
             }),
           guildId
@@ -422,21 +428,23 @@ export function enableAmethystPlugin<
             [
               {
                 ...(cmd as Command<"application">),
-                options: cmd.options.map((e) => {
-                  return {
-                    ...e,
-                    description: e.description ?? "A slash command option",
-                    channelTypes: e.channelTypes?.map((f) =>
-                      typeof f == "string" ? ChannelTypes[f] : f
-                    ),
-                    type:
-                      typeof e.type == "number"
-                        ? e.type
-                        : ApplicationCommandOptionTypes[
-                            e.type as keyof typeof ApplicationCommandOptionTypes
-                          ],
-                  };
-                }),
+                options: cmd.options?.length
+                  ? cmd.options.map((e) => {
+                      return {
+                        ...e,
+                        description: e.description ?? "A slash command option",
+                        channelTypes: e.channelTypes?.map((f) =>
+                          typeof f == "string" ? ChannelTypes[f] : f
+                        ),
+                        type:
+                          typeof e.type == "number"
+                            ? e.type
+                            : ApplicationCommandOptionTypes[
+                                e.type as keyof typeof ApplicationCommandOptionTypes
+                              ],
+                      };
+                    })
+                  : [],
               },
             ],
             guildId

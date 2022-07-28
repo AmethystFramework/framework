@@ -8,7 +8,7 @@ export type context<T extends "application" | "message" = never> = {
   guildId?: bigint;
   authorId: bigint;
   member?: Message["member"];
-  options?: optionResults;
+  options: optionResults;
   respond(
     bot: AmethystBot,
     content: CreateMessage & {

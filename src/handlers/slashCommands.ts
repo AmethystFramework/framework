@@ -97,7 +97,7 @@ export async function handleSlash(bot: AmethystBot, data: Interaction) {
             ? { ...data, data: data.data.options?.[0] }
             : { ...data, data: data.data.options?.[0]?.options?.[0] },
       }),
-      options: createOptionResults(bot, command.command.options, {
+      options: createOptionResults(bot, command.command.options || [], {
         interaction: data,
       }),
     });
