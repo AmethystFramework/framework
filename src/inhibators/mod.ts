@@ -1,15 +1,17 @@
 import {
+  BotWithCache,
   getMissingChannelPermissions,
   getMissingGuildPermissions,
+  PermissionStrings,
 } from "../../deps.ts";
 import { AmethystBot } from "../interfaces/bot.ts";
-import { BaseCommand } from "../interfaces/command.ts";
+import { Command } from "../interfaces/command.ts";
 import { AmethystError, Errors } from "../interfaces/errors.ts";
 import { AmethystCollection } from "../utils/AmethystCollection.ts";
 
 export const inhibitors = new AmethystCollection<
   string,
-  <T extends BaseCommand = BaseCommand>(
+  <T extends Command = Command>(
     bot: AmethystBot,
     command: T,
     options?: { memberId?: bigint; guildId?: bigint; channelId: bigint }
@@ -117,13 +119,17 @@ inhibitors.set("ownerOnly", (bot, command, options) => {
   return true;
 });
 
-inhibitors.set("botPermissions", (bot, command, options) => {
-  if (command.dmOnly) return true;
+inhibitors.set("botPermissions", (bot, cmd, options) => {
+  const command = cmd as Command & {
+    botGuildPermissions: PermissionStrings[];
+    botChannelPermissions: PermissionStrings[];
+  };
+  if (command.dmOnly && !command.guildOnly) return true;
   if (
     command.botGuildPermissions?.length &&
     (!options?.guildId ||
       getMissingGuildPermissions(
-        bot,
+        bot as unknown as BotWithCache,
         options.guildId,
         bot.id,
         command.botGuildPermissions
@@ -133,7 +139,7 @@ inhibitors.set("botPermissions", (bot, command, options) => {
       type: Errors.BOT_MISSING_PERMISSIONS,
       channel: false,
       value: getMissingGuildPermissions(
-        bot,
+        bot as unknown as BotWithCache,
         options!.guildId!,
         bot.id,
         command.botGuildPermissions
@@ -143,7 +149,7 @@ inhibitors.set("botPermissions", (bot, command, options) => {
     command.botChannelPermissions?.length &&
     (!options?.channelId ||
       getMissingChannelPermissions(
-        bot,
+        bot as unknown as BotWithCache,
         options.channelId,
         bot.id,
         command.botChannelPermissions
@@ -153,7 +159,7 @@ inhibitors.set("botPermissions", (bot, command, options) => {
       type: Errors.BOT_MISSING_PERMISSIONS,
       channel: true,
       value: getMissingChannelPermissions(
-        bot,
+        bot as unknown as BotWithCache,
         options!.channelId!,
         bot.id,
         command.botChannelPermissions
@@ -162,14 +168,19 @@ inhibitors.set("botPermissions", (bot, command, options) => {
   return true;
 });
 
-inhibitors.set("userPermissions", (bot, command, options) => {
+inhibitors.set("userPermissions", (bot, cmd, options) => {
+  const command = cmd as Command & {
+    userGuildPermissions: PermissionStrings[];
+    userChannelPermissions: PermissionStrings[];
+  };
+
   if (command.dmOnly) return true;
   if (
     command.userGuildPermissions?.length &&
     (!options?.guildId ||
       !options.memberId ||
       getMissingGuildPermissions(
-        bot,
+        bot as unknown as BotWithCache,
         options.guildId,
         options.memberId,
         command.userGuildPermissions
@@ -179,7 +190,7 @@ inhibitors.set("userPermissions", (bot, command, options) => {
       type: Errors.USER_MISSING_PERMISSIONS,
       channel: false,
       value: getMissingGuildPermissions(
-        bot,
+        bot as unknown as BotWithCache,
         options!.guildId!,
         options!.memberId!,
         command.userGuildPermissions
@@ -190,7 +201,7 @@ inhibitors.set("userPermissions", (bot, command, options) => {
     (!options?.memberId ||
       !options?.channelId ||
       getMissingChannelPermissions(
-        bot,
+        bot as unknown as BotWithCache,
         options.channelId,
         options.memberId,
         command.userChannelPermissions
@@ -200,7 +211,7 @@ inhibitors.set("userPermissions", (bot, command, options) => {
       type: Errors.USER_MISSING_PERMISSIONS,
       channel: true,
       value: getMissingGuildPermissions(
-        bot,
+        bot as unknown as BotWithCache,
         options!.guildId!,
         options!.memberId!,
         command.userChannelPermissions

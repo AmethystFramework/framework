@@ -4,8 +4,13 @@ import {
   Message,
   ChannelTypes,
   Locales,
+  Channel,
   ApplicationCommandOptionChoice,
   InteractionDataOption,
+  User,
+  Member,
+  Role,
+  Attachment,
 } from "../../deps.ts";
 import { AmethystBot } from "./bot.ts";
 
@@ -17,8 +22,12 @@ export interface commandOption {
   description?: string;
   /**The option type*/
   type:
-    | ApplicationCommandOptionTypes
-    | keyof typeof ApplicationCommandOptionTypes;
+    | Omit<ApplicationCommandOptionTypes, "SubCommand" | "SubCommandGroup">
+    | keyof Omit<
+        typeof ApplicationCommandOptionTypes,
+        "SubCommand" | "SubCommandGroup"
+      >;
+
   /**Whether the option is required or not, defaults to "false"*/
   required?: boolean;
   /**The minimum value for numbers, or the minimum amount of characters for a string*/
@@ -55,4 +64,45 @@ export interface optionResults {
   /**Will get the string option*/
   getString(name: string, required?: false): string | undefined;
   getString(name: string, required: true): string;
+  /**Will get the number option*/
+  getNumber(name: string, required?: false): number | undefined;
+  getNumber(name: string, required: true): number;
+  /**Will get the integer option*/
+  getInteger(name: string, required?: false): number | undefined;
+  getInteger(name: string, required: true): number;
+  /**Will get the boolean option*/
+  getBoolean(name: string, required?: false): boolean | undefined;
+  getBoolean(name: string, required: true): boolean;
+  /**Will get the user option*/
+  getUser(name: string, required?: false): User | undefined;
+  getUser(name: string, required: true): User;
+  /**Will get the member from the cache*/
+  getMember(
+    name: string,
+    options: {
+      required?: false;
+      force?: false;
+    }
+  ): Member | undefined;
+  getMember(name: string, options: { required: true; force?: false }): Member;
+  getMember(
+    name: string,
+    options: { required?: false; force: true }
+  ): Promise<Member | undefined>;
+  getMember(
+    name: string,
+    options: { required: true; force: true }
+  ): Promise<Member>;
+  /**Gets the role option*/
+  getRole(name: string, required?: false): Role;
+  getRole(name: string, required: true): Role;
+  /**Gets any mentionable discord object (roles, channels, members)*/
+  getMentionable(name: string, required?: false): Role | User | undefined;
+  getMentionable(name: string, required: true): Role | User;
+  /**Gets the attachment option*/
+  getAttachment(name: string, required?: false): Attachment | undefined;
+  getAttachment(name: string, required: true): Attachment;
+  /**Gets the channel option*/
+  getChannel(name: string, required?: false): Channel | undefined;
+  getChannel(name: string, required: true): Channel;
 }
