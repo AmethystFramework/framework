@@ -11,6 +11,8 @@ export type AmethystBotOptions = {
     | string[]
     | ((bot: AmethystBot, message: Message) => Async<string | string[]>);
   botMentionAsPrefix?: boolean;
+  /**ignore bots when they try to use message commands, default to `true`*/
+  ignoreBots?: boolean;
   messageQuotedArguments?: boolean;
   defaultCooldown?: CommandCooldown;
   ignoreCooldown?: (string | bigint)[];

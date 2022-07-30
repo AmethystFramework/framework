@@ -84,6 +84,11 @@ export async function handleMessageCommands(
         (cmd as Command<"message">).aliases?.includes(commandName!)
     )
   ) as Command<"message">;
+  if (
+    bot.users.get(message.authorId)?.toggles.bot &&
+    (command.ignoreBots ?? bot.ignoreBots)
+  )
+    return;
   if (!command) return bot.events.commandNotFound?.(bot, message, commandName);
   args =
     command.quotedArguments === true ||

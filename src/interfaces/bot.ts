@@ -117,6 +117,7 @@ interface AmethystProps extends Omit<BotWithCache, "events"> {
   ignoreCooldown?: bigint[];
   guildOnly?: boolean;
   messageQuotedArguments?: boolean;
+  ignoreBots?: boolean;
   dmOnly?: boolean;
   prefix?:
     | string

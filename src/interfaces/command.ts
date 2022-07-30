@@ -67,7 +67,7 @@ export type Command<T extends "application" | "message" = never> = {
       /**The guild permissions needed by the bot to execute the command*/
       botGuildPermissions?: PermissionStrings[];
     }
-    | {
+  | {
       /**If the command can only be used in dms*/
       dmOnly?: true;
       /**If the command can only be used in guilds*/
@@ -96,6 +96,8 @@ export type Command<T extends "application" | "message" = never> = {
     ? {
         aliases?: string[];
         quotedArguments?: boolean;
+        /**Ignore bots when they try to use the command*/
+        ignoreBots?: boolean;
       }
     : Record<never, never>);
 
