@@ -16,6 +16,7 @@ export interface CommandCooldown {
 }
 
 /**The base command interface that's used to create the other command interfaces*/
+
 export type Command<T extends "application" | "message" = never> = {
   /**The command name*/
   name: string;
@@ -66,7 +67,7 @@ export type Command<T extends "application" | "message" = never> = {
       /**The guild permissions needed by the bot to execute the command*/
       botGuildPermissions?: PermissionStrings[];
     }
-  | {
+    | {
       /**If the command can only be used in dms*/
       dmOnly?: true;
       /**If the command can only be used in guilds*/
