@@ -2,7 +2,6 @@ import { CreateMessage, Interaction, Message } from "../../deps.ts";
 import { AmethystBot } from "../../mod.ts";
 import { optionResults } from "./commandOptions.ts";
 
-// This type is still not used but it is still expiremental
 export type context<T extends "application" | "message" = never> = {
   channelId: bigint;
   guildId?: bigint;
