@@ -38,6 +38,7 @@ export * from "./src/utils/Embed.ts";
 export * from "./src/utils/component.ts";
 export * from "./src/utils/createCommand.ts";
 export * from "./src/utils/types.ts";
+export * from "./src/interfaces/context.ts";
 export * from "./src/interfaces/bot.ts";
 export * from "./src/interfaces/tasks.ts";
 export * from "./src/interfaces/errors.ts";
