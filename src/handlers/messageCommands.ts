@@ -1,7 +1,7 @@
 import { Message } from "../../deps.ts";
 import { AmethystBot } from "../interfaces/bot.ts";
 import { Command } from "../interfaces/command.ts";
-import { Errors } from "../interfaces/errors.ts";
+import { AmethystError, Errors } from "../interfaces/errors.ts";
 import { createContext } from "../utils/createContext.ts";
 import { createOptionResults } from "../utils/createOptionResults.ts";
 
@@ -17,6 +17,29 @@ function executeCommand(
   command: Command<"message">,
   args: string[]
 ) {
+  if (
+    bot.inhibitors.some(
+      (e) =>
+        e(bot, command as Command, {
+          guildId: message.guildId,
+          channelId: message.channelId!,
+          memberId: message.authorId,
+        }) !== true
+    )
+  ) {
+    return bot.events.commandError?.(bot, {
+      message,
+      error: bot.inhibitors
+        .map((e) =>
+          e(bot, command as Command, {
+            guildId: message.guildId,
+            channelId: message.channelId!,
+            memberId: message.authorId,
+          })
+        )
+        .find((e) => typeof e !== "boolean")! as AmethystError,
+    });
+  }
   try {
     command.execute?.(bot, {
       ...createContext({ message }),
