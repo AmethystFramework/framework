@@ -39,6 +39,8 @@ export * from "./src/utils/component.ts";
 export * from "./src/utils/createCommand.ts";
 export * from "./src/utils/types.ts";
 export * from "./src/interfaces/context.ts";
+export * from "./src/interfaces/event.ts";
+export * from "./src/interfaces/commandOptions.ts";
 export * from "./src/interfaces/bot.ts";
 export * from "./src/interfaces/tasks.ts";
 export * from "./src/interfaces/errors.ts";
