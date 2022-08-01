@@ -6,7 +6,7 @@ import {
 } from "../../deps.ts";
 import { AmethystBot } from "../interfaces/bot.ts";
 import { Command } from "../interfaces/command.ts";
-import { AmethystError, Errors } from "../interfaces/errors.ts";
+import { AmethystError, ErrorEnums } from "../interfaces/errors.ts";
 import { AmethystCollection } from "../utils/AmethystCollection.ts";
 
 export const inhibitors = new AmethystCollection<
@@ -29,13 +29,13 @@ inhibitors.set("hasRole", (bot, command, options) => {
   if (command.dmOnly || !command.hasRoles?.length || !options?.guildId)
     return true;
   if (!options?.memberId)
-    return { type: Errors.MISSING_REQUIRED_ROLES, value: command.hasRoles };
+    return { type: ErrorEnums.MISSING_REQUIRED_ROLES, value: command.hasRoles };
   const member = bot.members.get(
     bot.transformers.snowflake(`${options.memberId}${options.guildId}`)
   );
   if (command.hasRoles?.some((e) => !member?.roles.includes(e)))
     return {
-      type: Errors.MISSING_REQUIRED_ROLES,
+      type: ErrorEnums.MISSING_REQUIRED_ROLES,
       value: command.hasRoles?.filter((e) => !member?.roles.includes(e)),
     };
   return true;
@@ -58,7 +58,7 @@ inhibitors.set("cooldown", (bot, command, options) => {
       const now = Date.now();
       if (cooldown.timestamp > now) {
         return {
-          type: Errors.COOLDOWN,
+          type: ErrorEnums.COOLDOWN,
           value: {
             expiresAt: Date.now() + commandCooldown.seconds * 1000,
             executedAt: Date.now(),
@@ -74,7 +74,7 @@ inhibitors.set("cooldown", (bot, command, options) => {
       timestamp: Date.now() + commandCooldown.seconds * 1000,
     });
     return {
-      type: Errors.COOLDOWN,
+      type: ErrorEnums.COOLDOWN,
       value: {
         expiresAt: Date.now() + commandCooldown.seconds * 1000,
         executedAt: Date.now(),
@@ -104,9 +104,9 @@ inhibitors.set("nsfw", (bot, command, options) => {
     !options?.channelId ||
     !bot.channels.has(options.channelId)
   )
-    return { type: Errors.NSFW };
+    return { type: ErrorEnums.NSFW };
   const channel = bot.channels.get(options.channelId)!;
-  if (!command.nsfw && channel.nsfw) return { type: Errors.NSFW };
+  if (!command.nsfw && channel.nsfw) return { type: ErrorEnums.NSFW };
   return true;
 });
 
@@ -115,7 +115,7 @@ inhibitors.set("ownerOnly", (bot, command, options) => {
     command.ownerOnly &&
     (!options?.memberId || !bot.owners?.includes(options.memberId))
   )
-    return { type: Errors.OWNER_ONLY };
+    return { type: ErrorEnums.OWNER_ONLY };
   return true;
 });
 
@@ -136,7 +136,7 @@ inhibitors.set("botPermissions", (bot, cmd, options) => {
       ).length)
   )
     return {
-      type: Errors.BOT_MISSING_PERMISSIONS,
+      type: ErrorEnums.BOT_MISSING_PERMISSIONS,
       channel: false,
       value: getMissingGuildPermissions(
         bot as unknown as BotWithCache,
@@ -156,7 +156,7 @@ inhibitors.set("botPermissions", (bot, cmd, options) => {
       ).length)
   )
     return {
-      type: Errors.BOT_MISSING_PERMISSIONS,
+      type: ErrorEnums.BOT_MISSING_PERMISSIONS,
       channel: true,
       value: getMissingChannelPermissions(
         bot as unknown as BotWithCache,
@@ -187,7 +187,7 @@ inhibitors.set("userPermissions", (bot, cmd, options) => {
       ).length)
   )
     return {
-      type: Errors.USER_MISSING_PERMISSIONS,
+      type: ErrorEnums.USER_MISSING_PERMISSIONS,
       channel: false,
       value: getMissingGuildPermissions(
         bot as unknown as BotWithCache,
@@ -208,7 +208,7 @@ inhibitors.set("userPermissions", (bot, cmd, options) => {
       ).length)
   )
     return {
-      type: Errors.USER_MISSING_PERMISSIONS,
+      type: ErrorEnums.USER_MISSING_PERMISSIONS,
       channel: true,
       value: getMissingGuildPermissions(
         bot as unknown as BotWithCache,
@@ -230,8 +230,8 @@ inhibitors.set("guildOrDmOnly", (bot, command, options) => {
     return {
       type:
         command.guildOnly && !options?.guildId
-          ? Errors.GUILDS_ONLY
-          : Errors.DMS_ONLY,
+          ? ErrorEnums.GUILDS_ONLY
+          : ErrorEnums.DMS_ONLY,
     };
   return true;
 });
