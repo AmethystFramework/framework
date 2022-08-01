@@ -1,7 +1,7 @@
 import { Message } from "../../deps.ts";
 import { AmethystBot } from "../interfaces/bot.ts";
 import { Command } from "../interfaces/command.ts";
-import { AmethystError, Errors } from "../interfaces/errors.ts";
+import { AmethystError, ErrorEnums } from "../interfaces/errors.ts";
 import { createContext } from "../utils/createContext.ts";
 import { createOptionResults } from "../utils/createOptionResults.ts";
 
@@ -51,7 +51,7 @@ function executeCommand(
     if (bot.events.commandError) {
       bot.events.commandError(bot, {
         message,
-        error: { type: Errors.OTHER },
+        error: { type: ErrorEnums.OTHER },
       });
     } else throw e;
   }
