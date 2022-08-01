@@ -1,6 +1,6 @@
 import { PermissionStrings } from "../../deps.ts";
 
-export enum Errors {
+export enum ErrorEnums {
   OWNER_ONLY,
   NSFW,
   DMS_ONLY,
@@ -15,7 +15,7 @@ export enum Errors {
 
 export interface BaseError {
   type: Exclude<
-    Errors,
+    ErrorEnums,
     | UserPermissionsError["type"]
     | BotPermissionsError["type"]
     | CooldownError["type"]
@@ -25,28 +25,28 @@ export interface BaseError {
 }
 
 export interface MissingRequiredArguments {
-  type: Errors.MISSING_REQUIRED_ARGUMENTS;
+  type: ErrorEnums.MISSING_REQUIRED_ARGUMENTS;
   value: string;
 }
 
 export interface MissingRequiredRoles {
-  type: Errors.MISSING_REQUIRED_ROLES;
+  type: ErrorEnums.MISSING_REQUIRED_ROLES;
   value: bigint[];
 }
 
 export interface CooldownError {
-  type: Errors.COOLDOWN;
+  type: ErrorEnums.COOLDOWN;
   value: { expiresAt: number; executedAt: number };
 }
 
 export interface UserPermissionsError {
-  type: Errors.USER_MISSING_PERMISSIONS;
+  type: ErrorEnums.USER_MISSING_PERMISSIONS;
   channel: boolean;
   value: PermissionStrings[];
 }
 
 export interface BotPermissionsError {
-  type: Errors.BOT_MISSING_PERMISSIONS;
+  type: ErrorEnums.BOT_MISSING_PERMISSIONS;
   channel: boolean;
   value: PermissionStrings[];
 }
