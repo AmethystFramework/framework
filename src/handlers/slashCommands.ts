@@ -88,6 +88,9 @@ export async function handleSlash(bot: AmethystBot, data: Interaction) {
   }
   try {
     bot.events.commandStart?.(bot, command!.command! as Command, data);
+    bot.logger.log(
+      `Slash Command ${command.name} ran by ${data.user.username}(${data.user.id}) in ${data.guildId}. `
+    );
     command?.command.execute?.(bot, {
       ...createContext({
         interaction:

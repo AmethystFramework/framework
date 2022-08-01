@@ -41,6 +41,9 @@ function executeCommand(
     });
   }
   try {
+    bot.logger.log(
+      `Message Command ${commandname} ran by ${message.user.username}(${message.user.id}) in ${message.guild.id}. `
+    );
     command.execute?.(bot, {
       ...createContext({ message }),
       options: createOptionResults(bot, command.options || [], {
