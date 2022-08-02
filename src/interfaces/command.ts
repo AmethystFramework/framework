@@ -48,8 +48,6 @@ export type Command<T extends "application" | "message" = never> = {
   ignoreCooldown?: bigint[];
   /**A list of of ids for roles the user needs to run the command*/
   hasRoles?: bigint[];
-  /**Ignore bots when they try to use the command*/
-  ignoreBots?: boolean;
   /**Execute the command*/
   execute?: (bot: AmethystBot, ctx: context<T>) => unknown;
 } & (
@@ -98,6 +96,8 @@ export type Command<T extends "application" | "message" = never> = {
     ? {
         aliases?: string[];
         quotedArguments?: boolean;
+        /**Ignore bots when they try to use the command*/
+        ignoreBots?: boolean;
       }
     : Record<never, never>);
 
