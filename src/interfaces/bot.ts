@@ -19,7 +19,7 @@ import {
 import { AmethystError } from "./errors.ts";
 import { AmethystEvents } from "./event.ts";
 import { AmethystTask } from "./tasks.ts";
-
+import logger, { LogLevels } from "../utils/logger.ts";
 interface runningTasks {
   initialTimeouts: number[];
   intervals: number[];
@@ -119,6 +119,9 @@ interface AmethystProps extends Omit<BotWithCache, "events"> {
   messageQuotedArguments?: boolean;
   ignoreBots?: boolean;
   dmOnly?: boolean;
+  botName?: string;
+  logLevel?: LogLevels;
+  logger?: typeof logger;
   prefix?:
     | string
     | string[]

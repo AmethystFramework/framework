@@ -4,6 +4,7 @@ import { Command } from "../interfaces/command.ts";
 import { AmethystError, ErrorEnums } from "../interfaces/errors.ts";
 import { createContext } from "../utils/createContext.ts";
 import { createOptionResults } from "../utils/createOptionResults.ts";
+import { LogLevels } from "../utils/logger.ts";
 
 /**
  * Execute a message command.
@@ -41,6 +42,12 @@ function executeCommand(
     });
   }
   try {
+    bot.logger?.log(
+      LogLevels.Info,
+      `Message Command ${command.name} ran by ${
+        bot.users.get(message.authorId)?.username
+      }(${message.authorId}) in ${message.guildId}. `
+    );
     command.execute?.(bot, {
       ...createContext({ message }),
       options: createOptionResults(bot, command.options || [], {
@@ -109,7 +116,7 @@ export async function handleMessageCommands(
   ) as Command<"message">;
   if (
     bot.users.get(message.authorId)?.toggles.bot &&
-    (command.ignoreBots ?? bot.ignoreBots)
+    (command?.ignoreBots ?? bot.ignoreBots)
   )
     return;
   if (!command) return bot.events.commandNotFound?.(bot, message, commandName);
