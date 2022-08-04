@@ -7,7 +7,7 @@ import {
   Role,
   User,
 } from "../../deps.ts";
-import { AmethystBot, Errors } from "../../mod.ts";
+import { AmethystBot, ErrorEnums } from "../../mod.ts";
 import {
   commandOption,
   optionResults,
@@ -50,7 +50,7 @@ export function createOptionResults(
           option.missing(bot, data.message, name);
         if (bot.events.commandError)
           bot.events.commandError(bot, {
-            error: { type: Errors.MISSING_REQUIRED_ARGUMENTS, value: name },
+            error: { type: ErrorEnums.MISSING_REQUIRED_ARGUMENTS, value: name },
             message: data.message,
           });
         if (!(option?.missing && data.message) && !bot.events.commandError)
@@ -66,7 +66,7 @@ export function createOptionResults(
           option.missing(bot, data.message, name);
         if (bot.events.commandError)
           bot.events.commandError(bot, {
-            error: { type: Errors.MISSING_REQUIRED_ARGUMENTS, value: name },
+            error: { type: ErrorEnums.MISSING_REQUIRED_ARGUMENTS, value: name },
             message: data.message,
           });
         if (!(option?.missing && data.message) && !bot.events.commandError)
@@ -82,7 +82,7 @@ export function createOptionResults(
           option.missing(bot, data.message, name);
         if (bot.events.commandError)
           bot.events.commandError(bot, {
-            error: { type: Errors.MISSING_REQUIRED_ARGUMENTS, value: name },
+            error: { type: ErrorEnums.MISSING_REQUIRED_ARGUMENTS, value: name },
             message: data.message,
           });
         if (!(option?.missing && data.message) && !bot.events.commandError)
@@ -101,7 +101,7 @@ export function createOptionResults(
           option.missing(bot, data.message, name);
         if (bot.events.commandError)
           bot.events.commandError(bot, {
-            error: { type: Errors.MISSING_REQUIRED_ARGUMENTS, value: name },
+            error: { type: ErrorEnums.MISSING_REQUIRED_ARGUMENTS, value: name },
             message: data.message,
           });
         if (!(option?.missing && data.message) && !bot.events.commandError)
@@ -117,7 +117,7 @@ export function createOptionResults(
           option.missing(bot, data.message, name);
         if (bot.events.commandError)
           bot.events.commandError(bot, {
-            error: { type: Errors.MISSING_REQUIRED_ARGUMENTS, value: name },
+            error: { type: ErrorEnums.MISSING_REQUIRED_ARGUMENTS, value: name },
             message: data.message,
           });
         if (!(option?.missing && data.message) && !bot.events.commandError)
@@ -142,7 +142,7 @@ export function createOptionResults(
           option.missing(bot, data.message, name);
         if (bot.events.commandError)
           bot.events.commandError(bot, {
-            error: { type: Errors.MISSING_REQUIRED_ARGUMENTS, value: name },
+            error: { type: ErrorEnums.MISSING_REQUIRED_ARGUMENTS, value: name },
             message: data.message,
           });
         if (!(option?.missing && data.message) && !bot.events.commandError)
@@ -181,7 +181,7 @@ export function createOptionResults(
           option.missing(bot, data.message, name);
         if (bot.events.commandError)
           bot.events.commandError(bot, {
-            error: { type: Errors.MISSING_REQUIRED_ARGUMENTS, value: name },
+            error: { type: ErrorEnums.MISSING_REQUIRED_ARGUMENTS, value: name },
             message: data.message,
           });
         if (!(option?.missing && data.message) && !bot.events.commandError)
@@ -214,7 +214,7 @@ export function createOptionResults(
           option.missing(bot, data.message, name);
         if (bot.events.commandError)
           bot.events.commandError(bot, {
-            error: { type: Errors.MISSING_REQUIRED_ARGUMENTS, value: name },
+            error: { type: ErrorEnums.MISSING_REQUIRED_ARGUMENTS, value: name },
             message: data.message,
           });
         if (!(option?.missing && data.message) && !bot.events.commandError)
@@ -240,7 +240,7 @@ export function createOptionResults(
           option.missing(bot, data.message, name);
         if (bot.events.commandError)
           bot.events.commandError(bot, {
-            error: { type: Errors.MISSING_REQUIRED_ARGUMENTS, value: name },
+            error: { type: ErrorEnums.MISSING_REQUIRED_ARGUMENTS, value: name },
             message: data.message,
           });
         if (!(option?.missing && data.message) && !bot.events.commandError)
@@ -302,7 +302,7 @@ export function createOptionResults(
           option.missing(bot, data.message, name);
         if (bot.events.commandError)
           bot.events.commandError(bot, {
-            error: { type: Errors.MISSING_REQUIRED_ARGUMENTS, value: name },
+            error: { type: ErrorEnums.MISSING_REQUIRED_ARGUMENTS, value: name },
             message: data.message,
           });
         if (!(option?.missing && data.message) && !bot.events.commandError)
@@ -323,7 +323,7 @@ export function createOptionResults(
           option.missing(bot, data.message, name);
         if (bot.events.commandError)
           bot.events.commandError(bot, {
-            error: { type: Errors.MISSING_REQUIRED_ARGUMENTS, value: name },
+            error: { type: ErrorEnums.MISSING_REQUIRED_ARGUMENTS, value: name },
             message: data.message,
           });
         if (!(option?.missing && data.message) && !bot.events.commandError)
@@ -360,7 +360,7 @@ export function createOptionResults(
           option.missing(bot, data.message, name);
         if (bot.events.commandError)
           bot.events.commandError(bot, {
-            error: { type: Errors.MISSING_REQUIRED_ARGUMENTS, value: name },
+            error: { type: ErrorEnums.MISSING_REQUIRED_ARGUMENTS, value: name },
             message: data.message,
           });
         if (!(option?.missing && data.message) && !bot.events.commandError)
