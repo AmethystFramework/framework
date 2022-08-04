@@ -2,7 +2,7 @@ import { Message } from "../../deps.ts";
 import { Async } from "../utils/types.ts";
 import { AmethystBot } from "./bot.ts";
 import { CommandCooldown } from "./command.ts";
-import { LogLevels } from "../utils/logger.ts";
+
 /**A list of options for the amethyst bot*/
 export type AmethystBotOptions = {
   owners?: (bigint | string)[];
@@ -20,9 +20,6 @@ export type AmethystBotOptions = {
   eventDir?: string;
   inhibitorDir?: string;
   prefixCaseSensitive?: boolean;
-  logLevel?: LogLevels;
-  /* Name of the bot used in the logger */
-  botName?: string;
 } & (
   | {
       guildOnly?: true;

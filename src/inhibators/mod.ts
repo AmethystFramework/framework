@@ -106,7 +106,7 @@ inhibitors.set("nsfw", (bot, command, options) => {
   )
     return { type: ErrorEnums.NSFW };
   const channel = bot.channels.get(options.channelId)!;
-  if (!command.nsfw && channel.nsfw) return { type: ErrorEnums.NSFW };
+  if (command.nsfw && !channel.nsfw) return { type: ErrorEnums.NSFW };
   return true;
 });
 

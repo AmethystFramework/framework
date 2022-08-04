@@ -31,7 +31,6 @@ import {
   loadInhibitors,
 } from "./src/utils/fileLoader.ts";
 
-import { logger, LogLevels } from "./src/utils/logger.ts";
 let Ready = false;
 
 export * from "./src/utils/AmethystCollection.ts";
@@ -280,10 +279,6 @@ export function enableAmethystPlugin<
     typeof e == "string" ? bot.utils.snowflakeToBigint(e) : e
   );
   bot.botMentionAsPrefix = options?.botMentionAsPrefix;
-  bot.logLevel = options?.logLevel ?? LogLevels.Debug;
-  bot.botName = options?.botName ?? "Amethyst Bot";
-
-  bot.logger = logger({ name: bot.botName, logLevel: bot.logLevel });
   bot.defaultCooldown = options?.defaultCooldown;
   bot.ignoreCooldown = options?.ignoreCooldown?.map((e) => BigInt(e));
   bot.guildOnly = options?.guildOnly;

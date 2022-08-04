@@ -4,7 +4,6 @@ import { Command, subcommand, subcommandGroup } from "../interfaces/command.ts";
 import { AmethystError, ErrorEnums } from "../interfaces/errors.ts";
 import { createContext } from "../utils/createContext.ts";
 import { createOptionResults } from "../utils/createOptionResults.ts";
-import { LogLevels } from "../utils/logger.ts";
 
 interface commandFetch {
   type: "command" | "subcommand" | "subcommandGroup";
@@ -89,10 +88,6 @@ export async function handleSlash(bot: AmethystBot, data: Interaction) {
   }
   try {
     bot.events.commandStart?.(bot, command!.command! as Command, data);
-    bot.logger?.log(
-      LogLevels.Info,
-      `Slash Command ${command.command.name} ran by ${data.user.username}(${data.user.id}) in ${data.guildId}. `
-    );
     command?.command.execute?.(bot, {
       ...createContext({
         interaction:
