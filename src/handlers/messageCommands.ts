@@ -109,7 +109,7 @@ export async function handleMessageCommands(
   ) as Command<"message">;
   if (
     bot.users.get(message.authorId)?.toggles.bot &&
-    (command.ignoreBots ?? bot.ignoreBots)
+    (command?.ignoreBots ?? bot.ignoreBots)
   )
     return;
   if (!command) return bot.events.commandNotFound?.(bot, message, commandName);
