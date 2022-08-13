@@ -8,6 +8,8 @@ export type context<T extends "application" | "message" = never> = {
   authorId: bigint;
   member?: Message["member"];
   options: optionResults;
+  /**Defers the interaction response*/
+  defer(bot: AmethystBot): Promise<unknown>;
   respond(
     bot: AmethystBot,
     content: CreateMessage & {
@@ -34,6 +36,7 @@ export type context<T extends "application" | "message" = never> = {
     bot: AmethystBot,
     content: CreateMessage & {
       private?: boolean;
+      /**Only useful to send a deferred reply for a slash command*/ defer?: boolean;
       /**only useful for force fetching interaction response*/ force?: false;
     }
   ): Promise<Message | undefined>;

@@ -12,6 +12,14 @@ export function createContext<
       data.interaction?.member?.id)!,
     member: data.interaction?.member || data.message?.member,
     guildId: data.interaction?.guildId || data.message?.guildId,
+    async defer(bot) {
+      if (data.interaction)
+        return await bot.helpers.sendInteractionResponse(
+          data.interaction.id,
+          data.interaction.token,
+          { type: 5 }
+        );
+    },
     // @ts-ignore -
     reply: async (bot, content) => {
       if (data.message) {
