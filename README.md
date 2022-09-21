@@ -11,8 +11,8 @@ npm i amethyst-framework
 ## Features
 
 - Amethyst's flexibility allows you to modify many things and add features as you see fit.
-- Amethyst allows a developer to construct slash or message instructions.
-- Support for interaction, including built-in buttons, selection, and more.
+- Amethyst allows a developer to construct slash or message interactions.
+- Support for interactions, including built-in buttons, selection, and more.
 - More amazing features of our framework for you to explore.
 
 ## Why Amethyst?
