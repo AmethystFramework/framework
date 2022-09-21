@@ -1,6 +1,7 @@
 # Amethyst
 
-Amethyst is a very strong and adaptable [Discordeno](https://github.com/discordeno/discordeno) framework.
+Amethyst is a [Discordeno](https://github.com/discordeno/discordeno) framework that is incredibly robust and flexible.
+It promotes standard practises and is geared at bigger bots.
 
 ## Installation
 
@@ -10,17 +11,17 @@ npm i amethyst-framework
 
 ## Features
 
-- Amethyst's flexibility allows you to modify many things and add features as you see fit.
-- Amethyst allows a developer to construct slash or message interactions.
-- Support for interactions, including built-in buttons, selection, and more.
-- More amazing features of our framework for you to explore.
+- Thanks to Amethyst's adaptability, you can change a lot of things and add features as you see appropriate.
+- A developer may create slash or message interactions with Amethyst.
+- Assistance with interactions, such as selection, built-in buttons, and more.
+- Explore more incredible features of our framework.
 
 ## Why Amethyst?
 
-- 📌 Amethyst uses Decorators to help simply your code and maintain readiblity.
-- ✨ Support for both slash and message commands without the need to rewrite code.
-- ❤️ Fully customizable.
-- 🎖️ Easy to learn and use.
+Amethyst utilises Decorators to help you keep readability and simplify your code. Support for message and slash commands without requiring code rewriting.
+
+- Completely programmable.
+- Simple to use and learn.
 
 ## Usage
 
@@ -33,4 +34,3 @@ npm i amethyst-framework
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
 
 Please make sure to update tests as appropriate.
-
