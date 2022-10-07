@@ -29,7 +29,7 @@ await build({
   mappings: {
     "https://deno.land/x/discordeno@16.0.0/mod.ts": {
       name: "discordeno",
-      version: "discordeno@16.0.0",
+      version: "16.0.0",
     },
   },
   outDir: "./npm",
