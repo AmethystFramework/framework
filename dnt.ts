@@ -27,7 +27,7 @@ await build({
   },
   entryPoints: ["./mod.ts"],
   mappings: {
-    "https://deno.land/x/discordeno@discordeno@16.0.0/mod.ts": {
+    "https://deno.land/x/discordeno@16.0.0/mod.ts": {
       name: "discordeno",
       version: "discordeno@16.0.0",
     },
