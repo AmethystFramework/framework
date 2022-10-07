@@ -33,19 +33,19 @@ import {
 
 let Ready = false;
 
+export * from "./src/interfaces/AmethystBotOptions.ts";
+export * from "./src/interfaces/bot.ts";
+export * from "./src/interfaces/command.ts";
+export * from "./src/interfaces/commandOptions.ts";
+export * from "./src/interfaces/context.ts";
+export * from "./src/interfaces/errors.ts";
+export * from "./src/interfaces/event.ts";
+export * from "./src/interfaces/tasks.ts";
 export * from "./src/utils/AmethystCollection.ts";
-export * from "./src/utils/Embed.ts";
 export * from "./src/utils/component.ts";
 export * from "./src/utils/createCommand.ts";
+export * from "./src/utils/Embed.ts";
 export * from "./src/utils/types.ts";
-export * from "./src/interfaces/context.ts";
-export * from "./src/interfaces/event.ts";
-export * from "./src/interfaces/commandOptions.ts";
-export * from "./src/interfaces/bot.ts";
-export * from "./src/interfaces/tasks.ts";
-export * from "./src/interfaces/errors.ts";
-export * from "./src/interfaces/command.ts";
-export * from "./src/interfaces/AmethystBotOptions.ts";
 
 /**
  * Adds a task to run in an interval
@@ -304,7 +304,8 @@ export function enableAmethystPlugin<
     } = bot.events;
     bot.events.guildCreate = (bot, guild) => {
       guildCreate(bot, guild);
-      bot.commands
+      const amethystBot = bot as AmethystBot;
+      amethystBot.commands
         .filter((cmd) => {
           const command = cmd as Command<"application">;
           return (
@@ -317,53 +318,54 @@ export function enableAmethystPlugin<
           );
         })
         .forEach((cmd) => {
-          bot.helpers.upsertApplicationCommands(
-            [
-              {
-                ...(cmd as Command<"application">),
-                options: cmd.options?.length
-                  ? cmd.options.map((e) => {
-                      return {
-                        ...e,
-                        description: e.description ?? "A slash command option",
-                        channelTypes: e.channelTypes?.map((f) =>
-                          typeof f == "string" ? ChannelTypes[f] : f
-                        ),
-                        type:
-                          typeof e.type == "number"
-                            ? e.type
-                            : ApplicationCommandOptionTypes[
-                                e.type as keyof typeof ApplicationCommandOptionTypes
-                              ],
-                      };
-                    })
-                  : [],
-              },
-            ],
-            guild.id
-          );
+          bot.helpers.upsertGuildApplicationCommands(guild.id, [
+            {
+              ...(cmd as Command<"application">),
+              options: cmd.options?.length
+                ? cmd.options.map((e) => {
+                    return {
+                      ...e,
+                      description: e.description ?? "A slash command option",
+                      channelTypes: e.channelTypes?.map((f) =>
+                        typeof f == "string" ? ChannelTypes[f] : f
+                      ),
+                      type:
+                        typeof e.type == "number"
+                          ? e.type
+                          : ApplicationCommandOptionTypes[
+                              e.type as keyof typeof ApplicationCommandOptionTypes
+                            ],
+                    };
+                  })
+                : [],
+            },
+          ]);
         });
     };
     bot.events.messageCreate = (_, msg) => {
       messageCreate(_, msg);
-      handleMessageCommands(_, msg);
-      handleMessageCollector(_, msg);
+      const amethystBot = bot as AmethystBot;
+      handleMessageCommands(amethystBot, msg);
+      handleMessageCollector(amethystBot, msg);
     };
     bot.events.reactionAdd = (_, payload) => {
       reactionAdd(_, payload);
-      handleReactionCollector(_, payload);
+      const amethystBot = bot as AmethystBot;
+      handleReactionCollector(amethystBot, payload);
     };
     bot.events.interactionCreate = (_, data) => {
       interactionCreate(_, data);
-      handleSlash(_, data);
-      if (data.type === 3) handleComponentCollector(_, data);
+      const amethystBot = bot as AmethystBot;
+      handleSlash(amethystBot, data);
+      if (data.type === 3) handleComponentCollector(amethystBot, data);
     };
     bot.events.ready = (bot, payload, rawPayload) => {
       ready(bot, payload, rawPayload);
       if (Ready) return;
-      registerTasks(bot);
-      bot.helpers.upsertApplicationCommands(
-        bot.commands
+      const amethystBot = bot as AmethystBot;
+      registerTasks(amethystBot);
+      bot.helpers.upsertGlobalApplicationCommands(
+        amethystBot.commands
           .filter(
             //@ts-ignore -
             (e: Command<"application">) => !e.scope || e.scope == "global"
@@ -392,8 +394,9 @@ export function enableAmethystPlugin<
           })
       );
       payload.guilds.forEach((guildId) => {
-        bot.helpers.upsertApplicationCommands(
-          bot.commands
+        amethystBot.helpers.upsertGuildApplicationCommands(
+          guildId,
+          amethystBot.commands
             .filter(
               //@ts-ignore -
               (e: Command<"application">) =>
@@ -420,39 +423,35 @@ export function enableAmethystPlugin<
                     })
                   : [],
               };
-            }),
-          guildId
+            })
         );
       });
       //@ts-ignore -
-      bot.commands.forEach((cmd: Command<"application">) => {
+      amethystBot.commands.forEach((cmd: Command<"application">) => {
         if (cmd.scope != "guild" || !cmd.guildIds?.length) return;
         cmd.guildIds.forEach((guildId) =>
-          bot.helpers.upsertApplicationCommands(
-            [
-              {
-                ...(cmd as Command<"application">),
-                options: cmd.options?.length
-                  ? cmd.options.map((e) => {
-                      return {
-                        ...e,
-                        description: e.description ?? "A slash command option",
-                        channelTypes: e.channelTypes?.map((f) =>
-                          typeof f == "string" ? ChannelTypes[f] : f
-                        ),
-                        type:
-                          typeof e.type == "number"
-                            ? e.type
-                            : ApplicationCommandOptionTypes[
-                                e.type as keyof typeof ApplicationCommandOptionTypes
-                              ],
-                      };
-                    })
-                  : [],
-              },
-            ],
-            guildId
-          )
+          amethystBot.helpers.upsertGuildApplicationCommands(guildId, [
+            {
+              ...(cmd as Command<"application">),
+              options: cmd.options?.length
+                ? cmd.options.map((e) => {
+                    return {
+                      ...e,
+                      description: e.description ?? "A slash command option",
+                      channelTypes: e.channelTypes?.map((f) =>
+                        typeof f == "string" ? ChannelTypes[f] : f
+                      ),
+                      type:
+                        typeof e.type == "number"
+                          ? e.type
+                          : ApplicationCommandOptionTypes[
+                              e.type as keyof typeof ApplicationCommandOptionTypes
+                            ],
+                    };
+                  })
+                : [],
+            },
+          ])
         );
       });
       Ready = true;

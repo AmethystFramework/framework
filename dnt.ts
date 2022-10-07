@@ -27,9 +27,9 @@ await build({
   },
   entryPoints: ["./mod.ts"],
   mappings: {
-    "https://deno.land/x/discordeno@13.0.0-rc45/mod.ts": {
+    "https://deno.land/x/discordeno@discordeno@16.0.0/mod.ts": {
       name: "discordeno",
-      version: "13.0.0-rc45",
+      version: "discordeno@16.0.0",
     },
   },
   outDir: "./npm",
