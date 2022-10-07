@@ -10,6 +10,13 @@ interface commandFetch {
   command: Command<"application"> | subcommand<"application">;
 }
 
+/**
+ * Fetches the command from the interaction.
+ *
+ * @param data The interaction data.
+ * @param command The command to fetch.
+ * @returns The command to fetch.
+ */
 function fetchCommand(
   data: Interaction,
   command: Command<"application">
@@ -37,6 +44,11 @@ function fetchCommand(
   if (sub) return { type: "subcommand", command: sub };
 }
 
+/**
+ * Handles the slash command
+ * @param bot The bot instance
+ * @param data The slash command data
+ */
 export async function handleSlash(bot: AmethystBot, data: Interaction) {
   if (
     data.type !== 2 ||

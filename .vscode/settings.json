@@ -5,6 +5,8 @@
     "editor.codeActionsOnSave": {
       "source.fixAll": true,
       "source.organizeImports": true
-    }
+    },
+    "editor.tabCompletion": "on",
+    "diffEditor.codeLens": true
   }
   
