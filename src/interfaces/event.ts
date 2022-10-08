@@ -5,8 +5,9 @@ import {
   Interaction,
   Message,
 } from "../../deps.ts";
+import Command from "../classes/Command.ts";
 import { AmethystBot } from "./bot.ts";
-import { Command } from "./command.ts";
+
 import { AmethystError } from "./errors.ts";
 
 export type Events = {

@@ -103,4 +103,31 @@ export default class Command {
         : [],
     };
   }
+
+  update(
+    options: commandOptions,
+    execute: (bot: AmethystBot, ctx: context) => unknown,
+    client: AmethystBot
+  ) {
+    this.name = options.name;
+    this.description = options.description;
+    this.category = options.category;
+    this.args = options.args ?? [];
+    this.aliases = options.aliases ?? [];
+    this.commandType = options.commandType;
+    this.cooldown = options.cooldown ?? client.defaultCooldown;
+    this.userChannelPermissions = options.userChannelPermissions ?? [];
+    this.userGuildPermissions = options.userGuildPermissions ?? [];
+    this.botChannelPermissions = options.botChannelPermissions ?? [];
+    this.botGuildPermissions = options.botGuildPermissions ?? [];
+    this.guildOnly = options.guildOnly ?? true;
+    this.dmOnly = options.dmOnly ?? false;
+    this.scope = options.scope ?? "global";
+    this.guildIds = options.guildIds ?? [];
+    this.quotedArguments = options.quotedArguments ?? false;
+    this.ignoreBots = options.ignoreBots ?? true;
+    this.nsfw = options.nsfw ?? false;
+    this.ownerOnly = options.ownerOnly ?? false;
+    this.execute = execute;
+  }
 }

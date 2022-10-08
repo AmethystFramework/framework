@@ -1,13 +1,13 @@
 import { Interaction } from "../../deps.ts";
+import Command from "../classes/Command.ts";
 import { AmethystBot } from "../interfaces/bot.ts";
-import { Command, subcommand, subcommandGroup } from "../interfaces/command.ts";
 import { AmethystError, ErrorEnums } from "../interfaces/errors.ts";
 import { createContext } from "../utils/createContext.ts";
 import { createOptionResults } from "../utils/createOptionResults.ts";
 
 interface commandFetch {
   type: "command" | "subcommand" | "subcommandGroup";
-  command: Command<"application"> | subcommand<"application">;
+  command: Command;
 }
 
 /**
@@ -19,7 +19,7 @@ interface commandFetch {
  */
 function fetchCommand(
   data: Interaction,
-  command: Command<"application">
+  command: Command
 ): commandFetch | undefined {
   if (!command.subcommands?.size) return { type: "command", command };
   const subGroup: subcommandGroup<"application"> | undefined =
@@ -74,7 +74,7 @@ export async function handleSlash(bot: AmethystBot, data: Interaction) {
     bot.channels.set(data.channelId, channel);
   }
   const cmd = bot.commands.get(data.data.name)!;
-  const command = fetchCommand(data, cmd as Command<"application">)!;
+  const command = fetchCommand(data, cmd as Command)!;
   if (
     bot.inhibitors.some(
       (e) =>
@@ -109,7 +109,7 @@ export async function handleSlash(bot: AmethystBot, data: Interaction) {
             ? { ...data, data: data.data.options?.[0] }
             : { ...data, data: data.data.options?.[0]?.options?.[0] },
       }),
-      options: createOptionResults(bot, command.command.options || [], {
+      options: createOptionResults(bot, command.command.args || [], {
         interaction: data,
       }),
     });

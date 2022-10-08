@@ -4,8 +4,8 @@ import {
   getMissingGuildPermissions,
   PermissionStrings,
 } from "../../deps.ts";
+import Command from "../classes/Command.ts";
 import { AmethystBot } from "../interfaces/bot.ts";
-import { Command } from "../interfaces/command.ts";
 import { AmethystError, ErrorEnums } from "../interfaces/errors.ts";
 import { AmethystCollection } from "../utils/AmethystCollection.ts";
 
@@ -25,29 +25,11 @@ interface Cooldown {
   timestamp: number;
 }
 
-inhibitors.set("hasRole", (bot, command, options) => {
-  if (command.dmOnly || !command.hasRoles?.length || !options?.guildId)
-    return true;
-  if (!options?.memberId)
-    return { type: ErrorEnums.MISSING_REQUIRED_ROLES, value: command.hasRoles };
-  const member = bot.members.get(
-    bot.transformers.snowflake(`${options.memberId}${options.guildId}`)
-  );
-  if (command.hasRoles?.some((e) => !member?.roles.includes(e)))
-    return {
-      type: ErrorEnums.MISSING_REQUIRED_ROLES,
-      value: command.hasRoles?.filter((e) => !member?.roles.includes(e)),
-    };
-  return true;
-});
-
 inhibitors.set("cooldown", (bot, command, options) => {
   const commandCooldown = command.cooldown || bot.defaultCooldown;
   if (
     !commandCooldown ||
-    (options?.memberId &&
-      (bot.ignoreCooldown?.includes(options?.memberId) ||
-        command.ignoreCooldown?.includes(options.memberId)))
+    (options?.memberId && bot.ignoreCooldown?.includes(options?.memberId))
   )
     return true;
 

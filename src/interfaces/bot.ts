@@ -1,4 +1,5 @@
 import { BotWithCache, Interaction, Message } from "../../deps.ts";
+import Command from "../classes/Command.ts";
 import { AmethystCollection } from "../utils/AmethystCollection.ts";
 import { Async } from "../utils/types.ts";
 import {
@@ -10,12 +11,7 @@ import {
   ReactionCollector,
   ReactionCollectorOptions,
 } from "./collectors.ts";
-import {
-  Command,
-  CommandCooldown,
-  subcommand,
-  subcommandGroup,
-} from "./command.ts";
+import { CommandCooldown } from "./command.ts";
 import { AmethystError } from "./errors.ts";
 import { AmethystEvents } from "./event.ts";
 import { AmethystTask } from "./tasks.ts";
@@ -70,16 +66,6 @@ interface AmethystUtils {
     channelId: bigint,
     options?: MessageCollectorOptions
   ): Promise<Message>;
-  createSubcommandGroup(
-    command: string,
-    subcommandGroup: subcommandGroup,
-    retries?: number
-  ): void;
-  createSubcommand(
-    command: string,
-    subcommandGroup: subcommand,
-    options?: { split?: boolean; retries?: number }
-  ): void;
   createCommand(command: Command): void;
   createTask(task: AmethystTask): void;
   clearTasks(): void;

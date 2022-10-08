@@ -1,5 +1,5 @@
+import Command from "../classes/Command.ts";
 import { AmethystBot } from "../interfaces/bot.ts";
-import { Command } from "../interfaces/command.ts";
 import { AmethystError } from "../interfaces/errors.ts";
 import { AmethystEvent, AmethystEvents } from "../interfaces/event.ts";
 import { RecAsyncGen } from "./types.ts";

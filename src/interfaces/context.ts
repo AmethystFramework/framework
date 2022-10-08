@@ -2,12 +2,13 @@ import { CreateMessage, Interaction, Message } from "../../deps.ts";
 import { AmethystBot } from "../../mod.ts";
 import { optionResults } from "./commandOptions.ts";
 
-export type context<T extends "application" | "message" = never> = {
+export type context = {
   channelId: bigint;
   guildId?: bigint;
   authorId: bigint;
   member?: Message["member"];
   options: optionResults;
+  message: Interaction | Message;
   /**Defers the interaction response*/
   defer(bot: AmethystBot): Promise<unknown>;
   respond(
@@ -40,7 +41,4 @@ export type context<T extends "application" | "message" = never> = {
       /**only useful for force fetching interaction response*/ force?: false;
     }
   ): Promise<Message | undefined>;
-} & ("application" extends T
-  ? { interaction: Interaction }
-  : { interaction?: Interaction }) &
-  ("message" extends T ? { message: Message } : { message?: Message });
+};

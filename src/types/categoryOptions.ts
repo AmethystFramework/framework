@@ -8,3 +8,5 @@ type CategoryOptions = {
   /* Default command when uniqueCommand is false. */
   default: string;
 };
+
+export default CategoryOptions;

@@ -1,6 +1,6 @@
 import { Message } from "../../deps.ts";
+import Command from "../classes/Command.ts";
 import { AmethystBot } from "../interfaces/bot.ts";
-import { Command } from "../interfaces/command.ts";
 import { AmethystError, ErrorEnums } from "../interfaces/errors.ts";
 import { createContext } from "../utils/createContext.ts";
 import { createOptionResults } from "../utils/createOptionResults.ts";
@@ -14,7 +14,7 @@ import { createOptionResults } from "../utils/createOptionResults.ts";
 function executeCommand(
   bot: AmethystBot,
   message: Message,
-  command: Command<"message">,
+  command: Command,
   args: string[]
 ) {
   if (
@@ -43,7 +43,7 @@ function executeCommand(
   try {
     command.execute?.(bot, {
       ...createContext({ message }),
-      options: createOptionResults(bot, command.options || [], {
+      options: createOptionResults(bot, command.args || [], {
         message: { ...message, args },
       }),
     });
@@ -104,9 +104,9 @@ export async function handleMessageCommands(
   const command = bot.commands.find((cmd) =>
     Boolean(
       cmd.name == commandName ||
-        (cmd as Command<"message">).aliases?.includes(commandName!)
+        (cmd as Command).aliases?.includes(commandName!)
     )
-  ) as Command<"message">;
+  ) as Command;
   if (
     bot.users.get(message.authorId)?.toggles.bot &&
     (command?.ignoreBots ?? bot.ignoreBots)
@@ -143,6 +143,6 @@ export async function handleMessageCommands(
     bot.channels.set(message.channelId, channel);
   }
   bot.events.commandStart?.(bot, command as Command, message);
-  executeCommand(bot, message, command as Command<"message">, args);
+  executeCommand(bot, message, command as Command, args);
   bot.events.commandEnd?.(bot, command as Command, message);
 }

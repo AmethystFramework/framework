@@ -6,12 +6,12 @@ import {
   Interaction,
   Message,
 } from "./deps.ts";
+import Command from "./src/classes/Command.ts";
 import { handleMessageCommands } from "./src/handlers/messageCommands.ts";
 import { handleSlash } from "./src/handlers/slashCommands.ts";
 import { inhibitors } from "./src/inhibators/mod.ts";
 import { AmethystBotOptions } from "./src/interfaces/AmethystBotOptions.ts";
 import { AmethystBot } from "./src/interfaces/bot.ts";
-import { Command } from "./src/interfaces/command.ts";
 import { AmethystError } from "./src/interfaces/errors.ts";
 import { AmethystTask } from "./src/interfaces/tasks.ts";
 import { AmethystCollection } from "./src/utils/AmethystCollection.ts";
@@ -20,11 +20,7 @@ import {
   awaitMessage,
   awaitReaction,
 } from "./src/utils/Collectors.ts";
-import {
-  createCommand,
-  createSubcommand,
-  createSubcommandGroup,
-} from "./src/utils/createCommand.ts";
+
 import {
   loadCommands,
   loadEvents,
@@ -33,6 +29,7 @@ import {
 
 let Ready = false;
 
+export * from "./src/classes/Command.ts";
 export * from "./src/interfaces/AmethystBotOptions.ts";
 export * from "./src/interfaces/bot.ts";
 export * from "./src/interfaces/command.ts";
@@ -43,7 +40,6 @@ export * from "./src/interfaces/event.ts";
 export * from "./src/interfaces/tasks.ts";
 export * from "./src/utils/AmethystCollection.ts";
 export * from "./src/utils/component.ts";
-export * from "./src/utils/createCommand.ts";
 export * from "./src/utils/Embed.ts";
 export * from "./src/utils/types.ts";
 
@@ -238,12 +234,7 @@ export function enableAmethystPlugin<
     createCommand: (command) => {
       createCommand(bot, command);
     },
-    createSubcommandGroup: (command, subGroup, retries) => {
-      createSubcommandGroup(bot, command, subGroup, retries);
-    },
-    createSubcommand: (command, sub, options) => {
-      createSubcommand(bot, command, sub, options);
-    },
+
     createInhibitor: (name, inhibitor) => {
       createInhibitor(bot, name, inhibitor);
     },
@@ -329,7 +320,7 @@ export function enableAmethystPlugin<
       const amethystBot = bot as AmethystBot;
       amethystBot.commands
         .filter((cmd) => {
-          const command = cmd as Command<"application">;
+          const command = cmd as Command;
           return (
             Boolean(
               !cmd.commandType ||
@@ -342,9 +333,9 @@ export function enableAmethystPlugin<
         .forEach((cmd) => {
           bot.helpers.upsertGuildApplicationCommands(guild.id, [
             {
-              ...(cmd as Command<"application">),
-              options: cmd.options?.length
-                ? cmd.options.map((e) => {
+              ...(cmd as Command),
+              options: cmd.args?.length
+                ? cmd.args.map((e) => {
                     return {
                       ...e,
                       description: e.description ?? "A slash command option",
@@ -394,9 +385,9 @@ export function enableAmethystPlugin<
           )
           .map((cmd) => {
             return {
-              ...(cmd as Command<"application">),
-              options: cmd.options?.length
-                ? cmd.options.map((e) => {
+              ...(cmd as Command),
+              options: cmd.args?.length
+                ? cmd.args.map((e) => {
                     return {
                       ...e,
                       description: e.description ?? "A slash command option",
@@ -426,9 +417,9 @@ export function enableAmethystPlugin<
             )
             .map((cmd) => {
               return {
-                ...(cmd as Command<"application">),
-                options: cmd.options?.length
-                  ? cmd.options.map((e) => {
+                ...(cmd as Command),
+                options: cmd.args?.length
+                  ? cmd.args.map((e) => {
                       return {
                         ...e,
                         description: e.description ?? "A slash command option",
@@ -449,14 +440,14 @@ export function enableAmethystPlugin<
         );
       });
       //@ts-ignore -
-      amethystBot.commands.forEach((cmd: Command<"application">) => {
+      amethystBot.commands.forEach((cmd: Command) => {
         if (cmd.scope != "guild" || !cmd.guildIds?.length) return;
         cmd.guildIds.forEach((guildId) =>
           amethystBot.helpers.upsertGuildApplicationCommands(guildId, [
             {
-              ...(cmd as Command<"application">),
-              options: cmd.options?.length
-                ? cmd.options.map((e) => {
+              ...(cmd as Command),
+              options: cmd.args?.length
+                ? cmd.args.map((e) => {
                     return {
                       ...e,
                       description: e.description ?? "A slash command option",

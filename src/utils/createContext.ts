@@ -1,9 +1,10 @@
 import { Interaction, Message } from "../../deps.ts";
 import { context } from "../interfaces/context.ts";
 
-export function createContext<
-  T extends "application" | "message" = never
->(data: { interaction?: Interaction; message?: Message }): context<T> {
+export function createContext(data: {
+  interaction?: Interaction;
+  message?: Message;
+}) {
   return {
     ...data,
     channelId: (data.interaction?.channelId || data.message?.channelId)!,
@@ -12,6 +13,8 @@ export function createContext<
       data.interaction?.member?.id)!,
     member: data.interaction?.member || data.message?.member,
     guildId: data.interaction?.guildId || data.message?.guildId,
+    message: data.interaction ?? data.message,
+    // @ts-ignore -
     async defer(bot) {
       if (data.interaction)
         return await bot.helpers.sendInteractionResponse(
@@ -37,6 +40,7 @@ export function createContext<
         return msg;
       } else if (data.interaction) {
         return (
+          // @ts-ignore -
           (await bot.helpers.sendInteractionResponse(
             data.interaction.id,
             data.interaction.token,
@@ -64,6 +68,7 @@ export function createContext<
         return msg;
       } else if (data.interaction) {
         return (
+          // @ts-ignore -
           (await bot.helpers.sendInteractionResponse(
             data.interaction.id,
             data.interaction.token,
@@ -80,5 +85,5 @@ export function createContext<
         );
       }
     },
-  } as context<T>;
+  } as context;
 }
