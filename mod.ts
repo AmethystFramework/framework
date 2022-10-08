@@ -48,12 +48,20 @@ export * from "./src/utils/Embed.ts";
 export * from "./src/utils/types.ts";
 
 /**
- * Adds a task to run in an interval
+ * Create a task.
+ *
+ * @param bot The bot instance.
+ * @param task The task to create.
  */
 export function createTask(bot: AmethystBot, task: AmethystTask) {
   bot.tasks.set(task.name, task);
 }
 
+/**
+ * Handles a message collector.
+ * @param {AmethystBot} bot The bot instance.
+ * @param {Message} message The message to handle.
+ */
 function handleMessageCollector(bot: AmethystBot, message: Message) {
   const collector = bot.messageCollectors.get(
     `${message.authorId}-${message.channelId}`
@@ -77,6 +85,11 @@ function handleMessageCollector(bot: AmethystBot, message: Message) {
   // More messages still need to be collected
   collector.messages.push(message);
 }
+/**
+ * Handles a reaction collector.
+ * @param bot The bot instance.
+ * @param payload The payload.
+ */
 function handleReactionCollector(
   bot: AmethystBot,
   payload: {
@@ -118,6 +131,11 @@ function handleReactionCollector(
     id: payload.emoji.id,
   });
 }
+/**
+ * Handles a component collector.
+ * @param bot The bot instance.
+ * @param data The interaction data.
+ */
 function handleComponentCollector(bot: AmethystBot, data: Interaction) {
   const collector = bot.componentCollectors.get(data.message?.id || 0n);
   if (!collector) return;
@@ -134,6 +152,10 @@ function handleComponentCollector(bot: AmethystBot, data: Interaction) {
   collector.components.push(data);
 }
 
+/**
+ * Registers all tasks in the bot.
+ * @param bot The bot to register the tasks for.
+ */
 function registerTasks(bot: AmethystBot) {
   for (const task of bot.tasks.values()) {
     bot.runningTasks.initialTimeouts.push(
