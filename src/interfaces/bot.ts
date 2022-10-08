@@ -1,5 +1,8 @@
 import { BotWithCache, Interaction, Message } from "../../deps.ts";
-import Command from "../classes/Command.ts";
+import Category from "../classes/Category.ts";
+import { Command } from "../classes/Command.ts";
+import { CategoryOptions } from "../types/categoryOptions.ts";
+import { CommandOptions } from "../types/commandOptions.ts";
 import { AmethystCollection } from "../utils/AmethystCollection.ts";
 import { Async } from "../utils/types.ts";
 import {
@@ -66,7 +69,9 @@ interface AmethystUtils {
     channelId: bigint,
     options?: MessageCollectorOptions
   ): Promise<Message>;
-  createCommand(command: Command): void;
+  createCommand(command: CommandOptions): void;
+  createCategory(category: CategoryOptions): void;
+  updateCategory(category: CategoryOptions): void;
   createTask(task: AmethystTask): void;
   clearTasks(): void;
   createInhibitor<T extends Command = Command>(
@@ -87,7 +92,7 @@ interface AmethystProps extends Omit<BotWithCache, "events"> {
   reactionCollectors: AmethystCollection<bigint, ReactionCollector>;
   runningTasks: runningTasks;
   tasks: AmethystCollection<string, AmethystTask>;
-  commands: AmethystCollection<string, Command>;
+  category: AmethystCollection<string, Category>;
   inhibitors: AmethystCollection<
     string,
     <T extends Command = Command>(

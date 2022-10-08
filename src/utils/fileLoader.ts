@@ -1,7 +1,8 @@
-import Command from "../classes/Command.ts";
+import { Command } from "../classes/Command.ts";
 import { AmethystBot } from "../interfaces/bot.ts";
 import { AmethystError } from "../interfaces/errors.ts";
 import { AmethystEvent, AmethystEvents } from "../interfaces/event.ts";
+import { CommandOptions } from "../types/commandOptions.ts";
 import { RecAsyncGen } from "./types.ts";
 
 interface Module extends Record<string, unknown> {
@@ -35,7 +36,7 @@ export async function loadEvents(bot: AmethystBot, dir: string) {
 // Just for test
 // Soon enough there will be just 1 command type that has support for both slash and message command
 export async function loadCommands(bot: AmethystBot, dir: string) {
-  const commandFiles = load<{ default?: Command }>(dir);
+  const commandFiles = load<{ default?: CommandOptions }>(dir);
   for await (const commandFile of commandFiles) {
     if (commandFile.default) {
       bot.utils.createCommand(commandFile.default);

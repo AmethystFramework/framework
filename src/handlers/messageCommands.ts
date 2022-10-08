@@ -1,5 +1,5 @@
 import { Message } from "../../deps.ts";
-import Command from "../classes/Command.ts";
+import { Command } from "../classes/Command.ts";
 import { AmethystBot } from "../interfaces/bot.ts";
 import { AmethystError, ErrorEnums } from "../interfaces/errors.ts";
 import { createContext } from "../utils/createContext.ts";
@@ -101,12 +101,16 @@ export async function handleMessageCommands(
   let args = message.content.split(" ").filter((e) => Boolean(e.length));
   const commandName = args.shift()?.slice(prefix.length);
   if (!commandName) return;
-  const command = bot.commands.find((cmd) =>
-    Boolean(
-      cmd.name == commandName ||
-        (cmd as Command).aliases?.includes(commandName!)
-    )
-  ) as Command;
+  const subCommandName = args.shift();
+  let command;
+  for (let i = 0; i < bot.category.size; i++) {
+    command = bot.category.at(i)?.getCommand(commandName, subCommandName);
+    if (command) {
+      if (bot.category.at(i)?.uniqueCommands && subCommandName)
+        args.unshift(subCommandName);
+      break;
+    }
+  }
   if (
     bot.users.get(message.authorId)?.toggles.bot &&
     (command?.ignoreBots ?? bot.ignoreBots)

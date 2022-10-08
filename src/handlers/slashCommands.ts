@@ -1,48 +1,9 @@
 import { Interaction } from "../../deps.ts";
-import Command from "../classes/Command.ts";
+import { Command } from "../classes/Command.ts";
 import { AmethystBot } from "../interfaces/bot.ts";
 import { AmethystError, ErrorEnums } from "../interfaces/errors.ts";
 import { createContext } from "../utils/createContext.ts";
 import { createOptionResults } from "../utils/createOptionResults.ts";
-
-interface commandFetch {
-  type: "command" | "subcommand" | "subcommandGroup";
-  command: Command;
-}
-
-/**
- * Fetches the command from the interaction.
- *
- * @param data The interaction data.
- * @param command The command to fetch.
- * @returns The command to fetch.
- */
-function fetchCommand(
-  data: Interaction,
-  command: Command
-): commandFetch | undefined {
-  if (!command.subcommands?.size) return { type: "command", command };
-  const subGroup: subcommandGroup<"application"> | undefined =
-    command.subcommands.find(
-      (e) =>
-        data.data!.options![0]!.type == 2 &&
-        e.name == data.data!.options![0]!.name &&
-        e.SubcommandType == "subcommandGroup"
-    ) as subcommandGroup<"application"> | undefined;
-  if (subGroup) {
-    return {
-      type: "subcommandGroup",
-      command: subGroup.subcommands?.get(
-        data.data!.options![0]!.options![0]!.name!
-      )!,
-    };
-  }
-
-  const sub = command.subcommands.get(data.data!.options![0]!.name!) as
-    | subcommand<"application">
-    | undefined;
-  if (sub) return { type: "subcommand", command: sub };
-}
 
 /**
  * Handles the slash command
@@ -50,13 +11,17 @@ function fetchCommand(
  * @param data The slash command data
  */
 export async function handleSlash(bot: AmethystBot, data: Interaction) {
-  if (
-    data.type !== 2 ||
-    !data.data?.name ||
-    !bot.commands.has(data.data.name)
-  ) {
+  if (data.type !== 2 || !data.data?.name) {
     return;
   }
+  let command: Command | undefined;
+  for (let i = 0; i < bot.category.size; i++) {
+    command = bot.category
+      .at(i)
+      ?.getCommandFromInteraction(data.data.name, data.data!.options![0]!.name);
+    if (command) break;
+  }
+  if (!command) return;
   if (data.guildId && !bot.guilds.has(data.guildId)) {
     const guild = await bot.helpers.getGuild(data.guildId, { counts: true });
     if (!guild) throw "There was an issue fetching the guild";
@@ -73,12 +38,11 @@ export async function handleSlash(bot: AmethystBot, data: Interaction) {
     if (!channel) throw "There was an issue fetching the command's channel";
     bot.channels.set(data.channelId, channel);
   }
-  const cmd = bot.commands.get(data.data.name)!;
-  const command = fetchCommand(data, cmd as Command)!;
+
   if (
     bot.inhibitors.some(
       (e) =>
-        e(bot, command?.command as Command, {
+        e(bot, command!, {
           guildId: data.guildId,
           channelId: data.channelId!,
           memberId: data.user.id,
@@ -89,7 +53,7 @@ export async function handleSlash(bot: AmethystBot, data: Interaction) {
       data,
       error: bot.inhibitors
         .map((e) =>
-          e(bot, command?.command as Command, {
+          e(bot, command!, {
             guildId: data.guildId,
             channelId: data.channelId!,
             memberId: data.user.id,
@@ -99,21 +63,16 @@ export async function handleSlash(bot: AmethystBot, data: Interaction) {
     });
   }
   try {
-    bot.events.commandStart?.(bot, command!.command! as Command, data);
-    command?.command.execute?.(bot, {
+    bot.events.commandStart?.(bot, command, data);
+    command.execute?.(bot, {
       ...createContext({
-        interaction:
-          command.type === "command"
-            ? data
-            : command.type === "subcommand"
-            ? { ...data, data: data.data.options?.[0] }
-            : { ...data, data: data.data.options?.[0]?.options?.[0] },
+        interaction: { ...data, data: data.data.options?.[0] },
       }),
-      options: createOptionResults(bot, command.command.args || [], {
+      options: createOptionResults(bot, command.args || [], {
         interaction: data,
       }),
     });
-    bot.events.commandEnd?.(bot, command!.command! as Command, data);
+    bot.events.commandEnd?.(bot, command, data);
   } catch (e) {
     if (bot.events.commandError) {
       bot.events.commandError(bot, {

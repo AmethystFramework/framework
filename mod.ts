@@ -6,7 +6,8 @@ import {
   Interaction,
   Message,
 } from "./deps.ts";
-import Command from "./src/classes/Command.ts";
+import Category from "./src/classes/Category.ts";
+import { Command } from "./src/classes/Command.ts";
 import { handleMessageCommands } from "./src/handlers/messageCommands.ts";
 import { handleSlash } from "./src/handlers/slashCommands.ts";
 import { inhibitors } from "./src/inhibators/mod.ts";
@@ -38,11 +39,12 @@ export * from "./src/interfaces/context.ts";
 export * from "./src/interfaces/errors.ts";
 export * from "./src/interfaces/event.ts";
 export * from "./src/interfaces/tasks.ts";
+export * from "./src/types/categoryOptions.ts";
+export * from "./src/types/commandOptions.ts";
 export * from "./src/utils/AmethystCollection.ts";
 export * from "./src/utils/component.ts";
 export * from "./src/utils/Embed.ts";
 export * from "./src/utils/types.ts";
-
 /**
  * Create a task.
  *
@@ -231,8 +233,36 @@ export function enableAmethystPlugin<
     createTask: (task) => {
       createTask(bot, task);
     },
-    createCommand: (command) => {
-      createCommand(bot, command);
+    createCommand: (commandOptions) => {
+      const command = new Command(commandOptions, bot);
+      if (bot.category.get(command.category))
+        bot.category.get(command.category)?.commands.set(command.name, command);
+      else {
+        const category = new Category({
+          name: command.category,
+          description: "No Information available",
+          uniqueCommands: true,
+          default: "",
+        });
+
+        bot.category.set(command.category, category);
+        category.commands.set(command.name, command);
+      }
+    },
+    createCategory: (categoryOptions) => {
+      if (bot.category.get(categoryOptions.name)) {
+        bot.utils.updateCategory(categoryOptions);
+      } else {
+        const category = new Category(categoryOptions);
+        bot.category.set(category.name, category);
+      }
+    },
+    updateCategory: (categoryOptions) => {
+      if (bot.category.get(categoryOptions.name)) {
+        bot.category.get(categoryOptions.name)?.update(categoryOptions);
+      } else {
+        bot.utils.createCategory(categoryOptions);
+      }
     },
 
     createInhibitor: (name, inhibitor) => {
@@ -287,7 +317,7 @@ export function enableAmethystPlugin<
   bot.messageCollectors = new AmethystCollection();
   bot.componentCollectors = new AmethystCollection();
   bot.reactionCollectors = new AmethystCollection();
-  bot.commands = new AmethystCollection();
+  bot.category = new AmethystCollection();
   bot.owners = options?.owners?.map((e) =>
     typeof e == "string" ? bot.utils.snowflakeToBigint(e) : e
   );
@@ -318,42 +348,11 @@ export function enableAmethystPlugin<
     bot.events.guildCreate = (bot, guild) => {
       guildCreate(bot, guild);
       const amethystBot = bot as AmethystBot;
-      amethystBot.commands
-        .filter((cmd) => {
-          const command = cmd as Command;
-          return (
-            Boolean(
-              !cmd.commandType ||
-                (command.commandType as string[])?.includes("application")
-            ) &&
-            command.scope === "guild" &&
-            !command.guildIds?.length
-          );
-        })
-        .forEach((cmd) => {
-          bot.helpers.upsertGuildApplicationCommands(guild.id, [
-            {
-              ...(cmd as Command),
-              options: cmd.args?.length
-                ? cmd.args.map((e) => {
-                    return {
-                      ...e,
-                      description: e.description ?? "A slash command option",
-                      channelTypes: e.channelTypes?.map((f) =>
-                        typeof f == "string" ? ChannelTypes[f] : f
-                      ),
-                      type:
-                        typeof e.type == "number"
-                          ? e.type
-                          : ApplicationCommandOptionTypes[
-                              e.type as keyof typeof ApplicationCommandOptionTypes
-                            ],
-                    };
-                  })
-                : [],
-            },
-          ]);
-        });
+      amethystBot.category.forEach((category) => {
+        bot.helpers.upsertGuildApplicationCommands(guild.id, [
+          category.toGuildApplicationCommand(),
+        ]);
+      });
     };
     bot.events.messageCreate = (_, msg) => {
       messageCreate(_, msg);
@@ -378,95 +377,19 @@ export function enableAmethystPlugin<
       const amethystBot = bot as AmethystBot;
       registerTasks(amethystBot);
       bot.helpers.upsertGlobalApplicationCommands(
-        amethystBot.commands
-          .filter(
-            //@ts-ignore -
-            (e: Command<"application">) => !e.scope || e.scope == "global"
-          )
-          .map((cmd) => {
-            return {
-              ...(cmd as Command),
-              options: cmd.args?.length
-                ? cmd.args.map((e) => {
-                    return {
-                      ...e,
-                      description: e.description ?? "A slash command option",
-                      channelTypes: e.channelTypes?.map((f) =>
-                        typeof f == "string" ? ChannelTypes[f] : f
-                      ),
-                      type:
-                        typeof e.type == "number"
-                          ? e.type
-                          : ApplicationCommandOptionTypes[
-                              e.type as keyof typeof ApplicationCommandOptionTypes
-                            ],
-                    };
-                  })
-                : [],
-            };
-          })
+        amethystBot.category.map((category) => {
+          return category.toApplicationCommand();
+        })
       );
       payload.guilds.forEach((guildId) => {
         amethystBot.helpers.upsertGuildApplicationCommands(
           guildId,
-          amethystBot.commands
-            .filter(
-              //@ts-ignore -
-              (e: Command<"application">) =>
-                e.scope == "guild" && !e.guildIds?.length
-            )
-            .map((cmd) => {
-              return {
-                ...(cmd as Command),
-                options: cmd.args?.length
-                  ? cmd.args.map((e) => {
-                      return {
-                        ...e,
-                        description: e.description ?? "A slash command option",
-                        channelTypes: e.channelTypes?.map((f) =>
-                          typeof f == "string" ? ChannelTypes[f] : f
-                        ),
-                        type:
-                          typeof e.type == "number"
-                            ? e.type
-                            : ApplicationCommandOptionTypes[
-                                e.type as keyof typeof ApplicationCommandOptionTypes
-                              ],
-                      };
-                    })
-                  : [],
-              };
-            })
+          amethystBot.category.map((category) => {
+            return category.toGuildApplicationCommand();
+          })
         );
       });
-      //@ts-ignore -
-      amethystBot.commands.forEach((cmd: Command) => {
-        if (cmd.scope != "guild" || !cmd.guildIds?.length) return;
-        cmd.guildIds.forEach((guildId) =>
-          amethystBot.helpers.upsertGuildApplicationCommands(guildId, [
-            {
-              ...(cmd as Command),
-              options: cmd.args?.length
-                ? cmd.args.map((e) => {
-                    return {
-                      ...e,
-                      description: e.description ?? "A slash command option",
-                      channelTypes: e.channelTypes?.map((f) =>
-                        typeof f == "string" ? ChannelTypes[f] : f
-                      ),
-                      type:
-                        typeof e.type == "number"
-                          ? e.type
-                          : ApplicationCommandOptionTypes[
-                              e.type as keyof typeof ApplicationCommandOptionTypes
-                            ],
-                    };
-                  })
-                : [],
-            },
-          ])
-        );
-      });
+
       Ready = true;
     };
   })();

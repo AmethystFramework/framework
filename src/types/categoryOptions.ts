@@ -1,4 +1,4 @@
-type CategoryOptions = {
+export type CategoryOptions = {
   /* Name of the category */
   name: string;
   /* Information about the category */
@@ -8,5 +8,3 @@ type CategoryOptions = {
   /* Default command when uniqueCommand is false. */
   default: string;
 };
-
-export default CategoryOptions;

@@ -4,7 +4,7 @@ import {
   getMissingGuildPermissions,
   PermissionStrings,
 } from "../../deps.ts";
-import Command from "../classes/Command.ts";
+import { Command } from "../classes/Command.ts";
 import { AmethystBot } from "../interfaces/bot.ts";
 import { AmethystError, ErrorEnums } from "../interfaces/errors.ts";
 import { AmethystCollection } from "../utils/AmethystCollection.ts";

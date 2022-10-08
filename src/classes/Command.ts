@@ -1,4 +1,5 @@
 import {
+  ApplicationCommandOption,
   ApplicationCommandOptionTypes,
   ChannelTypes,
   PermissionStrings,
@@ -9,9 +10,9 @@ import {
   commandOption,
   context,
 } from "../../mod.ts";
-import commandOptions from "../types/commandOptions.ts";
+import { CommandOptions } from "../types/commandOptions.ts";
 
-export default class Command {
+export class Command {
   /* Name of the command */
   name: string;
   /* Information about the command */
@@ -52,11 +53,7 @@ export default class Command {
   ignoreBots: boolean;
   execute: (bot: AmethystBot, ctx: context) => unknown;
 
-  constructor(
-    options: commandOptions,
-    execute: (bot: AmethystBot, ctx: context) => unknown,
-    client: AmethystBot
-  ) {
+  constructor(options: CommandOptions, client: AmethystBot) {
     this.name = options.name;
     this.description = options.description;
     this.category = options.category;
@@ -69,21 +66,27 @@ export default class Command {
     this.botChannelPermissions = options.botChannelPermissions ?? [];
     this.botGuildPermissions = options.botGuildPermissions ?? [];
     this.guildOnly = options.guildOnly ?? true;
-    this.dmOnly = options.dmOnly ?? false;
+    this.dmOnly = options.dmOnly ?? true;
     this.scope = options.scope ?? "global";
     this.guildIds = options.guildIds ?? [];
     this.quotedArguments = options.quotedArguments ?? false;
     this.ignoreBots = options.ignoreBots ?? true;
     this.nsfw = options.nsfw ?? false;
     this.ownerOnly = options.ownerOnly ?? false;
-    this.execute = execute;
+    this.execute = options.execute;
   }
 
-  toApplicationCommand() {
+  toApplicationCommand(): ApplicationCommandOption {
+    if (!this.commandType.includes("application"))
+      return {
+        type: -99,
+        name: this.name,
+        description: this.description,
+      };
     return {
+      type: 1,
       name: this.name,
       description: this.description,
-      dm_permission: this.dmOnly,
       options: this.args?.length
         ? this.args.map((e) => {
             return {
@@ -105,7 +108,7 @@ export default class Command {
   }
 
   update(
-    options: commandOptions,
+    options: CommandOptions,
     execute: (bot: AmethystBot, ctx: context) => unknown,
     client: AmethystBot
   ) {

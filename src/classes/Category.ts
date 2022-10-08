@@ -1,5 +1,6 @@
-import { AmethystBot, Command } from "../../mod.ts";
-import categoryOptions from "../types/categoryOptions.ts";
+import { CreateApplicationCommand } from "../../deps.ts";
+import { AmethystCollection, Command } from "../../mod.ts";
+import { CategoryOptions } from "../types/categoryOptions.ts";
 
 export default class Category {
   /* Name of the category */
@@ -11,7 +12,87 @@ export default class Category {
   /* Default command when uniqueCommand is false. */
   default: string;
   /* Commands belonging to this category */
-  commands: Command[];
+  commands: AmethystCollection<string, Command>;
 
-  constructor(options: categoryOptions, client: AmethystBot) {}
+  constructor(options: CategoryOptions) {
+    this.name = options.name;
+    this.description = options.description;
+    this.uniqueCommands = options.uniqueCommands;
+    this.default = options.default;
+    this.commands = new AmethystCollection();
+  }
+
+  update(options: CategoryOptions) {
+    this.name = options.name;
+    this.description = options.description;
+    this.uniqueCommands = options.uniqueCommands;
+    this.default = options.default;
+  }
+  toGuildApplicationCommand(): CreateApplicationCommand {
+    return {
+      name: this.name,
+      description: this.description,
+      options: this.commands
+        .filter((e) => e.scope == "guild")
+        .map((e) => e.toApplicationCommand())
+        .filter((n) => n.type > 0),
+    };
+  }
+
+  toApplicationCommand() {
+    return {
+      name: this.name,
+      description: this.description,
+      options: this.commands
+        .filter((e) => e.scope == "guild")
+        .map((e) => e.toApplicationCommand())
+        .filter((n) => n.type > 0),
+    };
+  }
+
+  getCommand(
+    commandName: string,
+    subCommandName?: string
+  ): Command | undefined {
+    if (this.uniqueCommands) {
+      for (let i = 0; i < this.commands.size; i++)
+        if (this.commands.at(i)!.name.toUpperCase() == commandName)
+          return this.commands.at(i)!;
+    } else {
+      if (this.name.toUpperCase() == commandName.toUpperCase()) {
+        for (let i = 0; i < this.commands.size; i++) {
+          if (subCommandName)
+            for (let i = 0; i < this.commands.size; i++)
+              if (this.commands.at(i)!.name.toUpperCase() == commandName)
+                return this.commands.at(i)!;
+              else
+                for (let i = 0; i < this.commands.size; i++)
+                  if (this.commands.at(i)!.name.toUpperCase() == subCommandName)
+                    return this.commands.at(i)!;
+        }
+      }
+    }
+
+    return undefined;
+  }
+
+  getCommandFromInteraction(
+    commandName: string,
+    subCommandName?: string
+  ): Command | undefined {
+    if (this.name.toUpperCase() == commandName.toUpperCase()) {
+      for (let i = 0; i < this.commands.size; i++) {
+        if (subCommandName)
+          for (let i = 0; i < this.commands.size; i++)
+            if (this.commands.at(i)!.name.toUpperCase() == commandName)
+              return this.commands.at(i)!;
+            else
+              for (let i = 0; i < this.commands.size; i++)
+                if (this.commands.at(i)!.name.toUpperCase() == subCommandName)
+                  return this.commands.at(i)!;
+      }
+    }
+
+    return undefined;
+  }
 }
