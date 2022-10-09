@@ -1,11 +1,4 @@
-import {
-  ApplicationCommandOptionTypes,
-  BotWithCache,
-  ChannelTypes,
-  Emoji,
-  Interaction,
-  Message,
-} from "./deps.ts";
+import { BotWithCache, Emoji, Interaction, Message } from "./deps.ts";
 import Category from "./src/classes/Category.ts";
 import { Command } from "./src/classes/Command.ts";
 import { handleMessageCommands } from "./src/handlers/messageCommands.ts";
@@ -30,8 +23,8 @@ import {
 
 let Ready = false;
 
-export * from "./src/classes/Command.ts";
 export * from "./src/classes/Category.ts";
+export * from "./src/classes/Command.ts";
 export * from "./src/classes/Context.ts";
 export * from "./src/interfaces/AmethystBotOptions.ts";
 export * from "./src/interfaces/bot.ts";
@@ -327,6 +320,7 @@ export function enableAmethystPlugin<
   bot.ignoreCooldown = options?.ignoreCooldown?.map((e) => BigInt(e));
   bot.guildOnly = options?.guildOnly;
   bot.dmOnly = options?.dmOnly;
+  bot.extras = options?.extras;
   if (bot.guildOnly && bot.dmOnly) {
     throw new Error(
       "You can't have both guild only and dm only options enabled at the same time"

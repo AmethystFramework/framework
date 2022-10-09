@@ -1,5 +1,6 @@
 import { Guild, Interaction, Member, Message, User } from "../../deps.ts";
 import { AmethystBot } from "../../mod.ts";
+import { optionResults } from "../interfaces/commandOptions.ts";
 
 export class Context {
   deffered = false;
@@ -14,6 +15,7 @@ export class Context {
   user?: User;
   author?: User;
   client: AmethystBot;
+  options: optionResults;
   constructor(options: ContextOptions, client: AmethystBot) {
     this.interaction = options.interaction;
     this.message = options.message;
@@ -24,6 +26,7 @@ export class Context {
     this.user = options.user;
     this.author = options.user;
     this.client = client;
+    this.options = options.options;
   }
   async followUp(content: any): Promise<Context> {
     return await this.reply(content);
@@ -40,7 +43,11 @@ export class Context {
           }
         );
         this.sentMessage = msg;
-        return await createContext({ message: this.sentMessage }, this.client);
+        return await createContext(
+          { message: this.sentMessage },
+          this.options,
+          this.client
+        );
       } else {
         await this.client.helpers.sendInteractionResponse(
           this.interaction.id,
@@ -75,7 +82,11 @@ export class Context {
           undefined,
           5000
         );
-      return await createContext({ message: this.sentMessage }, this.client);
+      return await createContext(
+        { message: this.sentMessage },
+        this.options,
+        this.client
+      );
     } else {
       return this;
     }
@@ -103,7 +114,11 @@ export class Context {
           undefined,
           5000
         );
-      return await createContext({ message: this.sentMessage }, this.client);
+      return await createContext(
+        { message: this.sentMessage },
+        this.options,
+        this.client
+      );
     } else {
       return this;
     }
@@ -117,6 +132,7 @@ type ContextOptions = {
   guildId: bigint | undefined;
   guild?: Guild;
   member?: Member;
+  options: optionResults;
   user?: User;
 };
 
@@ -127,9 +143,11 @@ type ContextOptions = {
  */
 export async function createContext(
   data: { interaction?: Interaction; message?: Message },
+  option: optionResults,
   bot: AmethystBot
 ): Promise<Context> {
   const options: ContextOptions = {
+    options: option,
     interaction: data.interaction,
     message: data.message,
     interactionContext: data.message ? false : true,

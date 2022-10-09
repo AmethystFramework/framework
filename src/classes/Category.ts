@@ -56,18 +56,27 @@ export default class Category {
   ): Command | undefined {
     if (this.uniqueCommands) {
       for (let i = 0; i < this.commands.size; i++)
-        if (this.commands.at(i)!.name.toUpperCase() == commandName)
+        if (
+          this.commands.at(i)!.name.toUpperCase() == commandName &&
+          this.commands.at(i)?.commandType.includes("message")
+        )
           return this.commands.at(i)!;
     } else {
       if (this.name.toUpperCase() == commandName.toUpperCase()) {
         for (let i = 0; i < this.commands.size; i++) {
           if (subCommandName)
             for (let i = 0; i < this.commands.size; i++)
-              if (this.commands.at(i)!.name.toUpperCase() == commandName)
+              if (
+                this.commands.at(i)!.name.toUpperCase() == commandName &&
+                this.commands.at(i)?.commandType.includes("message")
+              )
                 return this.commands.at(i)!;
               else
                 for (let i = 0; i < this.commands.size; i++)
-                  if (this.commands.at(i)!.name.toUpperCase() == subCommandName)
+                  if (
+                    this.commands.at(i)!.name.toUpperCase() == subCommandName &&
+                    this.commands.at(i)?.commandType.includes("message")
+                  )
                     return this.commands.at(i)!;
         }
       }
@@ -84,11 +93,17 @@ export default class Category {
       for (let i = 0; i < this.commands.size; i++) {
         if (subCommandName)
           for (let i = 0; i < this.commands.size; i++)
-            if (this.commands.at(i)!.name.toUpperCase() == commandName)
+            if (
+              this.commands.at(i)!.name.toUpperCase() == commandName &&
+              this.commands.at(i)?.commandType.includes("application")
+            )
               return this.commands.at(i)!;
             else
               for (let i = 0; i < this.commands.size; i++)
-                if (this.commands.at(i)!.name.toUpperCase() == subCommandName)
+                if (
+                  this.commands.at(i)!.name.toUpperCase() == subCommandName &&
+                  this.commands.at(i)?.commandType.includes("application")
+                )
                   return this.commands.at(i)!;
       }
     }

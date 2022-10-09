@@ -20,6 +20,7 @@ export type AmethystBotOptions = {
   eventDir?: string;
   inhibitorDir?: string;
   prefixCaseSensitive?: boolean;
+  extras?: any;
 } & (
   | {
       guildOnly?: true;

@@ -110,6 +110,7 @@ interface AmethystProps extends Omit<BotWithCache, "events"> {
   messageQuotedArguments?: boolean;
   ignoreBots?: boolean;
   dmOnly?: boolean;
+  extras: any;
   prefix?:
     | string
     | string[]

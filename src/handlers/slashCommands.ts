@@ -1,8 +1,8 @@
 import { Interaction } from "../../deps.ts";
 import { Command } from "../classes/Command.ts";
+import { createContext } from "../classes/Context.ts";
 import { AmethystBot } from "../interfaces/bot.ts";
 import { AmethystError, ErrorEnums } from "../interfaces/errors.ts";
-import { createContext } from "../classes/Context.ts";
 import { createOptionResults } from "../utils/createOptionResults.ts";
 
 /**
@@ -64,17 +64,18 @@ export async function handleSlash(bot: AmethystBot, data: Interaction) {
   }
   try {
     bot.events.commandStart?.(bot, command, data);
-    command.execute?.(bot, {
-      ...createContext(
+    await command.execute?.(
+      bot,
+      await createContext(
         {
           interaction: { ...data, data: data.data.options?.[0] },
         },
+        createOptionResults(bot, command.args || [], {
+          interaction: data,
+        }),
         bot
-      ),
-      options: createOptionResults(bot, command.args || [], {
-        interaction: data,
-      }),
-    });
+      )
+    );
     bot.events.commandEnd?.(bot, command, data);
   } catch (e) {
     if (bot.events.commandError) {

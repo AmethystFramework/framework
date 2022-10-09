@@ -8,7 +8,7 @@ import {
   AmethystBot,
   CommandCooldown,
   commandOption,
-  context,
+  Context,
 } from "../../mod.ts";
 import { CommandOptions } from "../types/commandOptions.ts";
 
@@ -51,7 +51,7 @@ export class Command {
   quotedArguments: boolean;
   /**Ignore bots when they try to use the command*/
   ignoreBots: boolean;
-  execute: (bot: AmethystBot, ctx: context) => unknown;
+  execute: (bot: AmethystBot, ctx: Context) => unknown;
 
   constructor(options: CommandOptions, client: AmethystBot) {
     this.name = options.name;
@@ -109,7 +109,7 @@ export class Command {
 
   update(
     options: CommandOptions,
-    execute: (bot: AmethystBot, ctx: context) => unknown,
+    execute: (bot: AmethystBot, ctx: Context) => unknown,
     client: AmethystBot
   ) {
     this.name = options.name;

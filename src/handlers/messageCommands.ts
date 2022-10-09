@@ -11,7 +11,7 @@ import { createOptionResults } from "../utils/createOptionResults.ts";
  * @param message
  * @param command
  */
-function executeCommand(
+async function executeCommand(
   bot: AmethystBot,
   message: Message,
   command: Command,
@@ -41,12 +41,16 @@ function executeCommand(
     });
   }
   try {
-    command.execute?.(bot, {
-      ...createContext({ message }, bot),
-      options: createOptionResults(bot, command.args || [], {
-        message: { ...message, args },
-      }),
-    });
+    await command.execute?.(
+      bot,
+      await createContext(
+        { message },
+        createOptionResults(bot, command.args || [], {
+          message: { ...message, args },
+        }),
+        bot
+      )
+    );
   } catch (e) {
     if (bot.events.commandError) {
       bot.events.commandError(bot, {
@@ -147,6 +151,6 @@ export async function handleMessageCommands(
     bot.channels.set(message.channelId, channel);
   }
   bot.events.commandStart?.(bot, command as Command, message);
-  executeCommand(bot, message, command as Command, args);
+  await executeCommand(bot, message, command as Command, args);
   bot.events.commandEnd?.(bot, command as Command, message);
 }
