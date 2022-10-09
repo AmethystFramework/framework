@@ -28,7 +28,7 @@ export async function loadEvents(bot: AmethystBot, dir: string) {
   );
   for await (const eventFile of eventFiles) {
     if (eventFile.default) {
-      bot.events[eventFile.default.name] = eventFile.default.execute;
+      bot.on(eventFile.default.name, eventFile.default.execute);
     }
   }
 }
