@@ -51,7 +51,7 @@ export class Command {
   quotedArguments: boolean;
   /**Ignore bots when they try to use the command*/
   ignoreBots: boolean;
-  execute: (bot: AmethystBot, ctx: Context) => unknown;
+  execute: (bot: AmethystBot, ctx: Context) => Promise<void>;
 
   constructor(options: CommandOptions, client: AmethystBot) {
     this.name = options.name;
@@ -107,11 +107,7 @@ export class Command {
     };
   }
 
-  update(
-    options: CommandOptions,
-    execute: (bot: AmethystBot, ctx: Context) => unknown,
-    client: AmethystBot
-  ) {
+  update(options: CommandOptions, client: AmethystBot) {
     this.name = options.name;
     this.description = options.description;
     this.category = options.category;
@@ -131,6 +127,6 @@ export class Command {
     this.ignoreBots = options.ignoreBots ?? true;
     this.nsfw = options.nsfw ?? false;
     this.ownerOnly = options.ownerOnly ?? false;
-    this.execute = execute;
+    this.execute = options.execute;
   }
 }

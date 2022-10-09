@@ -1,4 +1,5 @@
 import { BotWithCache, Interaction, Message } from "../../deps.ts";
+import { AmethystEventHandler } from "../classes/AmethystEvents.ts";
 import Category from "../classes/Category.ts";
 import { Command } from "../classes/Command.ts";
 import { CategoryOptions } from "../types/categoryOptions.ts";
@@ -110,9 +111,23 @@ interface AmethystProps extends Omit<BotWithCache, "events"> {
   messageQuotedArguments?: boolean;
   ignoreBots?: boolean;
   dmOnly?: boolean;
+  eventHandler: AmethystEventHandler;
   extras: any;
   prefix?:
     | string
     | string[]
     | ((bot: AmethystBot, message: Message) => Async<string | string[]>);
+
+  on(
+    name: string,
+    callback: <T extends keyof AmethystEvents>(
+      ...args: [...Parameters<AmethystEvents[T]>]
+    ) => Promise<void>
+  ): void;
+  once(
+    name: string,
+    callback: <T extends keyof AmethystEvents>(
+      ...args: [...Parameters<AmethystEvents[T]>]
+    ) => Promise<void>
+  ): void;
 }

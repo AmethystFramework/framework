@@ -1,3 +1,4 @@
+export * from "./src/classes/AmethystEvents.ts";
 export * from "./src/classes/Category.ts";
 export * from "./src/classes/Command.ts";
 export * from "./src/classes/Context.ts";

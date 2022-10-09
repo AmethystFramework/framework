@@ -1,4 +1,5 @@
 import { BotWithCache, Emoji, Interaction, Message } from "../../deps.ts";
+import { AmethystEventHandler } from "../classes/AmethystEvents.ts";
 import Category from "../classes/Category.ts";
 import { Command } from "../classes/Command.ts";
 import { handleMessageCommands } from "../handlers/messageCommands.ts";
@@ -7,6 +8,7 @@ import { inhibitors } from "../inhibators/mod.ts";
 import { AmethystBotOptions } from "../interfaces/AmethystBotOptions.ts";
 import { AmethystBot } from "../interfaces/bot.ts";
 import { AmethystError } from "../interfaces/errors.ts";
+import { AmethystEvents } from "../interfaces/event.ts";
 import { AmethystTask } from "../interfaces/tasks.ts";
 import { AmethystCollection } from "../utils/AmethystCollection.ts";
 import {
@@ -189,6 +191,7 @@ export function enableAmethystPlugin<
 >(rawBot: B, options?: AmethystBotOptions) {
   rawBot.enabledPlugins.add("AMETHYST");
   const bot = rawBot as AmethystBot<B>;
+  bot.eventHandler = new AmethystEventHandler(bot);
   bot.runningTasks = { intervals: [], initialTimeouts: [] };
   bot.utils = {
     ...bot.utils,
@@ -310,6 +313,23 @@ export function enableAmethystPlugin<
     );
   }
   bot.inhibitors = inhibitors;
+  bot.on = (
+    name: string,
+    callback: <T extends keyof AmethystEvents>(
+      ...args: [...Parameters<AmethystEvents[T]>]
+    ) => Promise<void>
+  ) => {
+    bot.eventHandler.on(name, callback);
+  };
+  bot.once = (
+    name: string,
+    callback: <T extends keyof AmethystEvents>(
+      ...args: [...Parameters<AmethystEvents[T]>]
+    ) => Promise<void>
+  ) => {
+    bot.eventHandler.on(name, callback);
+  };
+
   if (options?.prefix) bot.prefix = options.prefix;
 
   (async () => {
