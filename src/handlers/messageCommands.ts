@@ -1,8 +1,8 @@
 import { Message } from "../../deps.ts";
 import { Command } from "../classes/Command.ts";
+import { createContext } from "../classes/Context.ts";
 import { AmethystBot } from "../interfaces/bot.ts";
 import { AmethystError, ErrorEnums } from "../interfaces/errors.ts";
-import { createContext } from "../utils/createContext.ts";
 import { createOptionResults } from "../utils/createOptionResults.ts";
 
 /**
@@ -42,7 +42,7 @@ function executeCommand(
   }
   try {
     command.execute?.(bot, {
-      ...createContext({ message }),
+      ...createContext({ message }, bot),
       options: createOptionResults(bot, command.args || [], {
         message: { ...message, args },
       }),

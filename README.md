@@ -6,7 +6,7 @@ It promotes standard practices and is geared at bigger bots.
 ## Installation
 
 ```bash
-npm i amethyst-framework
+npm i amethystframework
 ```
 
 ## Features
