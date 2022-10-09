@@ -49,5 +49,5 @@ export interface AmethystEvents extends Events {
 
 export interface AmethystEvent<T extends keyof AmethystEvents> {
   name: T;
-  execute(...args: [...Parameters<AmethystEvents[T]>]): Promise<void>;
+  execute(...args: [...Parameters<AmethystEvents[T]>]): unknown;
 }

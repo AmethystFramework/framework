@@ -244,7 +244,13 @@ export function enableAmethystPlugin<
         bot.utils.createCategory(categoryOptions);
       }
     },
-
+    updateSlashCommands: () => {
+      bot.helpers.upsertGlobalApplicationCommands(
+        bot.category.map((category) => {
+          return category.toApplicationCommand();
+        })
+      );
+    },
     createInhibitor: (name, inhibitor) => {
       createInhibitor(bot, name, inhibitor);
     },
@@ -317,7 +323,7 @@ export function enableAmethystPlugin<
     name: string,
     callback: <T extends keyof AmethystEvents>(
       ...args: [...Parameters<AmethystEvents[T]>]
-    ) => Promise<void>
+    ) => unknown
   ) => {
     bot.eventHandler.on(name, callback);
   };
@@ -325,7 +331,7 @@ export function enableAmethystPlugin<
     name: string,
     callback: <T extends keyof AmethystEvents>(
       ...args: [...Parameters<AmethystEvents[T]>]
-    ) => Promise<void>
+    ) => unknown
   ) => {
     bot.eventHandler.on(name, callback);
   };
@@ -336,41 +342,30 @@ export function enableAmethystPlugin<
     if (options?.eventDir) await loadEvents(bot, options.eventDir);
     if (options?.commandDir) await loadCommands(bot, options.commandDir);
     if (options?.inhibitorDir) await loadInhibitors(bot, options.inhibitorDir);
-    const {
-      ready,
-      interactionCreate,
-      guildCreate,
-      messageCreate,
-      reactionAdd,
-    } = bot.events;
-    bot.events.guildCreate = (bot, guild) => {
-      guildCreate(bot, guild);
+
+    bot.on("guildCreate", (bot, guild) => {
       const amethystBot = bot as AmethystBot;
       amethystBot.category.forEach((category) => {
         bot.helpers.upsertGuildApplicationCommands(guild.id, [
           category.toGuildApplicationCommand(),
         ]);
       });
-    };
-    bot.events.messageCreate = (_, msg) => {
-      messageCreate(_, msg);
+    });
+    bot.on("messageCreate ", (_, msg) => {
       const amethystBot = bot as AmethystBot;
       handleMessageCommands(amethystBot, msg);
       handleMessageCollector(amethystBot, msg);
-    };
-    bot.events.reactionAdd = (_, payload) => {
-      reactionAdd(_, payload);
+    });
+    bot.on("reactionAdd ", (_, payload) => {
       const amethystBot = bot as AmethystBot;
       handleReactionCollector(amethystBot, payload);
-    };
-    bot.events.interactionCreate = (_, data) => {
-      interactionCreate(_, data);
+    });
+    bot.on("interactionCreate", (_, data) => {
       const amethystBot = bot as AmethystBot;
       handleSlash(amethystBot, data);
       if (data.type === 3) handleComponentCollector(amethystBot, data);
-    };
-    bot.events.ready = (bot, payload, rawPayload) => {
-      ready(bot, payload, rawPayload);
+    });
+    bot.on("ready ", (bot, payload, rawPayload) => {
       if (Ready) return;
       const amethystBot = bot as AmethystBot;
       registerTasks(amethystBot);
@@ -379,7 +374,7 @@ export function enableAmethystPlugin<
           return category.toApplicationCommand();
         })
       );
-      payload.guilds.forEach((guildId) => {
+      payload.guilds.forEach((guildId: any) => {
         amethystBot.helpers.upsertGuildApplicationCommands(
           guildId,
           amethystBot.category.map((category) => {
@@ -389,7 +384,7 @@ export function enableAmethystPlugin<
       });
 
       Ready = true;
-    };
+    });
   })();
   return bot;
 }

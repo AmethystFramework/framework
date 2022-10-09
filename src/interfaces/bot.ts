@@ -84,6 +84,7 @@ interface AmethystUtils {
     ) => true | AmethystError
   ): void;
   deleteInhibitor(name: string): void;
+  updateSlashCommands(): void;
 }
 
 interface AmethystProps extends Omit<BotWithCache, "events"> {
@@ -118,16 +119,6 @@ interface AmethystProps extends Omit<BotWithCache, "events"> {
     | string[]
     | ((bot: AmethystBot, message: Message) => Async<string | string[]>);
 
-  on(
-    name: string,
-    callback: <T extends keyof AmethystEvents>(
-      ...args: [...Parameters<AmethystEvents[T]>]
-    ) => Promise<void>
-  ): void;
-  once(
-    name: string,
-    callback: <T extends keyof AmethystEvents>(
-      ...args: [...Parameters<AmethystEvents[T]>]
-    ) => Promise<void>
-  ): void;
+  on(name: string, callback: (...args: any) => unknown): void;
+  once(name: string, callback: (...args: any) => unknown): void;
 }

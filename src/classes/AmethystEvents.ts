@@ -1,24 +1,19 @@
-import { AmethystBot, AmethystCollection, AmethystEvents } from "../../mod.ts";
+import { AmethystBot, AmethystCollection } from "../../mod.ts";
 
 export class AmethystEventHandler {
   client: AmethystBot;
-  events: AmethystCollection<
-    string,
-    (<T extends keyof AmethystEvents>(
-      ...args: [...Parameters<AmethystEvents[T]>]
-    ) => Promise<void>)[]
-  >;
+  events: AmethystCollection<string, ((...args: any) => unknown)[]>;
   constructor(client: AmethystBot) {
     this.client = client;
     this.events = new AmethystCollection();
     let k: keyof typeof client.events;
     for (k in client.events) {
-      this.events.set(k, []);
+      this.events.set(k, [client.events[k]]);
       client.events[k];
     }
   }
 
-  on(event: string, listener: (...args: any) => Promise<void>): this {
+  on(event: string, listener: (...args: any) => unknown): this {
     this.events.get(event)?.push(listener);
     return this;
   }

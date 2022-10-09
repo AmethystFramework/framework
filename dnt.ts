@@ -9,8 +9,8 @@ await build({
   },
   package: {
     author: "some-boi",
-    name: "amethystframework",
-    version: "v4.0.0",
+    name: "@thereallonewolf/amethystframework",
+    version: "v4.0.1",
     description: "Amethyst is a powerful and flexible Discordeno framework.",
     repository: {
       type: "git",
