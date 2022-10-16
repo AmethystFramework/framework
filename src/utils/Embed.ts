@@ -16,7 +16,9 @@ const embedLimits = {
   total: 6000,
 };
 
-/*A class to create embed easily*/
+/**
+ * A class to create embed easily
+ * */
 export class AmethystEmbed {
   /** The amount of characters in the embed. */
   currentTotal = 0;

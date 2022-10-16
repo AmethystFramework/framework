@@ -41,7 +41,7 @@ export type CommandOptions = {
   dmOnly?: false;
   /** The command scope
    * @default "global" */
-  scope: "guild";
+  scope?: string;
   /**A list of guild ids that will have the command*/
   guildIds?: bigint[];
   quotedArguments?: boolean;

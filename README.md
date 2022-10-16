@@ -26,7 +26,6 @@ Amethyst utilizes Decorators to help you keep readability and simplify your code
 ## Usage
 
 ```typescript
-
 ```
 
 ## Contributing
