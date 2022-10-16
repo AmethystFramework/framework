@@ -9,7 +9,9 @@ export class AmethystEventHandler {
     let k: keyof typeof client.events;
     for (k in client.events) {
       this.events.set(k, [client.events[k]]);
-      client.events[k];
+      client.events[k] = (...args: any) => {
+        this.dispatch(k, args);
+      };
     }
   }
 
