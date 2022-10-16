@@ -39,7 +39,7 @@ export async function loadCommands(bot: AmethystBot, dir: string) {
   const commandFiles = load<{ default?: CommandOptions }>(dir);
   for await (const commandFile of commandFiles) {
     if (commandFile.default) {
-      bot.utils.createCommand(commandFile.default);
+      bot.amethystUtils.createCommand(commandFile.default);
     }
   }
 }

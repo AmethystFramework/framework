@@ -193,8 +193,7 @@ export function enableAmethystPlugin<
   const bot = rawBot as AmethystBot<B>;
   bot.eventHandler = new AmethystEventHandler(bot);
   bot.runningTasks = { intervals: [], initialTimeouts: [] };
-  bot.utils = {
-    ...bot.utils,
+  bot.amethystUtils = {
     //@ts-ignore -
     awaitMessage: (memberId, channelId, options) => {
       return awaitMessage(bot, memberId, channelId, options);
@@ -231,7 +230,7 @@ export function enableAmethystPlugin<
     },
     createCategory: (categoryOptions) => {
       if (bot.category.get(categoryOptions.name)) {
-        bot.utils.updateCategory(categoryOptions);
+        bot.amethystUtils.updateCategory(categoryOptions);
       } else {
         const category = new Category(categoryOptions);
         bot.category.set(category.name, category);
@@ -241,7 +240,7 @@ export function enableAmethystPlugin<
       if (bot.category.get(categoryOptions.name)) {
         bot.category.get(categoryOptions.name)?.update(categoryOptions);
       } else {
-        bot.utils.createCategory(categoryOptions);
+        bot.amethystUtils.createCategory(categoryOptions);
       }
     },
     updateSlashCommands: () => {

@@ -28,7 +28,7 @@ interface runningTasks {
 /**An extended version of BotWithCache with a command handler and extra utils*/
 export type AmethystBot<
   B extends Omit<BotWithCache, "events"> = Omit<BotWithCache, "events">
-> = B & AmethystProps & { utils: AmethystUtils };
+> = B & AmethystProps & { amethystUtils: AmethystUtils };
 
 interface AmethystUtils {
   awaitComponent(
