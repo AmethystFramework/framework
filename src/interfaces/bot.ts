@@ -30,6 +30,7 @@ export type AmethystBot<
   B extends Omit<BotWithCache, "events"> = Omit<BotWithCache, "events">
 > = B & AmethystProps & { amethystUtils: AmethystUtils };
 
+/* It's defining a new interface called `AmethystUtils` */
 interface AmethystUtils {
   awaitComponent(
     messageId: bigint,
@@ -87,6 +88,7 @@ interface AmethystUtils {
   updateSlashCommands(): void;
 }
 
+/* Extending the BotWithCache interface and removing the events property. */
 interface AmethystProps extends Omit<BotWithCache, "events"> {
   events: AmethystEvents;
   messageCollectors: AmethystCollection<string, MessageCollector>;

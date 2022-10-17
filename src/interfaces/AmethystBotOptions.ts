@@ -3,7 +3,8 @@ import { Async } from "../utils/types.ts";
 import { AmethystBot } from "./bot.ts";
 import { CommandCooldown } from "./command.ts";
 
-/**A list of options for the amethyst bot*/
+/* It's a type that is used to define the options that can be passed to the `AmethystBot`
+class. */
 export type AmethystBotOptions = {
   owners?: (bigint | string)[];
   prefix?:

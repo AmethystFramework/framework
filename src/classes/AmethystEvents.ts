@@ -1,26 +1,52 @@
 import { AmethystBot, AmethystCollection } from "../../mod.ts";
 
+/* It's a class that can be used to handle events. */
 export class AmethystEventHandler {
   client: AmethystBot;
-  events: AmethystCollection<string, ((...args: any) => unknown)[]>;
+  events: AmethystCollection<string, ((...args: any[]) => unknown)[]>;
   constructor(client: AmethystBot) {
     this.client = client;
     this.events = new AmethystCollection();
-    let k: keyof typeof client.events;
-    for (k in client.events) {
+    for (const [k, _v] of Object.entries(client.events)) {
+      //@ts-ignore this should fix types
       this.events.set(k, [client.events[k]]);
-      client.events[k] = (...args: any) => {
-        this.dispatch(k, args);
+      //@ts-ignore this should fix types
+      client.events[k] = (...args: any[]) => {
+        /* Dispatching the event to the event handler. */
+        client.eventHandler.dispatch(k, ...args);
       };
     }
   }
 
-  on(event: string, listener: (...args: any) => unknown): this {
-    this.events.get(event)?.push(listener);
+  /**
+   * If the event exists, add the listener to the event, otherwise create the event and add the
+   * listener to it.
+   * @param {string} event - string - The name of the event.
+   * @param listener - (...args: any[]) => unknown
+   * @returns The instance of the class.
+   */
+  on(event: string, listener: (...args: any[]) => unknown): this {
+    let events = this.events.get(event);
+    if (events) events.push(listener);
+    else events = [listener];
+    this.events.set(event, events);
     return this;
   }
 
-  dispatch(event: string, args: any): void {
-    this.events.get(event)?.forEach((cb) => cb(...args));
+  /**
+   * For each event in the events map, if the event name matches the event passed in, then call each
+   * listener function with the arguments passed in
+   * @param {string} event - string - The name of the event to dispatch.
+   * @param {any[]} args - any[] - This is an array of any type. This is used to pass in any arguments
+   * that you want to pass to the event listener.
+   */
+  dispatch(event: string, ...args: any[]): void {
+    this.events.forEach((events, name) => {
+      if (name === event) {
+        events.forEach((listener) => {
+          listener.call(this, ...args);
+        });
+      }
+    });
   }
 }

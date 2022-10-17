@@ -12,6 +12,7 @@ import {
 } from "../../mod.ts";
 import { CommandOptions } from "../types/commandOptions.ts";
 
+/* It creates a class called Command. */
 export class Command {
   /* Name of the command */
   name: string;
@@ -53,6 +54,12 @@ export class Command {
   ignoreBots: boolean;
   execute: (bot: AmethystBot, ctx: Context) => unknown;
 
+  /**
+   * It takes in a CommandOptions object and a client object, and then sets the properties of the
+   * Command object to the properties of the CommandOptions object
+   * @param {CommandOptions} options - CommandOptions - The options for the command.
+   * @param {AmethystBot} client - AmethystBot - The client object
+   */
   constructor(options: CommandOptions, client: AmethystBot) {
     this.name = options.name;
     this.description = options.description;
@@ -76,6 +83,11 @@ export class Command {
     this.execute = options.execute;
   }
 
+  /**
+   * If the command type is not an application command, return a default object. Otherwise, return the
+   * command object with the options mapped to the correct types
+   * @returns An object with the following properties:
+   */
   toApplicationCommand(): ApplicationCommandOption {
     if (!this.commandType.includes("application"))
       return {
@@ -107,6 +119,12 @@ export class Command {
     };
   }
 
+  /**
+   * It updates the command's properties with the options passed in
+   * @param {CommandOptions} options - CommandOptions - The options object that is passed to the
+   * constructor.
+   * @param {AmethystBot} client - AmethystBot - The client that the command is being registered to.
+   */
   update(options: CommandOptions, client: AmethystBot) {
     this.name = options.name;
     this.description = options.description;

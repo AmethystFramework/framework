@@ -10,7 +10,7 @@ await build({
   package: {
     author: "some-boi",
     name: "@thereallonewolf/amethystframework",
-    version: "v4.1.2",
+    version: "v4.2.0",
     description: "Amethyst is a powerful and flexible Discordeno framework.",
     repository: {
       type: "git",
@@ -27,9 +27,9 @@ await build({
   },
   entryPoints: ["./mod.ts"],
   mappings: {
-    "https://deno.land/x/discordeno@16.0.0/mod.ts": {
+    "https://deno.land/x/discordeno@17.0.0/mod.ts": {
       name: "discordeno",
-      version: "16.0.0",
+      version: "17.0.0",
     },
   },
   outDir: "./npm",

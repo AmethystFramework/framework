@@ -6,9 +6,10 @@ import { AmethystError, ErrorEnums } from "../interfaces/errors.ts";
 import { createOptionResults } from "../utils/createOptionResults.ts";
 
 /**
- * Handles the slash command
- * @param bot The bot instance
- * @param data The slash command data
+ * It handles the slash command
+ * @param {AmethystBot} bot - AmethystBot - The bot instance
+ * @param {Interaction} data - Interaction
+ * @returns The data object
  */
 export async function handleSlash(bot: AmethystBot, data: Interaction) {
   if (data.type !== 2 || !data.data?.name) {
@@ -40,14 +41,14 @@ export async function handleSlash(bot: AmethystBot, data: Interaction) {
   }
 
   if (
-    bot.inhibitors.some(
-      (e) =>
-        e(bot, command!, {
-          guildId: data.guildId,
-          channelId: data.channelId!,
-          memberId: data.user.id,
-        }) !== true
-    )
+    bot.inhibitors.some((e) => {
+      let f = e(bot, command!, {
+        guildId: data.guildId,
+        channelId: data.channelId!,
+        memberId: data.user.id,
+      });
+      return typeof f == "boolean" ? false : true;
+    })
   ) {
     return bot.events.commandError?.(bot, {
       data,
@@ -64,7 +65,7 @@ export async function handleSlash(bot: AmethystBot, data: Interaction) {
   }
   try {
     bot.events.commandStart?.(bot, command, data);
-    await command.execute?.(
+    await command.execute(
       bot,
       await createContext(
         {

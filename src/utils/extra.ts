@@ -8,7 +8,6 @@ import { inhibitors } from "../inhibators/mod.ts";
 import { AmethystBotOptions } from "../interfaces/AmethystBotOptions.ts";
 import { AmethystBot } from "../interfaces/bot.ts";
 import { AmethystError } from "../interfaces/errors.ts";
-import { AmethystEvents } from "../interfaces/event.ts";
 import { AmethystTask } from "../interfaces/tasks.ts";
 import { AmethystCollection } from "../utils/AmethystCollection.ts";
 import {
@@ -184,7 +183,9 @@ export function deleteInhibitor(bot: AmethystBot, name: string) {
 }
 
 /**
- * Creates the amethyst bot with all it's features
+ * It takes a bot and returns a bot with the Amethyst plugin enabled.
+ * @param {B} rawBot - The bot object that you're using.
+ * @param {AmethystBotOptions} [options] - AmethystBotOptions
  */
 export function enableAmethystPlugin<
   B extends Omit<BotWithCache, "events"> = Omit<BotWithCache, "events">
@@ -214,8 +215,10 @@ export function enableAmethystPlugin<
     },
     createCommand: (commandOptions) => {
       const command = new Command(commandOptions, bot);
-      if (bot.category.get(command.category))
-        bot.category.get(command.category)?.commands.set(command.name, command);
+      if (bot.category!.get(command.category))
+        bot
+          .category!.get(command.category)
+          ?.commands.set(command.name, command);
       else {
         const category = new Category({
           name: command.category,
@@ -224,28 +227,28 @@ export function enableAmethystPlugin<
           default: "",
         });
 
-        bot.category.set(command.category, category);
+        bot.category!.set(command.category, category);
         category.commands.set(command.name, command);
       }
     },
     createCategory: (categoryOptions) => {
-      if (bot.category.get(categoryOptions.name)) {
+      if (bot.category!.get(categoryOptions.name)) {
         bot.amethystUtils.updateCategory(categoryOptions);
       } else {
         const category = new Category(categoryOptions);
-        bot.category.set(category.name, category);
+        bot.category!.set(category.name, category);
       }
     },
     updateCategory: (categoryOptions) => {
-      if (bot.category.get(categoryOptions.name)) {
-        bot.category.get(categoryOptions.name)?.update(categoryOptions);
+      if (bot.category!.get(categoryOptions.name)) {
+        bot.category!.get(categoryOptions.name)?.update(categoryOptions);
       } else {
         bot.amethystUtils.createCategory(categoryOptions);
       }
     },
     updateSlashCommands: () => {
       bot.helpers.upsertGlobalApplicationCommands(
-        bot.category.map((category) => {
+        bot.category!.map((category) => {
           return category.toApplicationCommand();
         })
       );
@@ -318,20 +321,10 @@ export function enableAmethystPlugin<
     );
   }
   bot.inhibitors = inhibitors;
-  bot.on = (
-    name: string,
-    callback: <T extends keyof AmethystEvents>(
-      ...args: [...Parameters<AmethystEvents[T]>]
-    ) => unknown
-  ) => {
+  bot.on = (name: string, callback: (...args: any[]) => unknown) => {
     bot.eventHandler.on(name, callback);
   };
-  bot.once = (
-    name: string,
-    callback: <T extends keyof AmethystEvents>(
-      ...args: [...Parameters<AmethystEvents[T]>]
-    ) => unknown
-  ) => {
+  bot.once = (name: string, callback: (...args: any[]) => unknown) => {
     bot.eventHandler.on(name, callback);
   };
 
@@ -342,20 +335,12 @@ export function enableAmethystPlugin<
     if (options?.commandDir) await loadCommands(bot, options.commandDir);
     if (options?.inhibitorDir) await loadInhibitors(bot, options.inhibitorDir);
 
-    bot.on("guildCreate", (bot, guild) => {
-      const amethystBot = bot as AmethystBot;
-      amethystBot.category.forEach((category) => {
-        bot.helpers.upsertGuildApplicationCommands(guild.id, [
-          category.toGuildApplicationCommand(),
-        ]);
-      });
-    });
-    bot.on("messageCreate ", (_, msg) => {
+    bot.on("messageCreate", (_, msg) => {
       const amethystBot = bot as AmethystBot;
       handleMessageCommands(amethystBot, msg);
       handleMessageCollector(amethystBot, msg);
     });
-    bot.on("reactionAdd ", (_, payload) => {
+    bot.on("reactionAdd", (_, payload) => {
       const amethystBot = bot as AmethystBot;
       handleReactionCollector(amethystBot, payload);
     });
@@ -364,24 +349,17 @@ export function enableAmethystPlugin<
       handleSlash(amethystBot, data);
       if (data.type === 3) handleComponentCollector(amethystBot, data);
     });
-    bot.on("ready ", (bot, payload, rawPayload) => {
+    bot.on("ready", async (bot, payload, rawPayload) => {
       if (Ready) return;
       const amethystBot = bot as AmethystBot;
       registerTasks(amethystBot);
-      bot.helpers.upsertGlobalApplicationCommands(
-        amethystBot.category.map((category) => {
-          return category.toApplicationCommand();
-        })
-      );
-      payload.guilds.forEach((guildId: any) => {
-        amethystBot.helpers.upsertGuildApplicationCommands(
-          guildId,
-          amethystBot.category.map((category) => {
-            return category.toGuildApplicationCommand();
+      try {
+        await bot.helpers.upsertGlobalApplicationCommands(
+          amethystBot.category!.map((category) => {
+            return category.toApplicationCommand();
           })
         );
-      });
-
+      } catch (e) {}
       Ready = true;
     });
   })();

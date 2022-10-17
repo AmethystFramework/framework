@@ -106,7 +106,6 @@ inhibitors.set("botPermissions", (bot, cmd, options) => {
     botGuildPermissions: PermissionStrings[];
     botChannelPermissions: PermissionStrings[];
   };
-  if (command.dmOnly && !command.guildOnly) return true;
   if (
     command.botGuildPermissions?.length &&
     (!options?.guildId ||
@@ -156,7 +155,6 @@ inhibitors.set("userPermissions", (bot, cmd, options) => {
     userChannelPermissions: PermissionStrings[];
   };
 
-  if (command.dmOnly) return true;
   if (
     command.userGuildPermissions?.length &&
     (!options?.guildId ||
@@ -198,22 +196,6 @@ inhibitors.set("userPermissions", (bot, cmd, options) => {
         options!.memberId!,
         command.userChannelPermissions
       ),
-    };
-  return true;
-});
-
-inhibitors.set("guildOrDmOnly", (bot, command, options) => {
-  if (
-    (!options?.guildId && command.guildOnly) ||
-    (options?.guildId && command.dmOnly) ||
-    (!options?.guildId && bot.guildOnly) ||
-    (options?.guildId && bot.dmOnly)
-  )
-    return {
-      type:
-        command.guildOnly && !options?.guildId
-          ? ErrorEnums.GUILDS_ONLY
-          : ErrorEnums.DMS_ONLY,
     };
   return true;
 });

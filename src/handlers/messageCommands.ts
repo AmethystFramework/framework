@@ -6,10 +6,12 @@ import { AmethystError, ErrorEnums } from "../interfaces/errors.ts";
 import { createOptionResults } from "../utils/createOptionResults.ts";
 
 /**
- * Execute a message command.
- * @param bot
- * @param message
- * @param command
+ * It executes a command
+ * @param {AmethystBot} bot - AmethystBot - The bot instance
+ * @param {Message} message - Message - The message object
+ * @param {Command} command - Command - The command that was executed
+ * @param {string[]} args - string[] - The arguments of the command
+ * @returns The return value of the function is the return value of the last statement in the function.
  */
 async function executeCommand(
   bot: AmethystBot,
@@ -18,20 +20,20 @@ async function executeCommand(
   args: string[]
 ) {
   if (
-    bot.inhibitors.some(
-      (e) =>
-        e(bot, command as Command, {
-          guildId: message.guildId,
-          channelId: message.channelId!,
-          memberId: message.authorId,
-        }) !== true
-    )
+    bot.inhibitors.some((e) => {
+      let f = e(bot, command, {
+        guildId: message.guildId,
+        channelId: message.channelId!,
+        memberId: message.authorId,
+      });
+      return typeof f == "boolean" ? false : true;
+    })
   ) {
     return bot.events.commandError?.(bot, {
       message,
       error: bot.inhibitors
         .map((e) =>
-          e(bot, command as Command, {
+          e(bot, command, {
             guildId: message.guildId,
             channelId: message.channelId!,
             memberId: message.authorId,
@@ -41,7 +43,7 @@ async function executeCommand(
     });
   }
   try {
-    await command.execute?.(
+    await command.execute(
       bot,
       await createContext(
         { message },
@@ -52,6 +54,7 @@ async function executeCommand(
       )
     );
   } catch (e) {
+    console.log(e);
     if (bot.events.commandError) {
       bot.events.commandError(bot, {
         message,
@@ -100,7 +103,7 @@ export async function handleMessageCommands(
       prefix = `<@!${bot.id}>`;
   }
 
-  if (prefix === undefined) return;
+  if (prefix === undefined) return console.log("Invalid prefix: " + prefix);
 
   let args = message.content.split(" ").filter((e) => Boolean(e.length));
   const commandName = args.shift()?.slice(prefix.length);
@@ -150,7 +153,7 @@ export async function handleMessageCommands(
     if (!channel) throw "There was an issue fetching the message channel";
     bot.channels.set(message.channelId, channel);
   }
-  bot.events.commandStart?.(bot, command as Command, message);
-  await executeCommand(bot, message, command as Command, args);
-  bot.events.commandEnd?.(bot, command as Command, message);
+  bot.events.commandStart?.(bot, command, message);
+  await executeCommand(bot, message, command, args);
+  bot.events.commandEnd?.(bot, command, message);
 }

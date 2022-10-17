@@ -2,6 +2,7 @@ import { Guild, Interaction, Member, Message, User } from "../../deps.ts";
 import { AmethystBot } from "../../mod.ts";
 import { optionResults } from "../interfaces/commandOptions.ts";
 
+/* It's a class that represents a context of a message or interaction */
 export class Context {
   deffered = false;
   replied = false;
@@ -28,10 +29,21 @@ export class Context {
     this.client = client;
     this.options = options.options;
   }
+  /**
+   * It's a constructor for the Context class
+   * @param {ContextOptions} options - ContextOptions
+   * @param {AmethystBot} client - The client instance
+   */
   async followUp(content: any): Promise<Context> {
     return await this.reply(content);
   }
 
+  /**
+   * The followUp function is a wrapper for the reply function
+   * @param {any} content - any - The content to send to the user. This can be a string, an object, or
+   * a function that returns a string or object.
+   * @returns The context object is being returned.
+   */
   async reply(content: any): Promise<Context> {
     if (this.interactionContext && this.interaction) {
       if (this.replied) {
@@ -92,6 +104,12 @@ export class Context {
     }
   }
 
+  /**
+   * If the message is an interaction, edit the original message, otherwise edit the message that was
+   * sent.
+   * @param {any} content - any - The content to send.
+   * @returns The context object.
+   */
   async editReply(content: any): Promise<Context> {
     if (this.interactionContext && this.interaction) {
       await this.client.helpers.editOriginalInteractionResponse(
@@ -125,6 +143,22 @@ export class Context {
   }
 }
 
+/**
+ * ContextOptions is an object with optional properties interaction, message, interactionContext,
+ * guildId, guild, member, options, and user, where interaction and message are of type Interaction and
+ * Message, respectively, interactionContext is a boolean, guildId is a bigint or undefined, guild and
+ * member are of type Guild and Member, respectively, options is of type optionResults, and user is of
+ * type User.
+ * @property {Interaction} interaction - The interaction object that was used to trigger the command.
+ * @property {Message} message - The message that triggered the command.
+ * @property {boolean} interactionContext - boolean - This is a boolean that is true if the command is
+ * being used in an interaction.
+ * @property {bigint | undefined} guildId - The ID of the guild the command was used in.
+ * @property {Guild} guild - The guild the command was used in.
+ * @property {Member} member - The member that triggered the command
+ * @property {optionResults} options - optionResults;
+ * @property {User} user - The user who sent the message
+ */
 type ContextOptions = {
   interaction?: Interaction;
   message?: Message;
@@ -137,9 +171,11 @@ type ContextOptions = {
 };
 
 /**
- * Creates a new context object.
- * @param data The data to create the context with.
- * @param bot The bot instance.
+ * It creates a context object for a command
+ * @param data - { interaction?: Interaction; message?: Message }
+ * @param {optionResults} option - optionResults
+ * @param {AmethystBot} bot - AmethystBot - The bot instance.
+ * @returns A Context object.
  */
 export async function createContext(
   data: { interaction?: Interaction; message?: Message },
