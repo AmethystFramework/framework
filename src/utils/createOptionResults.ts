@@ -12,7 +12,7 @@ import {
   commandOption,
   optionResults,
   result,
-} from "../interfaces/commandOptions.ts";
+} from "../interfaces/commandArgumentOptions.ts";
 
 export function createOptionResults(
   bot: AmethystBot,
