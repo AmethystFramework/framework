@@ -52,6 +52,7 @@ export class Command {
   quotedArguments: boolean;
   /**Ignore bots when they try to use the command*/
   ignoreBots: boolean;
+  extras: any;
   execute: (bot: AmethystBot, ctx: Context) => unknown;
 
   /**
@@ -81,6 +82,7 @@ export class Command {
     this.nsfw = options.nsfw ?? false;
     this.ownerOnly = options.ownerOnly ?? false;
     this.execute = options.execute;
+    this.extras = options.extras ?? {};
   }
 
   /**

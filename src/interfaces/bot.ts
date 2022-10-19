@@ -1,4 +1,4 @@
-import { BotWithCache, Interaction, Message } from "../../deps.ts";
+import { BotWithCache, Interaction, Message, User } from "../../deps.ts";
 import { AmethystEventHandler } from "../classes/AmethystEvents.ts";
 import Category from "../classes/Category.ts";
 import { Command } from "../classes/Command.ts";
@@ -90,6 +90,7 @@ interface AmethystUtils {
 
 /* Extending the BotWithCache interface and removing the events property. */
 interface AmethystProps extends Omit<BotWithCache, "events"> {
+  user: User;
   events: AmethystEvents;
   messageCollectors: AmethystCollection<string, MessageCollector>;
   componentCollectors: AmethystCollection<bigint, ComponentCollector>;

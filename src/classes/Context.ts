@@ -1,6 +1,6 @@
 import { Guild, Interaction, Member, Message, User } from "../../deps.ts";
 import { AmethystBot } from "../../mod.ts";
-import { optionResults } from "../interfaces/commandOptions.ts";
+import { optionResults } from "../interfaces/commandArgumentOptions.ts";
 
 /* It's a class that represents a context of a message or interaction */
 export class Context {

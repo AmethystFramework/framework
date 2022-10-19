@@ -5,7 +5,7 @@ export * from "./src/classes/Context.ts";
 export * from "./src/interfaces/AmethystBotOptions.ts";
 export * from "./src/interfaces/bot.ts";
 export * from "./src/interfaces/command.ts";
-export * from "./src/interfaces/commandOptions.ts";
+export * from "./src/interfaces/commandArgumentOptions.ts";
 export * from "./src/interfaces/errors.ts";
 export * from "./src/interfaces/event.ts";
 export * from "./src/interfaces/tasks.ts";

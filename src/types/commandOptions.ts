@@ -2,7 +2,7 @@ import { PermissionStrings } from "../../deps.ts";
 import { Context } from "../classes/Context.ts";
 import { AmethystBot } from "../interfaces/bot.ts";
 import { CommandCooldown } from "../interfaces/command.ts";
-import { commandOption } from "../interfaces/commandOptions.ts";
+import { commandOption } from "../interfaces/commandArgumentOptions.ts";
 
 export type CommandOptions = {
   /* Name of the command */
@@ -47,5 +47,6 @@ export type CommandOptions = {
   quotedArguments?: boolean;
   /**Ignore bots when they try to use the command*/
   ignoreBots?: boolean;
+  extras: any;
   execute: (bot: AmethystBot, ctx: Context) => unknown;
 };

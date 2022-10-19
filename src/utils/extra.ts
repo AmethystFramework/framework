@@ -350,8 +350,8 @@ export function enableAmethystPlugin<
       if (data.type === 3) handleComponentCollector(amethystBot, data);
     });
     bot.on("ready", async (bot, payload, rawPayload) => {
-      if (Ready) return;
       const amethystBot = bot as AmethystBot;
+      amethystBot.user = await amethystBot.helpers.getUser(amethystBot.id);
       registerTasks(amethystBot);
       try {
         await bot.helpers.upsertGlobalApplicationCommands(

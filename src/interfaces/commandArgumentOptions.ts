@@ -1,16 +1,16 @@
 import {
-  ApplicationCommandOptionTypes,
-  Interaction,
-  Message,
-  ChannelTypes,
-  Locales,
-  Channel,
   ApplicationCommandOptionChoice,
-  InteractionDataOption,
-  User,
-  Member,
-  Role,
+  ApplicationCommandOptionTypes,
   Attachment,
+  Channel,
+  ChannelTypes,
+  Interaction,
+  InteractionDataOption,
+  Locales,
+  Member,
+  Message,
+  Role,
+  User,
 } from "../../deps.ts";
 import { AmethystBot } from "./bot.ts";
 
