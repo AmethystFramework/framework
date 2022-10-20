@@ -1,4 +1,11 @@
-import { Guild, Interaction, Member, Message, User } from "../../deps.ts";
+import {
+  Channel,
+  Guild,
+  Interaction,
+  Member,
+  Message,
+  User,
+} from "../../deps.ts";
 import { AmethystBot } from "../../mod.ts";
 import { optionResults } from "../interfaces/commandArgumentOptions.ts";
 
@@ -17,6 +24,7 @@ export class Context {
   author?: User;
   client: AmethystBot;
   options: optionResults;
+  channel?: Channel;
   constructor(options: ContextOptions, client: AmethystBot) {
     this.interaction = options.interaction;
     this.message = options.message;
@@ -27,6 +35,7 @@ export class Context {
     this.user = options.user;
     this.author = options.user;
     this.client = client;
+    this.channel = options.channel;
     this.options = options.options;
   }
   /**
@@ -167,6 +176,7 @@ type ContextOptions = {
   guild?: Guild;
   member?: Member;
   options: optionResults;
+  channel?: Channel;
   user?: User;
 };
 
@@ -191,6 +201,10 @@ export async function createContext(
     user: data.message
       ? await bot.helpers.getUser(data.message.authorId)
       : data.interaction?.user,
+    channel: data.message
+      ? bot.channels.get(data.message.channelId)
+      : //@ts-ignore this should fix types
+        bot.channels.get(data.interaction.channelId),
   };
 
   //Assign guild.
