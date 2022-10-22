@@ -1,10 +1,8 @@
-import { ActionRow, ButtonStyles } from "../../deps.ts";
+import { ActionRow, ButtonStyles, SelectOption } from "../../deps.ts";
 
 const snowflakeRegex = /[0-9]{17,19}/;
 
-/*
- * This is a class to help you with creating components
- */
+/* It's an array of Action Rows that has a few methods to add Action Rows and Buttons */
 export class Components extends Array<ActionRow> {
   constructor(...args: ActionRow[]) {
     super(...args);
@@ -12,6 +10,10 @@ export class Components extends Array<ActionRow> {
     return this;
   }
 
+  /**
+   * Don't allow more than 5 Action Rows
+   * @returns The array itself.
+   */
   addActionRow() {
     // Don't allow more than 5 Action Rows
     if (this.length === 5) return this;
@@ -23,6 +25,42 @@ export class Components extends Array<ActionRow> {
     return this;
   }
 
+  addSelectComponent(
+    label: string,
+    customId: string,
+    options: SelectOption[],
+    placeholder?: string,
+    minValues?: number,
+    maxValues?: number,
+    disabled?: boolean
+  ) {
+    if (options.length > 25)
+      throw new Error("SelectComponent Cannot have more than 25 options");
+    this.addActionRow();
+    let row = this[this.length - 1];
+
+    row.components = [
+      {
+        type: 3,
+        label: label,
+        customId,
+        options,
+        placeholder,
+        minValues,
+        maxValues,
+        disabled,
+      },
+    ];
+  }
+  /**
+   * If the last Action Row has 5 buttons, create a new one, otherwise add the button to the last
+   * Action Row
+   * @param {string} label - The text that will be displayed on the button
+   * @param style - keyof typeof ButtonStyles,
+   * @param {string} idOrLink - The ID of the button or the URL of the link
+   * @param [options] - { emoji?: string | bigint; disabled?: boolean }
+   * @returns The object itself.
+   */
   addButton(
     label: string,
     style: keyof typeof ButtonStyles,

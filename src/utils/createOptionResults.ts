@@ -14,6 +14,14 @@ import {
   result,
 } from "../interfaces/commandArgumentOptions.ts";
 
+/**
+ * It takes an array of options, and an object containing a message or interaction, and returns an
+ * object containing functions to get the values of the options
+ * @param {AmethystBot} bot - AmethystBot - The bot instance
+ * @param {commandOption[]} options - commandOption[] - The options that the command has.
+ * @param data - { interaction?: Interaction; message?: Message & { args: string[] } }
+ * @returns an object with a bunch of functions.
+ */
 export function createOptionResults(
   bot: AmethystBot,
   options: commandOption[],
@@ -31,7 +39,6 @@ export function createOptionResults(
             const option = options?.filter(
               (e) => ![11, "Attachment"].includes(e.type as string | number)
             )[index];
-            console.log(arg, index, data.message?.args);
             return {
               name: option.name,
               value: arg,
@@ -167,9 +174,8 @@ export function createOptionResults(
               res.value.length - 1
             )
           : (res?.value as string);
-      console.log(userId);
+
       const user = bot.users.find((e) => {
-        console.log(e.username);
         return /^[\d+]{17,}$/.test(userId)
           ? e.id == BigInt(userId as string)
           : e.username == userId ||
