@@ -1,3 +1,3 @@
-import { AmethystBot, AmethystCollection } from "../mod.ts";
-
+import { AmethystBot } from "../mod.ts";
+import { AmethystCollection } from "./utils/AmethystCollection.ts";
 export const cache = new AmethystCollection<number, AmethystBot>();
