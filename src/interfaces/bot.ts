@@ -1,7 +1,7 @@
 import { BotWithCache, Interaction, Message, User } from "../../deps.ts";
 import { AmethystEventHandler } from "../classes/AmethystEvents.ts";
-import Category from "../classes/Category.ts";
-import { Command } from "../classes/Command.ts";
+import CategoryClass from "../classes/Category.ts";
+import { CommandClass } from "../classes/Command.ts";
 import { CategoryOptions } from "../types/categoryOptions.ts";
 import { CommandOptions } from "../types/commandOptions.ts";
 import { AmethystCollection } from "../utils/AmethystCollection.ts";
@@ -76,7 +76,7 @@ interface AmethystUtils {
   updateCategory(category: CategoryOptions): void;
   createTask(task: AmethystTask): void;
   clearTasks(): void;
-  createInhibitor<T extends Command = Command>(
+  createInhibitor<T extends CommandClass = CommandClass>(
     name: string,
     inhibitor: (
       bot: AmethystBot,
@@ -97,10 +97,10 @@ interface AmethystProps extends Omit<BotWithCache, "events"> {
   reactionCollectors: AmethystCollection<bigint, ReactionCollector>;
   runningTasks: runningTasks;
   tasks: AmethystCollection<string, AmethystTask>;
-  category: AmethystCollection<string, Category>;
+  category: AmethystCollection<string, CategoryClass>;
   inhibitors: AmethystCollection<
     string,
-    <T extends Command = Command>(
+    <T extends CommandClass = CommandClass>(
       bot: AmethystBot,
       command: T,
       options: { memberId?: bigint; channelId: bigint; guildId?: bigint }
@@ -124,4 +124,5 @@ interface AmethystProps extends Omit<BotWithCache, "events"> {
 
   on(name: string, callback: (...args: any) => unknown): void;
   once(name: string, callback: (...args: any) => unknown): void;
+  emit(name: string, ...args: any[]): void;
 }

@@ -5,7 +5,7 @@ import {
   Interaction,
   Message,
 } from "../../deps.ts";
-import { Command } from "../classes/Command.ts";
+import { CommandClass } from "../classes/Command.ts";
 import { AmethystBot } from "./bot.ts";
 
 import { AmethystError } from "./errors.ts";
@@ -35,12 +35,12 @@ export interface AmethystEvents extends Events {
     message: Message,
     commandName: string
   ): unknown;
-  commandStart<E extends Command = Command>(
+  commandStart<E extends CommandClass = CommandClass>(
     bot: AmethystBot,
     command: E,
     dataOrMessage: Interaction | Message
   ): unknown;
-  commandEnd<E extends Command = Command>(
+  commandEnd<E extends CommandClass = CommandClass>(
     bot: AmethystBot,
     command: E,
     dataOrMessage: Interaction | Message
@@ -50,4 +50,5 @@ export interface AmethystEvents extends Events {
 export interface AmethystEvent<T extends keyof AmethystEvents> {
   name: T;
   execute(...args: [...Parameters<AmethystEvents[T]>]): unknown;
+  botCacheNumber?: number;
 }

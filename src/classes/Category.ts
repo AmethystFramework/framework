@@ -1,9 +1,9 @@
 import { CreateApplicationCommand } from "../../deps.ts";
-import { AmethystCollection, Command } from "../../mod.ts";
+import { AmethystCollection, CommandClass } from "../../mod.ts";
 import { CategoryOptions } from "../types/categoryOptions.ts";
 
 /* Exporting the class Category. */
-export default class Category {
+export default class CategoryClass {
   /* Name of the category */
   name: string;
   /* Information about the category */
@@ -13,7 +13,7 @@ export default class Category {
   /* Default command when uniqueCommand is false. */
   default: string;
   /* Commands belonging to this category */
-  commands: AmethystCollection<string, Command>;
+  commands: AmethystCollection<string, CommandClass>;
 
   /**
    * It's a constructor for the Category class
@@ -86,7 +86,7 @@ export default class Category {
   getCommand(
     commandName: string,
     subCommandName?: string
-  ): Command | undefined {
+  ): CommandClass | undefined {
     if (this.uniqueCommands) {
       for (let i = 0; i < this.commands.size; i++)
         if (
@@ -130,7 +130,7 @@ export default class Category {
   getCommandFromInteraction(
     commandName: string,
     subCommandName?: string
-  ): Command | undefined {
+  ): CommandClass | undefined {
     if (this.name == commandName) {
       for (let i = 0; i < this.commands.size; i++) {
         if (subCommandName)

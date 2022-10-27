@@ -4,14 +4,14 @@ import {
   getMissingGuildPermissions,
   PermissionStrings,
 } from "../../deps.ts";
-import { Command } from "../classes/Command.ts";
+import { CommandClass } from "../classes/Command.ts";
 import { AmethystBot } from "../interfaces/bot.ts";
 import { AmethystError, ErrorEnums } from "../interfaces/errors.ts";
 import { AmethystCollection } from "../utils/AmethystCollection.ts";
 
 export const inhibitors = new AmethystCollection<
   string,
-  <T extends Command = Command>(
+  <T extends CommandClass = CommandClass>(
     bot: AmethystBot,
     command: T,
     options?: { memberId?: bigint; guildId?: bigint; channelId: bigint }
@@ -102,7 +102,7 @@ inhibitors.set("ownerOnly", (bot, command, options) => {
 });
 
 inhibitors.set("botPermissions", (bot, cmd, options) => {
-  const command = cmd as Command & {
+  const command = cmd as CommandClass & {
     botGuildPermissions: PermissionStrings[];
     botChannelPermissions: PermissionStrings[];
   };
@@ -150,7 +150,7 @@ inhibitors.set("botPermissions", (bot, cmd, options) => {
 });
 
 inhibitors.set("userPermissions", (bot, cmd, options) => {
-  const command = cmd as Command & {
+  const command = cmd as CommandClass & {
     userGuildPermissions: PermissionStrings[];
     userChannelPermissions: PermissionStrings[];
   };

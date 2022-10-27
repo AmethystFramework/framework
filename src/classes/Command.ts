@@ -12,8 +12,11 @@ import {
 } from "../../mod.ts";
 import { CommandOptions } from "../types/commandOptions.ts";
 
+const defaultFunction = (bot: AmethystBot, ctx: Context): void => {
+  console.warn("THe Execute Function if not defined.");
+};
 /* It creates a class called Command. */
-export class Command {
+export class CommandClass {
   /* Name of the command */
   name: string;
   /* Information about the command */
@@ -81,7 +84,7 @@ export class Command {
     this.ignoreBots = options.ignoreBots ?? true;
     this.nsfw = options.nsfw ?? false;
     this.ownerOnly = options.ownerOnly ?? false;
-    this.execute = options.execute;
+    this.execute = options.execute ?? defaultFunction;
     this.extras = options.extras ?? {};
   }
 
@@ -147,6 +150,6 @@ export class Command {
     this.ignoreBots = options.ignoreBots ?? true;
     this.nsfw = options.nsfw ?? false;
     this.ownerOnly = options.ownerOnly ?? false;
-    this.execute = options.execute;
+    this.execute = options.execute ?? defaultFunction;
   }
 }

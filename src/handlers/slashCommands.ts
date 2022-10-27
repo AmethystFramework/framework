@@ -1,5 +1,5 @@
 import { Interaction } from "../../deps.ts";
-import { Command } from "../classes/Command.ts";
+import { CommandClass } from "../classes/Command.ts";
 import { createContext } from "../classes/Context.ts";
 import { AmethystBot } from "../interfaces/bot.ts";
 import { AmethystError, ErrorEnums } from "../interfaces/errors.ts";
@@ -15,7 +15,7 @@ export async function handleSlash(bot: AmethystBot, data: Interaction) {
   if (data.type !== 2 || !data.data?.name) {
     return;
   }
-  let command: Command | undefined;
+  let command: CommandClass | undefined;
   for (let i = 0; i < bot.category.size; i++) {
     command = bot.category
       .at(i)

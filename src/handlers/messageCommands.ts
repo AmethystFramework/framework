@@ -1,5 +1,5 @@
 import { Message } from "../../deps.ts";
-import { Command } from "../classes/Command.ts";
+import { CommandClass } from "../classes/Command.ts";
 import { createContext } from "../classes/Context.ts";
 import { AmethystBot } from "../interfaces/bot.ts";
 import { AmethystError, ErrorEnums } from "../interfaces/errors.ts";
@@ -9,14 +9,14 @@ import { createOptionResults } from "../utils/createOptionResults.ts";
  * It executes a command
  * @param {AmethystBot} bot - AmethystBot - The bot instance
  * @param {Message} message - Message - The message object
- * @param {Command} command - Command - The command that was executed
+ * @param {CommandClass} command - Command - The command that was executed
  * @param {string[]} args - string[] - The arguments of the command
  * @returns The return value of the function is the return value of the last statement in the function.
  */
 async function executeCommand(
   bot: AmethystBot,
   message: Message,
-  command: Command,
+  command: CommandClass,
   args: string[]
 ) {
   if (

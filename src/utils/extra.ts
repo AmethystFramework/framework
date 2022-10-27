@@ -1,7 +1,8 @@
 import { BotWithCache, Emoji, Interaction, Message } from "../../deps.ts";
+import { cache } from "../cache.ts";
 import { AmethystEventHandler } from "../classes/AmethystEvents.ts";
-import Category from "../classes/Category.ts";
-import { Command } from "../classes/Command.ts";
+import CategoryClass from "../classes/Category.ts";
+import { CommandClass } from "../classes/Command.ts";
 import { handleMessageCommands } from "../handlers/messageCommands.ts";
 import { handleSlash } from "../handlers/slashCommands.ts";
 import { inhibitors } from "../inhibators/mod.ts";
@@ -164,7 +165,7 @@ export function clearTasks(bot: AmethystBot) {
 }
 
 /**Create a custom inhibitor*/
-export function createInhibitor<T extends Command = Command>(
+export function createInhibitor<T extends CommandClass = CommandClass>(
   bot: AmethystBot,
   name: string,
   inhibitor: (
@@ -214,13 +215,13 @@ export function enableAmethystPlugin<
       createTask(bot, task);
     },
     createCommand: (commandOptions) => {
-      const command = new Command(commandOptions, bot);
+      const command = new CommandClass(commandOptions, bot);
       if (bot.category!.get(command.category))
         bot
           .category!.get(command.category)
           ?.commands.set(command.name, command);
       else {
-        const category = new Category({
+        const category = new CategoryClass({
           name: command.category,
           description: "No Information available",
           uniqueCommands: true,
@@ -235,7 +236,7 @@ export function enableAmethystPlugin<
       if (bot.category!.get(categoryOptions.name)) {
         bot.amethystUtils.updateCategory(categoryOptions);
       } else {
-        const category = new Category(categoryOptions);
+        const category = new CategoryClass(categoryOptions);
         bot.category!.set(category.name, category);
       }
     },
@@ -327,6 +328,11 @@ export function enableAmethystPlugin<
   bot.once = (name: string, callback: (...args: any[]) => unknown) => {
     bot.eventHandler.on(name, callback);
   };
+  bot.emit = (name: string, ...args: any[]) => {
+    bot.eventHandler.dispatch(name, ...args);
+  };
+
+  cache.set(cache.size, bot);
 
   if (options?.prefix) bot.prefix = options.prefix;
 

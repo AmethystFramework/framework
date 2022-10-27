@@ -7,4 +7,6 @@ export type CategoryOptions = {
   uniqueCommands: boolean;
   /* Default command when uniqueCommand is false. */
   default: string;
+
+  botCacheNumber?: number;
 };
