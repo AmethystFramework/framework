@@ -47,7 +47,7 @@ export type CommandOptions = {
   quotedArguments?: boolean;
   /**Ignore bots when they try to use the command*/
   ignoreBots?: boolean;
-  extras: any;
+  extras?: any;
   botCacheNumber?: number;
   execute?: (bot: AmethystBot, ctx: Context) => unknown;
 };
