@@ -50,7 +50,7 @@ interface inhibitor {
     bot: AmethystBot,
     command: T,
     options?: { memberId?: bigint; guildId?: bigint; channelId: bigint }
-  ) => true | AmethystError;
+  ) => Promise<true | AmethystError>;
 }
 
 export async function loadInhibitors(bot: AmethystBot, dir: string) {

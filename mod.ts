@@ -1,3 +1,4 @@
+export * from "./src/cache-with-proxy/mod.ts";
 export * from "./src/classes/AmethystEvents.ts";
 export * from "./src/classes/Category.ts";
 export * from "./src/classes/Command.ts";
@@ -18,4 +19,5 @@ export * from "./src/utils/AmethystCollection.ts";
 export * from "./src/utils/component.ts";
 export * from "./src/utils/Embed.ts";
 export * from "./src/utils/extra.ts";
+export * from "./src/utils/permissions.ts";
 export * from "./src/utils/types.ts";

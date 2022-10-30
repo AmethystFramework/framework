@@ -1,10 +1,5 @@
-import {
-  Bot,
-  BotWithCache,
-  EventHandlers,
-  Interaction,
-  Message,
-} from "../../deps.ts";
+import { Bot, EventHandlers, Interaction, Message } from "../../deps.ts";
+import { BotWithProxyCache, ProxyCacheTypes } from "../cache-with-proxy/mod.ts";
 import { CommandClass } from "../classes/Command.ts";
 import { AmethystBot } from "./bot.ts";
 
@@ -15,7 +10,7 @@ export type Events = {
     bot: infer T,
     ...rest: infer R
   ) => infer U
-    ? BotWithCache<Bot> extends T
+    ? BotWithProxyCache<ProxyCacheTypes, Bot> extends T
       ? (bot: AmethystBot, ...rest: R) => U
       : (...rest: Parameters<EventHandlers[K]>) => U
     : never;

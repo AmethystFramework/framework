@@ -1,10 +1,10 @@
+// deno-lint-ignore-file
+import { PermissionStrings } from "../../deps.ts";
 import {
-  BotWithCache,
+  CommandClass,
   getMissingChannelPermissions,
   getMissingGuildPermissions,
-  PermissionStrings,
-} from "../../deps.ts";
-import { CommandClass } from "../classes/Command.ts";
+} from "../../mod.ts";
 import { AmethystBot } from "../interfaces/bot.ts";
 import { AmethystError, ErrorEnums } from "../interfaces/errors.ts";
 import { AmethystCollection } from "../utils/AmethystCollection.ts";
@@ -15,7 +15,7 @@ export const inhibitors = new AmethystCollection<
     bot: AmethystBot,
     command: T,
     options?: { memberId?: bigint; guildId?: bigint; channelId: bigint }
-  ) => true | AmethystError
+  ) => Promise<true | AmethystError>
 >();
 
 const membersInCooldown = new Map<string, Cooldown>();
@@ -25,7 +25,7 @@ interface Cooldown {
   timestamp: number;
 }
 
-inhibitors.set("cooldown", (bot, command, options) => {
+inhibitors.set("cooldown", async (bot, command, options) => {
   const commandCooldown = command.cooldown || bot.defaultCooldown;
   if (
     !commandCooldown ||
@@ -80,19 +80,14 @@ setInterval(() => {
   });
 }, 30000);
 
-inhibitors.set("nsfw", (bot, command, options) => {
-  if (
-    !options?.guildId ||
-    !options?.channelId ||
-    !bot.channels.has(options.channelId)
-  )
-    return { type: ErrorEnums.NSFW };
-  const channel = bot.channels.get(options.channelId)!;
+inhibitors.set("nsfw", async (bot, command, options) => {
+  const channel = (await bot.cache.channels.get(options!.channelId))!;
   if (command.nsfw && !channel.nsfw) return { type: ErrorEnums.NSFW };
   return true;
 });
 
-inhibitors.set("ownerOnly", (bot, command, options) => {
+// deno-lint-ignore require-await
+inhibitors.set("ownerOnly", async (bot, command, options) => {
   if (
     command.ownerOnly &&
     (!options?.memberId || !bot.owners?.includes(options.memberId))
@@ -101,18 +96,19 @@ inhibitors.set("ownerOnly", (bot, command, options) => {
   return true;
 });
 
-inhibitors.set("botPermissions", (bot, cmd, options) => {
+inhibitors.set("botPermissions", async (bot, cmd, options) => {
   const command = cmd as CommandClass & {
     botGuildPermissions: PermissionStrings[];
     botChannelPermissions: PermissionStrings[];
   };
+
   if (
     command.botGuildPermissions?.length &&
     (!options?.guildId ||
       getMissingGuildPermissions(
-        bot as unknown as BotWithCache,
-        options.guildId,
-        bot.id,
+        bot,
+        (await bot.cache.guilds.get(options.guildId))!,
+        (await bot.cache.members.get(options.guildId, bot.id))!,
         command.botGuildPermissions
       ).length)
   )
@@ -120,27 +116,29 @@ inhibitors.set("botPermissions", (bot, cmd, options) => {
       type: ErrorEnums.BOT_MISSING_PERMISSIONS,
       channel: false,
       value: getMissingGuildPermissions(
-        bot as unknown as BotWithCache,
-        options!.guildId!,
-        bot.id,
+        bot,
+        (await bot.cache.guilds.get(options?.guildId!))!,
+        (await bot.cache.members.get(options?.guildId!, bot.id))!,
         command.botGuildPermissions
       ),
     };
   if (
     command.botChannelPermissions?.length &&
     (!options?.channelId ||
-      getMissingChannelPermissions(
-        bot as unknown as BotWithCache,
-        options.channelId,
-        bot.id,
-        command.botChannelPermissions
+      (
+        await getMissingChannelPermissions(
+          bot,
+          options.channelId,
+          bot.id,
+          command.botChannelPermissions
+        )
       ).length)
   )
     return {
       type: ErrorEnums.BOT_MISSING_PERMISSIONS,
       channel: true,
-      value: getMissingChannelPermissions(
-        bot as unknown as BotWithCache,
+      value: await getMissingChannelPermissions(
+        bot,
         options!.channelId!,
         bot.id,
         command.botChannelPermissions
@@ -149,7 +147,7 @@ inhibitors.set("botPermissions", (bot, cmd, options) => {
   return true;
 });
 
-inhibitors.set("userPermissions", (bot, cmd, options) => {
+inhibitors.set("userPermissions", async (bot, cmd, options) => {
   const command = cmd as CommandClass & {
     userGuildPermissions: PermissionStrings[];
     userChannelPermissions: PermissionStrings[];
@@ -160,9 +158,9 @@ inhibitors.set("userPermissions", (bot, cmd, options) => {
     (!options?.guildId ||
       !options.memberId ||
       getMissingGuildPermissions(
-        bot as unknown as BotWithCache,
-        options.guildId,
-        options.memberId,
+        bot,
+        (await bot.cache.guilds.get(options.guildId))!,
+        (await bot.cache.members.get(options.guildId, options.memberId))!,
         command.userGuildPermissions
       ).length)
   )
@@ -170,9 +168,9 @@ inhibitors.set("userPermissions", (bot, cmd, options) => {
       type: ErrorEnums.USER_MISSING_PERMISSIONS,
       channel: false,
       value: getMissingGuildPermissions(
-        bot as unknown as BotWithCache,
-        options!.guildId!,
-        options!.memberId!,
+        bot,
+        (await bot.cache.guilds.get(options?.guildId!))!,
+        (await bot.cache.members.get(options?.guildId!, options?.memberId!))!,
         command.userGuildPermissions
       ),
     };
@@ -180,20 +178,22 @@ inhibitors.set("userPermissions", (bot, cmd, options) => {
     command.userChannelPermissions?.length &&
     (!options?.memberId ||
       !options?.channelId ||
-      getMissingChannelPermissions(
-        bot as unknown as BotWithCache,
-        options.channelId,
-        options.memberId,
-        command.userChannelPermissions
+      (
+        await getMissingChannelPermissions(
+          bot,
+          options.channelId,
+          options.memberId,
+          command.userChannelPermissions
+        )
       ).length)
   )
     return {
       type: ErrorEnums.USER_MISSING_PERMISSIONS,
       channel: true,
       value: getMissingGuildPermissions(
-        bot as unknown as BotWithCache,
-        options!.guildId!,
-        options!.memberId!,
+        bot,
+        (await bot.cache.guilds.get(options?.guildId!))!,
+        (await bot.cache.members.get(options?.guildId!, options?.memberId!))!,
         command.userChannelPermissions
       ),
     };

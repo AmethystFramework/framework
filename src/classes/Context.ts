@@ -202,9 +202,9 @@ export async function createContext(
       ? await bot.helpers.getUser(data.message.authorId)
       : data.interaction?.user,
     channel: data.message
-      ? bot.channels.get(data.message.channelId)
+      ? await bot.cache.channels.get(data.message.channelId)
       : //@ts-ignore this should fix types
-        bot.channels.get(data.interaction.channelId),
+        await bot.cache.channels.get(data.interaction.channelId),
   };
 
   //Assign guild.

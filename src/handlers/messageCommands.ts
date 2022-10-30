@@ -2,7 +2,7 @@ import { Message } from "../../deps.ts";
 import { CommandClass } from "../classes/Command.ts";
 import { createContext } from "../classes/Context.ts";
 import { AmethystBot } from "../interfaces/bot.ts";
-import { AmethystError, ErrorEnums } from "../interfaces/errors.ts";
+import { ErrorEnums } from "../interfaces/errors.ts";
 import { createOptionResults } from "../utils/createOptionResults.ts";
 
 /**
@@ -19,28 +19,20 @@ async function executeCommand(
   command: CommandClass,
   args: string[]
 ) {
-  if (
-    bot.inhibitors.some((e) => {
-      let f = e(bot, command, {
-        guildId: message.guildId,
-        channelId: message.channelId!,
-        memberId: message.authorId,
-      });
-      return typeof f == "boolean" ? false : true;
-    })
-  ) {
-    return bot.events.commandError?.(bot, {
-      message,
-      error: bot.inhibitors
-        .map((e) =>
-          e(bot, command, {
-            guildId: message.guildId,
-            channelId: message.channelId!,
-            memberId: message.authorId,
-          })
-        )
-        .find((e) => typeof e !== "boolean")! as AmethystError,
+  for (let i = 0; i < bot.inhibitors.size; i++) {
+    const e = bot.inhibitors.at(i)!;
+    const f = await e(bot, command, {
+      guildId: message.guildId,
+      channelId: message.channelId!,
+      memberId: message.authorId,
     });
+
+    if (typeof f != "boolean") {
+      return bot.events.commandError?.(bot, {
+        message,
+        error: f,
+      });
+    }
   }
   try {
     await command.execute(
@@ -119,7 +111,7 @@ export async function handleMessageCommands(
     }
   }
   if (
-    bot.users.get(message.authorId)?.toggles.bot &&
+    (await bot.cache.users.get(message.authorId))?.toggles.bot &&
     (command?.ignoreBots ?? bot.ignoreBots)
   )
     return;
@@ -136,23 +128,7 @@ export async function handleMessageCommands(
               : str
           ) || args
       : args;
-  if (message.guildId && !bot.members.has(message.authorId)) {
-    bot.members.set(
-      bot.transformers.snowflake(`${message.guildId}${message.guildId}`),
-      message.member ??
-        (await bot.helpers.getMember(message.guildId, message.authorId))
-    );
-  }
-  if (message.guildId && !bot.guilds.has(message.guildId)) {
-    const guild = await bot.helpers.getGuild(message.guildId, { counts: true });
-    if (!guild) throw "there was an issue fetching the guild.";
-    bot.guilds.set(message.guildId, guild);
-  }
-  if (!bot.channels.has(message.channelId)) {
-    const channel = await bot.helpers.getChannel(message.channelId);
-    if (!channel) throw "There was an issue fetching the message channel";
-    bot.channels.set(message.channelId, channel);
-  }
+  ``;
   bot.events.commandStart?.(bot, command, message);
   await executeCommand(bot, message, command, args);
   bot.events.commandEnd?.(bot, command, message);

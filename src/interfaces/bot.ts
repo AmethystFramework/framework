@@ -1,4 +1,5 @@
-import { BotWithCache, Interaction, Message, User } from "../../deps.ts";
+import { Bot, Interaction, Message, User } from "../../deps.ts";
+import { BotWithProxyCache, ProxyCacheTypes } from "../cache-with-proxy/mod.ts";
 import { AmethystEventHandler } from "../classes/AmethystEvents.ts";
 import CategoryClass from "../classes/Category.ts";
 import { CommandClass } from "../classes/Command.ts";
@@ -27,7 +28,10 @@ interface runningTasks {
 
 /**An extended version of BotWithCache with a command handler and extra utils*/
 export type AmethystBot<
-  B extends Omit<BotWithCache, "events"> = Omit<BotWithCache, "events">
+  B extends Omit<BotWithProxyCache<ProxyCacheTypes, Bot>, "events"> = Omit<
+    BotWithProxyCache<ProxyCacheTypes, Bot>,
+    "events"
+  >
 > = B & AmethystProps & { amethystUtils: AmethystUtils };
 
 /* It's defining a new interface called `AmethystUtils` */
@@ -82,14 +86,15 @@ interface AmethystUtils {
       bot: AmethystBot,
       command: T,
       options?: { memberId?: bigint; guildId?: bigint; channelId: bigint }
-    ) => true | AmethystError
+    ) => Promise<true | AmethystError>
   ): void;
   deleteInhibitor(name: string): void;
   updateSlashCommands(): void;
 }
 
 /* Extending the BotWithCache interface and removing the events property. */
-interface AmethystProps extends Omit<BotWithCache, "events"> {
+interface AmethystProps
+  extends Omit<BotWithProxyCache<ProxyCacheTypes, Bot>, "events"> {
   user: User;
   events: AmethystEvents;
   messageCollectors: AmethystCollection<string, MessageCollector>;
@@ -104,7 +109,7 @@ interface AmethystProps extends Omit<BotWithCache, "events"> {
       bot: AmethystBot,
       command: T,
       options: { memberId?: bigint; channelId: bigint; guildId?: bigint }
-    ) => true | AmethystError
+    ) => Promise<true | AmethystError>
   >;
   owners?: bigint[];
   botMentionAsPrefix?: boolean;

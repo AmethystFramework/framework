@@ -2,7 +2,7 @@ import { Interaction } from "../../deps.ts";
 import { CommandClass } from "../classes/Command.ts";
 import { createContext } from "../classes/Context.ts";
 import { AmethystBot } from "../interfaces/bot.ts";
-import { AmethystError, ErrorEnums } from "../interfaces/errors.ts";
+import { ErrorEnums } from "../interfaces/errors.ts";
 import { createOptionResults } from "../utils/createOptionResults.ts";
 
 /**
@@ -23,45 +23,21 @@ export async function handleSlash(bot: AmethystBot, data: Interaction) {
     if (command) break;
   }
   if (!command) return;
-  if (data.guildId && !bot.guilds.has(data.guildId)) {
-    const guild = await bot.helpers.getGuild(data.guildId, { counts: true });
-    if (!guild) throw "There was an issue fetching the guild";
-    bot.guilds.set(data.guildId, guild);
-  }
-  if (data.guildId && data.member && !bot.members.has(data.user.id)) {
-    bot.members.set(
-      bot.transformers.snowflake(`${data.user.id}${data.guildId}`),
-      await bot.helpers.getMember(data.guildId, data.user.id)
-    );
-  }
-  if (data.channelId && !bot.channels.has(data.channelId)) {
-    const channel = await bot.helpers.getChannel(data.channelId);
-    if (!channel) throw "There was an issue fetching the command's channel";
-    bot.channels.set(data.channelId, channel);
-  }
 
-  if (
-    bot.inhibitors.some((e) => {
-      let f = e(bot, command!, {
-        guildId: data.guildId,
-        channelId: data.channelId!,
-        memberId: data.user.id,
-      });
-      return typeof f == "boolean" ? false : true;
-    })
-  ) {
-    return bot.events.commandError?.(bot, {
-      data,
-      error: bot.inhibitors
-        .map((e) =>
-          e(bot, command!, {
-            guildId: data.guildId,
-            channelId: data.channelId!,
-            memberId: data.user.id,
-          })
-        )
-        .find((e) => typeof e !== "boolean")! as AmethystError,
+  for (let i = 0; i < bot.inhibitors.size; i++) {
+    const e = bot.inhibitors.at(i)!;
+    const f = await e(bot, command, {
+      guildId: data.guildId,
+      channelId: data.channelId!,
+      memberId: data.user.id,
     });
+
+    if (typeof f != "boolean") {
+      return bot.events.commandError?.(bot, {
+        data,
+        error: f,
+      });
+    }
   }
   try {
     bot.events.commandStart?.(bot, command, data);

@@ -1,4 +1,3 @@
-import { BotWithCache, Emoji, Interaction, Message } from "../../deps.ts";
 import { cache } from "../cache.ts";
 import { AmethystEventHandler } from "../classes/AmethystEvents.ts";
 import CategoryClass from "../classes/Category.ts";
@@ -17,6 +16,8 @@ import {
   awaitReaction,
 } from "../utils/Collectors.ts";
 
+import { Bot, Emoji, Interaction, Message } from "../../deps.ts";
+import { BotWithProxyCache, ProxyCacheTypes } from "../cache-with-proxy/mod.ts";
 import {
   loadCommands,
   loadEvents,
@@ -172,7 +173,7 @@ export function createInhibitor<T extends CommandClass = CommandClass>(
     bot: AmethystBot,
     command: T,
     options?: { memberId?: bigint; guildId?: bigint; channelId: bigint }
-  ) => true | AmethystError
+  ) => Promise<true | AmethystError>
 ) {
   // @ts-ignore -
   bot.inhibitors.set(name, inhibitor);
@@ -188,11 +189,12 @@ export function deleteInhibitor(bot: AmethystBot, name: string) {
  * @param {B} rawBot - The bot object that you're using.
  * @param {AmethystBotOptions} [options] - AmethystBotOptions
  */
-export function enableAmethystPlugin<
-  B extends Omit<BotWithCache, "events"> = Omit<BotWithCache, "events">
->(rawBot: B, options?: AmethystBotOptions) {
+export function enableAmethystPlugin(
+  rawBot: BotWithProxyCache<ProxyCacheTypes, Bot>,
+  options?: AmethystBotOptions
+) {
   rawBot.enabledPlugins.add("AMETHYST");
-  const bot = rawBot as AmethystBot<B>;
+  const bot = rawBot as unknown as AmethystBot;
   bot.eventHandler = new AmethystEventHandler(bot);
   bot.runningTasks = { intervals: [], initialTimeouts: [] };
   bot.amethystUtils = {
