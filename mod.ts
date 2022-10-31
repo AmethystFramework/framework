@@ -17,6 +17,7 @@ export * from "./src/types/categoryOptions.ts";
 export * from "./src/types/commandOptions.ts";
 export * from "./src/utils/AmethystCollection.ts";
 export * from "./src/utils/component.ts";
+export * from "./src/utils/createOptionResults.ts";
 export * from "./src/utils/Embed.ts";
 export * from "./src/utils/extra.ts";
 export * from "./src/utils/permissions.ts";
