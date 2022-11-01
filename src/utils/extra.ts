@@ -317,7 +317,7 @@ export function enableAmethystPlugin(
   bot.ignoreCooldown = options?.ignoreCooldown?.map((e) => BigInt(e));
   bot.guildOnly = options?.guildOnly;
   bot.dmOnly = options?.dmOnly;
-  bot.extras = options?.extras;
+  bot.extras = options?.extras ?? {};
   if (bot.guildOnly && bot.dmOnly) {
     throw new Error(
       "You can't have both guild only and dm only options enabled at the same time"
