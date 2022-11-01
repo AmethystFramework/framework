@@ -90,7 +90,6 @@ export function createProxyCache<
   const bot = rawBot as BotWithProxyCache<T, B>;
 
   bot.enabledPlugins.add("PROXY_CACHE");
-
   bot.cache.options = options;
 
   if (!bot.cache.options.cacheInMemory)

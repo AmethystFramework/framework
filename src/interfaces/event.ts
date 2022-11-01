@@ -1,18 +1,17 @@
-import { Bot, EventHandlers, Interaction, Message } from "../../deps.ts";
-import { BotWithProxyCache, ProxyCacheTypes } from "../cache-with-proxy/mod.ts";
+import { Bot, Interaction, Message } from "../../deps.ts";
+import { BotWithProxyEvents } from "../cache-with-proxy/events.ts";
 import { CommandClass } from "../classes/Command.ts";
 import { AmethystBot } from "./bot.ts";
 
 import { AmethystError } from "./errors.ts";
-
 export type Events = {
-  [K in keyof EventHandlers]: EventHandlers[K] extends (
+  [K in keyof BotWithProxyEvents]: BotWithProxyEvents[K] extends (
     bot: infer T,
     ...rest: infer R
   ) => infer U
-    ? BotWithProxyCache<ProxyCacheTypes, Bot> extends T
-      ? (bot: AmethystBot, ...rest: R) => U
-      : (...rest: Parameters<EventHandlers[K]>) => U
+    ? Bot extends T
+      ? (bot: Bot, ...rest: R) => U
+      : (...rest: Parameters<BotWithProxyEvents[K]>) => U
     : never;
 };
 

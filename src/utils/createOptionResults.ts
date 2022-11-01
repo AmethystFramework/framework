@@ -175,7 +175,7 @@ export function createOptionResults(
             )
           : (res?.value as string);
 
-      const user = bot.users.find((e) => {
+      const user = bot.cache.users.memory.find((e) => {
         return /^[\d+]{17,}$/.test(userId)
           ? e.id == BigInt(userId as string)
           : e.username == userId ||
@@ -211,7 +211,7 @@ export function createOptionResults(
       }
       const user = this.getUser(name, required as false);
       const member = user
-        ? bot.members.get(BigInt(`${user.id}${guildId}`)) ??
+        ? (await bot.cache.members.get(guildId, user.id)) ??
           (force ? await bot.helpers.getMember(guildId, user.id) : undefined)
         : undefined;
       if (!member && required) {
@@ -254,7 +254,7 @@ export function createOptionResults(
       }
       return (
         res?.value
-          ? bot.guilds
+          ? bot.cache.guilds.memory
               .get(data.message!.guildId!)
               ?.roles.find(
                 (e) =>
@@ -288,13 +288,13 @@ export function createOptionResults(
             )
           : (res?.value as string);
       const returned =
-        bot.users.find((e) =>
+        bot.cache.users.memory.find((e) =>
           /^[\d+]{17,}$/.test(userOrRoleId)
             ? e.id == BigInt(userOrRoleId as string)
             : e.username == userOrRoleId ||
               `${e.username}#${e.discriminator}` == userOrRoleId
         ) ||
-        bot.guilds
+        bot.cache.guilds.memory
           .get(data.message!.guildId!)
           ?.roles.find((e) =>
             /^[\d+]{17,}$/.test(userOrRoleId)
@@ -353,7 +353,7 @@ export function createOptionResults(
         typeof res?.value === "string" && res?.value.startsWith("<#")
           ? res.value.substring(2, res.value.length - 1)
           : (res?.value as string);
-      const channel = bot.channels.find(
+      const channel = bot.cache.channels.memory.find(
         (e) =>
           e.guildId == data.message?.guildId &&
           (/^[\d+]{17,}$/.test(channelId)

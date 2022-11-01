@@ -250,11 +250,11 @@ export function enableAmethystPlugin(
       }
     },
     updateSlashCommands: () => {
-      bot.helpers.upsertGlobalApplicationCommands(
-        bot.category!.map((category) => {
-          return category.toApplicationCommand();
-        })
-      );
+
+      const commands = bot.category!.map((category) => {
+        return category.toApplicationCommand();
+      });
+      bot.helpers.upsertGlobalApplicationCommands(commands);
     },
     createInhibitor: (name, inhibitor) => {
       createInhibitor(bot, name, inhibitor);

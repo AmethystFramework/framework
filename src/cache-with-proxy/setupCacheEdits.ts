@@ -150,8 +150,8 @@ export function setupCacheEdits<B extends Bot>(
   bot.handlers.CHANNEL_UPDATE = async function (_, data, shardId) {
     const payload = data.d as DiscordChannel;
     //TODO: This transformer is wierd. Make it better. {channel: channel} is not necessary.
+    const oldChannel = await bot.cache.channels.get(BigInt(payload.id));
     const channel = bot.transformers.channel(bot, { channel: payload });
-    const oldChannel = await bot.cache.channels.get(channel.id);
 
     await bot.cache.channels.set(channel);
 
@@ -162,8 +162,8 @@ export function setupCacheEdits<B extends Bot>(
 
   bot.handlers.MESSAGE_UPDATE = async function (_, data, shardId) {
     const payload = data.d as DiscordMessage;
+    const oldMessage = await bot.cache.messages.get(BigInt(payload.id));
     const message = bot.transformers.message(bot, payload);
-    const oldMessage = await bot.cache.messages.get(message.id);
 
     await bot.cache.messages.set(message);
 
@@ -191,12 +191,12 @@ export function setupCacheEdits<B extends Bot>(
 
   bot.handlers.GUILD_ROLE_UPDATE = async function (_, data, shardId) {
     const payload = data.d as DiscordGuildRoleUpdate;
+    const oldRole = await bot.cache.roles.get(BigInt(payload.role.id));
     const role = bot.transformers.role(bot, {
       role: payload.role,
       guildId: BigInt(payload.guild_id),
     });
 
-    const oldRole = await bot.cache.roles.get(role.id);
     await bot.cache.roles.set(role);
     //Send the event.
     bot.events.guildRoleUpdateWithOldRole(bot, oldRole!, role);
@@ -205,16 +205,17 @@ export function setupCacheEdits<B extends Bot>(
 
   bot.handlers.GUILD_MEMBER_UPDATE = async function (_, data, shardId) {
     const payload = data.d as DiscordGuildMemberUpdate;
+    const oldMember = await bot.cache.members.get(
+      BigInt(payload.user.id),
+      BigInt(payload.guild_id)
+    );
     const member = bot.transformers.member(
       bot,
       payload,
       BigInt(payload.guild_id),
       BigInt(payload.user.id)
     );
-    const oldMember = await bot.cache.members.get(
-      member.id,
-      BigInt(payload.guild_id)
-    );
+
     await bot.cache.members.set(member);
     //Send the event.
     bot.events.guildMemberUpdateWithOldMember(bot, oldMember!, member);
@@ -223,8 +224,8 @@ export function setupCacheEdits<B extends Bot>(
 
   bot.handlers.USER_UPDATE = async function (_, data, shardId) {
     const payload = data.d as DiscordUser;
+    const oldUser = await bot.cache.users.get(BigInt(payload.id));
     const user = bot.transformers.user(bot, payload);
-    const oldUser = await bot.cache.users.get(user.id);
 
     await bot.cache.users.set(user);
 
