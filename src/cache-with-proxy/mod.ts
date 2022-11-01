@@ -122,6 +122,7 @@ export function createProxyCache<
   };
 
   const internalBulkRemover = {
+    // deno-lint-ignore require-await
     removeChannel: async function (id: bigint) {
       // Remove from in memory as well
       bot.cache.messages.memory.forEach((message) => {
@@ -131,6 +132,7 @@ export function createProxyCache<
 
       bot.cache.channels.memory.delete(id);
     },
+    // deno-lint-ignore require-await
     removeRole: async function (id: bigint) {
       // Delete the role itself if it exists
       bot.cache.roles.memory.delete(id);
@@ -162,6 +164,7 @@ export function createProxyCache<
           member.roles = member.roles.filter((roleID: bigint) => roleID !== id);
       });
     },
+    // deno-lint-ignore require-await
     removeMessages: async function (ids: bigint[]) {
       const channelID = ids.find((id) => bot.cache.messages.channelIDs.get(id));
       if (channelID) {
@@ -188,6 +191,7 @@ export function createProxyCache<
         bot.cache.messages.channelIDs.delete(id);
       }
     },
+    // deno-lint-ignore require-await
     removeGuild: async function (id: bigint) {
       // Remove from memory
       bot.cache.guilds.memory.delete(id);
@@ -237,6 +241,8 @@ export function createProxyCache<
       // Check if Guild is unavailable
       if (unavailablesGuilds.has(id)) return;
 
+      if (bot.cache.guilds.memory.has(id))
+        return bot.cache.guilds.memory.get(id);
       // Fetch Guild through Helpers
       const guild = await bot.helpers.getGuild(id);
 
@@ -258,9 +264,8 @@ export function createProxyCache<
 
       return bot.cache.roles.get(roleId);
     },
-    fetchChannel: async (guildId: bigint, channelId: bigint) => {
+    fetchChannel: async (channelId: bigint) => {
       if (!options.fetchIfMissing?.channels) return;
-      if (unavailablesGuilds.has(guildId)) return;
 
       const channel = await bot.helpers.getChannel(channelId);
 
@@ -675,7 +680,7 @@ export function createProxyCache<
 
       // If neither stored nor memory has the channel and fetching is enabled, fetch it
       if (options.fetchIfMissing?.channels && guildID) {
-        return fetchers.fetchChannel(BigInt(guildID), channelID);
+        return fetchers.fetchChannel(channelID);
       }
 
       if (options.fetchIfMissing?.channels) {
@@ -807,23 +812,22 @@ export function createProxyCache<
 
       // If user wants memory cache, we cache it
       if (options.cacheInMemory?.messages) {
-        if (options.cacheInMemory?.guilds) {
+        if (options.cacheInMemory?.channels) {
           if (message.channelId)
             bot.cache.messages.channelIDs.set(message.id, message.channelId);
-
-          const guildID = bot.cache.messages.channelIDs.get(message.id);
-          if (guildID) {
-            const guild =
-              bot.cache.guilds.memory.get(guildID) ??
-              (await fetchers.fetchGuild(guildID, true));
-            if (guild) guild.messages.set(message.id, message);
+          const channelID = bot.cache.messages.channelIDs.get(message.id);
+          if (channelID) {
+            const channel =
+              (await bot.cache.channels.get(channelID)) ??
+              (await fetchers.fetchChannel(channelID));
+            if (channel) channel.messages.set(message.id, message);
             else
               console.warn(
-                `[CACHE] Can't cache message(${message.id}) since guild.messages is enabled but a guild (${guildID}) was not found`
+                `[CACHE] Can't cache message(${message.id}) since channel.messages is enabled but a guild (${channelID}) was not found`
               );
           } else
             console.warn(
-              `[CACHE] Can't cache message(${message.id}) since guild.messages is enabled but a guild id was not found.`
+              `[CACHE] Can't cache message(${message.id}) since channel.messages is enabled but a channel id was not found.`
             );
         } else bot.cache.messages.memory.set(message.id, message);
       }
