@@ -29,25 +29,23 @@ export function createOptionResults(
 ): optionResults {
   return {
     results: (data.interaction?.data?.options
-      ? data.interaction.data?.options.map((e) => {
+      ? data.interaction.data?.options[0].options?.map((e) => {
           return { ...e, value: e.value! };
         })
       : data.message?.args.length && options?.length
-      ? data.message.args
-          .slice(0, -(data.message.args.length - options.length))
-          .map((arg, index) => {
-            const option = options?.filter(
-              (e) => ![11, "Attachment"].includes(e.type as string | number)
-            )[index];
-            return {
-              name: option.name,
-              value: arg,
-              type:
-                typeof option.type == "string"
-                  ? ApplicationCommandOptionTypes[option.type]
-                  : option.type,
-            };
-          })
+      ? data.message.args.map((arg, index) => {
+          const option = options?.filter(
+            (e) => ![11, "Attachment"].includes(e.type as string | number)
+          )[index];
+          return {
+            name: option.name,
+            value: arg,
+            type:
+              typeof option.type == "string"
+                ? ApplicationCommandOptionTypes[option.type]
+                : option.type,
+          };
+        })
       : []) as result[],
     get(name, required) {
       const res = this.results.find((e) => e.name == name);

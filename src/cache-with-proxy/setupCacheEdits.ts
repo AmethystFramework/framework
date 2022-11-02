@@ -199,6 +199,7 @@ export function setupCacheEdits<B extends Bot>(
 
   bot.handlers.MESSAGE_UPDATE = async function (_, data, shardId) {
     const payload = data.d as DiscordMessage;
+    if (!payload.edited_timestamp) return;
     const message = bot.transformers.message(bot, payload);
     const oldMessage = await bot.cache.messages.get(
       BigInt(payload.id),
