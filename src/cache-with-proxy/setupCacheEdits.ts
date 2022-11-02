@@ -38,11 +38,13 @@ export function setupCacheEdits<B extends Bot>(
     const payload = data.d as DiscordGuildMemberAdd;
 
     const guildID = bot.transformers.snowflake(payload.guild_id);
-    const guild = await bot.cache.guilds.get(guildID);
+    const guild = await bot.cache.guilds.get(guildID, false);
     // Update cache
     if (guild) {
       guild.memberCount++;
       await bot.cache.guilds.set(guild);
+    } else {
+      await bot.cache.guilds.get(guildID);
     }
 
     GUILD_MEMBER_ADD(bot, data, shardId);
@@ -52,11 +54,14 @@ export function setupCacheEdits<B extends Bot>(
     const payload = data.d as DiscordGuildMemberRemove;
 
     const guildID = bot.transformers.snowflake(payload.guild_id);
-    const guild = await bot.cache.guilds.get(guildID);
+    const guild = await bot.cache.guilds.get(guildID, false);
     if (guild) {
       guild.memberCount--;
       bot.cache.guilds.set(guild);
+    } else {
+      await bot.cache.guilds.get(guildID);
     }
+
     GUILD_MEMBER_REMOVE(bot, data, shardId);
   };
 
@@ -64,7 +69,12 @@ export function setupCacheEdits<B extends Bot>(
     const payload = data.d as DiscordMessageReactionAdd;
 
     const messageId = bot.transformers.snowflake(payload.message_id);
-    const message = await bot.cache.messages.get(messageId);
+    const message = await bot.cache.messages.get(
+      messageId,
+      undefined,
+      undefined,
+      false
+    );
 
     const emoji = bot.transformers.emoji(bot, payload.emoji);
 
@@ -93,6 +103,12 @@ export function setupCacheEdits<B extends Bot>(
       }
 
       bot.cache.messages.set(message);
+    } else {
+      await bot.cache.messages.get(
+        messageId,
+        BigInt(payload.channel_id),
+        payload.guild_id ? BigInt(payload.guild_id) : undefined
+      );
     }
 
     MESSAGE_REACTION_ADD(bot, data, shardId);
@@ -102,7 +118,12 @@ export function setupCacheEdits<B extends Bot>(
     const payload = data.d as DiscordMessageReactionRemove;
 
     const messageId = bot.transformers.snowflake(payload.message_id);
-    const message = await bot.cache.messages.get(messageId);
+    const message = await bot.cache.messages.get(
+      messageId,
+      undefined,
+      undefined,
+      false
+    );
 
     const emoji = bot.transformers.emoji(bot, payload.emoji);
 
@@ -126,6 +147,12 @@ export function setupCacheEdits<B extends Bot>(
       }
 
       bot.cache.messages.set(message);
+    } else {
+      await bot.cache.messages.get(
+        messageId,
+        BigInt(payload.channel_id),
+        payload.guild_id ? BigInt(payload.guild_id) : undefined
+      );
     }
 
     MESSAGE_REACTION_REMOVE(bot, data, shardId);
@@ -142,6 +169,12 @@ export function setupCacheEdits<B extends Bot>(
       message.reactions = undefined;
 
       bot.cache.messages.set(message);
+    } else {
+      await bot.cache.messages.get(
+        messageId,
+        BigInt(payload.channel_id),
+        payload.guild_id ? BigInt(payload.guild_id) : undefined
+      );
     }
 
     MESSAGE_REACTION_REMOVE_ALL(bot, data, shardId);
@@ -150,8 +183,12 @@ export function setupCacheEdits<B extends Bot>(
   bot.handlers.CHANNEL_UPDATE = async function (_, data, shardId) {
     const payload = data.d as DiscordChannel;
     //TODO: This transformer is wierd. Make it better. {channel: channel} is not necessary.
-    const oldChannel = await bot.cache.channels.get(BigInt(payload.id));
     const channel = bot.transformers.channel(bot, { channel: payload });
+    const oldChannel = await bot.cache.channels.get(
+      BigInt(payload.id),
+      payload.guild_id ? BigInt(payload.guild_id) : undefined,
+      false
+    );
 
     await bot.cache.channels.set(channel);
 
@@ -162,8 +199,13 @@ export function setupCacheEdits<B extends Bot>(
 
   bot.handlers.MESSAGE_UPDATE = async function (_, data, shardId) {
     const payload = data.d as DiscordMessage;
-    const oldMessage = await bot.cache.messages.get(BigInt(payload.id));
     const message = bot.transformers.message(bot, payload);
+    const oldMessage = await bot.cache.messages.get(
+      BigInt(payload.id),
+      undefined,
+      undefined,
+      false
+    );
 
     await bot.cache.messages.set(message);
 
@@ -180,7 +222,7 @@ export function setupCacheEdits<B extends Bot>(
       shardId: shardId,
     });
 
-    const oldGuild = await bot.cache.guilds.get(guild.id);
+    const oldGuild = await bot.cache.guilds.get(guild.id, false);
     await bot.cache.guilds.set(guild);
 
     //Send the event.
@@ -191,11 +233,15 @@ export function setupCacheEdits<B extends Bot>(
 
   bot.handlers.GUILD_ROLE_UPDATE = async function (_, data, shardId) {
     const payload = data.d as DiscordGuildRoleUpdate;
-    const oldRole = await bot.cache.roles.get(BigInt(payload.role.id));
     const role = bot.transformers.role(bot, {
       role: payload.role,
       guildId: BigInt(payload.guild_id),
     });
+    const oldRole = await bot.cache.roles.get(
+      BigInt(payload.role.id),
+      BigInt(payload.guild_id),
+      false
+    );
 
     await bot.cache.roles.set(role);
     //Send the event.
@@ -205,15 +251,16 @@ export function setupCacheEdits<B extends Bot>(
 
   bot.handlers.GUILD_MEMBER_UPDATE = async function (_, data, shardId) {
     const payload = data.d as DiscordGuildMemberUpdate;
-    const oldMember = await bot.cache.members.get(
-      BigInt(payload.user.id),
-      BigInt(payload.guild_id)
-    );
     const member = bot.transformers.member(
       bot,
       payload,
       BigInt(payload.guild_id),
       BigInt(payload.user.id)
+    );
+    const oldMember = await bot.cache.members.get(
+      BigInt(payload.user.id),
+      BigInt(payload.guild_id),
+      false
     );
 
     await bot.cache.members.set(member);
@@ -224,8 +271,8 @@ export function setupCacheEdits<B extends Bot>(
 
   bot.handlers.USER_UPDATE = async function (_, data, shardId) {
     const payload = data.d as DiscordUser;
-    const oldUser = await bot.cache.users.get(BigInt(payload.id));
     const user = bot.transformers.user(bot, payload);
+    const oldUser = await bot.cache.users.get(BigInt(payload.id), false);
 
     await bot.cache.users.set(user);
 
