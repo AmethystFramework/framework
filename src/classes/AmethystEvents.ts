@@ -27,8 +27,18 @@ export class AmethystEventHandler {
    */
   on(event: string, listener: (...args: any[]) => unknown): this {
     let events = this.events.get(event);
-    if (events) events.push(listener);
-    else events = [listener];
+    if (events) {
+      events.push(listener);
+      try {
+        //@ts-ignore this should fix types
+        this.client.events[event] = (...args: any[]) => {
+          /* Dispatching the event to the event handler. */
+          this.client.eventHandler.dispatch(event, ...args);
+        };
+      } catch {
+        console.warn("Client.events." + event + "doesn't exist");
+      }
+    } else events = [listener];
     this.events.set(event, events);
     return this;
   }
