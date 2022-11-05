@@ -31,13 +31,16 @@ export class AmethystEventHandler {
     else {
       events = [listener];
       try {
+        console.warn(
+          "client.events." + event + " has no function bound to it."
+        );
         //@ts-ignore this should fix types
         this.client.events[event] = (...args: any[]) => {
           /* Dispatching the event to the event handler. */
           this.client.eventHandler.dispatch(event, ...args);
         };
       } catch {
-        console.warn("Client.events." + event + "doesn't exist");
+        console.warn("client.events." + event + " does not exist");
       }
     }
 
