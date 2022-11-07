@@ -112,9 +112,8 @@ export default class CategoryClass {
                   )
                     return this.commands.at(i)!;
         }
+        return this.commands.get(this.default);
       }
-
-      return this.commands.get(this.default);
     }
 
     return undefined;
