@@ -780,7 +780,7 @@ export function createProxyCache<
 
         if (options.cacheInMemory?.guilds) {
           const guildID =
-            channel.guilId ?? bot.cache.channels.guildIDs.get(channel.id);
+            channel.guildId ?? bot.cache.channels.guildIDs.get(channel.id);
 
           if (guildID) {
             const guild =

@@ -1,6 +1,7 @@
 import { CreateApplicationCommand } from "../../deps.ts";
 import { AmethystCollection, CommandClass } from "../../mod.ts";
 import { CategoryOptions } from "../types/categoryOptions.ts";
+import { validateRequiredParameters } from "./Validations.ts";
 
 /* Exporting the class Category. */
 export default class CategoryClass {
@@ -25,6 +26,7 @@ export default class CategoryClass {
     this.uniqueCommands = options.uniqueCommands;
     this.default = options.default;
     this.commands = new AmethystCollection();
+    validateRequiredParameters(this.name, this.description, []);
   }
 
   /**
@@ -111,6 +113,8 @@ export default class CategoryClass {
                     this.commands.at(i)?.commandType.includes("message")
                   )
                     return this.commands.at(i)!;
+
+          return this.commands.get(this.default);
         }
       }
     }

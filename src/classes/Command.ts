@@ -11,6 +11,7 @@ import {
   Context,
 } from "../../mod.ts";
 import { CommandOptions } from "../types/commandOptions.ts";
+import { validateRequiredParameters } from "./Validations.ts";
 
 const defaultFunction = (bot: AmethystBot, ctx: Context): void => {
   console.warn("THe Execute Function if not defined.");
@@ -100,6 +101,27 @@ export class CommandClass {
         name: this.name,
         description: this.description,
       };
+    validateRequiredParameters(
+      this.name,
+      this.description,
+      this.args?.length
+        ? this.args.map((e) => {
+            return {
+              ...e,
+              description: e.description ?? "A slash command option",
+              channelTypes: e.channelTypes?.map((f) =>
+                typeof f == "string" ? ChannelTypes[f] : f
+              ),
+              type:
+                typeof e.type == "number"
+                  ? e.type
+                  : ApplicationCommandOptionTypes[
+                      e.type as keyof typeof ApplicationCommandOptionTypes
+                    ],
+            };
+          })
+        : []
+    );
     return {
       type: 1,
       name: this.name,
