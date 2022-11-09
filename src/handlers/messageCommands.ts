@@ -83,10 +83,12 @@ export async function handleMessageCommands(
 
   //If prefix is a string and not a array
   if (typeof prefix == "string")
-    if (bot.prefixCaseSensitive)
+    if (bot.prefixCaseSensitive) {
       if (!message.content.startsWith(prefix)) prefix = undefined;
-      else if (!message.content.toLowerCase().startsWith(prefix.toLowerCase()))
+    } else {
+      if (!message.content.toLowerCase().startsWith(prefix.toLowerCase()))
         prefix = undefined;
+    }
 
   //If the bot.botMentionAsPrefix is a prefix.
   if (!prefix && bot.botMentionAsPrefix) {
@@ -96,6 +98,12 @@ export async function handleMessageCommands(
   }
 
   if (prefix === undefined) return console.log("Invalid prefix: " + prefix);
+  if (
+    bot.prefixCaseSensitive
+      ? !message.content.startsWith(prefix)
+      : !message.content.toLowerCase().startsWith(prefix)
+  )
+    return;
 
   let args = message.content.split(" ").filter((e) => Boolean(e.length));
   const commandName = args.shift()?.slice(prefix.length);
@@ -111,7 +119,7 @@ export async function handleMessageCommands(
     }
   }
   if (
-    (await bot.cache.users.get(message.authorId))?.toggles.bot &&
+    message.member?.user?.toggles.bot &&
     (command?.ignoreBots ?? bot.ignoreBots)
   )
     return;
