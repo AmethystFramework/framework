@@ -35,6 +35,20 @@ async function executeCommand(
     }
   }
   try {
+    for (const channelId in message.mentionedChannelIds)
+      await bot.cache.channels.get(BigInt(channelId));
+  } catch {}
+
+  try {
+    for (const userId in message.mentionedUserIds)
+      await bot.cache.users.get(BigInt(userId));
+  } catch {}
+
+  try {
+    for (const roleId in message.mentionedRoleIds)
+      await bot.cache.roles.get(BigInt(roleId));
+  } catch {}
+  try {
     await command.execute(
       bot,
       await createContext(
