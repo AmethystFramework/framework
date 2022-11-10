@@ -25,6 +25,7 @@ export class Context {
   client: AmethystBot;
   options: optionResults;
   channel?: Channel;
+  id: BigInt;
   constructor(options: ContextOptions, client: AmethystBot) {
     this.interaction = options.interaction;
     this.message = options.message;
@@ -37,6 +38,7 @@ export class Context {
     this.client = client;
     this.channel = options.channel;
     this.options = options.options;
+    this.id = options.id;
   }
   /**
    * It's a constructor for the Context class
@@ -178,6 +180,7 @@ type ContextOptions = {
   options: optionResults;
   channel?: Channel;
   user?: User;
+  id: BigInt;
 };
 
 /**
@@ -205,6 +208,7 @@ export async function createContext(
       ? await bot.cache.channels.get(data.message.channelId)
       : //@ts-ignore this should fix types
         await bot.cache.channels.get(data.interaction.channelId),
+    id: data.message ? data.message.id : data.interaction!.message!.id,
   };
 
   //Assign guild.
