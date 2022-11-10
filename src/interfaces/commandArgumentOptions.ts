@@ -77,8 +77,8 @@ export interface optionResults {
   getBoolean(name: string, required?: false): boolean | undefined;
   getBoolean(name: string, required: true): boolean;
   /**Will get the user option*/
-  getUser(name: string, required?: false): User | undefined;
-  getUser(name: string, required: true): User;
+  getUser(name: string, required?: false): Promise<User | undefined>;
+  getUser(name: string, required: true): Promise<User>;
   /**Will get the member from the cache*/
   getMember(
     name: string,
@@ -86,8 +86,11 @@ export interface optionResults {
       required?: false;
       force?: false;
     }
-  ): Member | undefined;
-  getMember(name: string, options: { required: true; force?: false }): Member;
+  ): Promise<Member | undefined>;
+  getMember(
+    name: string,
+    options: { required: true; force?: false }
+  ): Promise<Member>;
   getMember(
     name: string,
     options: { required?: false; force: true }
@@ -97,15 +100,18 @@ export interface optionResults {
     options: { required: true; force: true }
   ): Promise<Member>;
   /**Gets the role option*/
-  getRole(name: string, required?: false): Role;
-  getRole(name: string, required: true): Role;
+  getRole(name: string, required?: false): Promise<Role>;
+  getRole(name: string, required: true): Promise<Role>;
   /**Gets any mentionable discord object (roles, channels, members)*/
-  getMentionable(name: string, required?: false): Role | User | undefined;
-  getMentionable(name: string, required: true): Role | User;
+  getMentionable(
+    name: string,
+    required?: false
+  ): Promise<Role | User | undefined>;
+  getMentionable(name: string, required: true): Promise<Role | User>;
   /**Gets the attachment option*/
   getAttachment(name: string, required?: false): Attachment | undefined;
   getAttachment(name: string, required: true): Attachment;
   /**Gets the channel option*/
-  getChannel(name: string, required?: false): Channel | undefined;
-  getChannel(name: string, required: true): Channel;
+  getChannel(name: string, required?: false): Promise<Channel | undefined>;
+  getChannel(name: string, required: true): Promise<Channel>;
 }

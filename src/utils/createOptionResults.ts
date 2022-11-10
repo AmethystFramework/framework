@@ -155,7 +155,7 @@ export function createOptionResults(
       }
       return bool as boolean;
     },
-    getUser(name, required) {
+    async getUser(name, required) {
       const res = this.results.find((e) => e.name == name && e.type == 6);
       if (data.interaction && res?.value)
         return (
@@ -173,12 +173,15 @@ export function createOptionResults(
             )
           : (res?.value as string);
 
-      const user = bot.cache.users.memory.find((e) => {
+      let user = bot.cache.users.memory.find((e) => {
         return /^[\d+]{17,}$/.test(userId)
           ? e.id == BigInt(userId as string)
           : e.username == userId ||
               `${e.username}#${e.discriminator}` == userId;
       });
+      try {
+        if (!user && userId) user = await bot.cache.users.get(BigInt(userId));
+      } catch {}
       if (!user && required) {
         const option = options?.find((e) => e.name == name);
         if (option?.missing && data.message)
@@ -207,7 +210,7 @@ export function createOptionResults(
             )
           : undefined;
       }
-      const user = this.getUser(name, required as false);
+      const user = await this.getUser(name, required as false);
       const member = user
         ? (await bot.cache.members.get(guildId, user.id)) ??
           (force ? await bot.helpers.getMember(guildId, user.id) : undefined)
@@ -226,7 +229,7 @@ export function createOptionResults(
       }
       return member;
     },
-    getRole(name, required) {
+    async getRole(name, required) {
       const res = this.results.find((e) => e.name == name && e.type == 8);
       if (!data.interaction?.guildId && !data.message?.guildId)
         throw "This option can only be used in guilds.";
@@ -252,18 +255,16 @@ export function createOptionResults(
       }
       return (
         res?.value
-          ? bot.cache.guilds.memory
-              .get(data.message!.guildId!)
-              ?.roles.find(
-                (e) =>
-                  e.id == BigInt(res.value as string) ||
-                  `<@&${res.value}>` == `<@&${e.id}>` ||
-                  e.name == res.value
-              )
+          ? (await bot.helpers.getGuild(data.message!.guildId!))?.roles.find(
+              (e) =>
+                e.id == BigInt(res.value as string) ||
+                `<@&${res.value}>` == `<@&${e.id}>` ||
+                e.name == res.value
+            )
           : undefined
       ) as Role;
     },
-    getMentionable(name, required) {
+    async getMentionable(name, required) {
       const res = this.results.find((e) => e.name == name && e.type == 9);
       if (data.interaction?.data?.resolved)
         return (
@@ -285,20 +286,22 @@ export function createOptionResults(
               res.value.length - 1
             )
           : (res?.value as string);
-      const returned =
+      let returned =
         bot.cache.users.memory.find((e) =>
           /^[\d+]{17,}$/.test(userOrRoleId)
             ? e.id == BigInt(userOrRoleId as string)
             : e.username == userOrRoleId ||
               `${e.username}#${e.discriminator}` == userOrRoleId
         ) ||
-        bot.cache.guilds.memory
-          .get(data.message!.guildId!)
-          ?.roles.find((e) =>
-            /^[\d+]{17,}$/.test(userOrRoleId)
-              ? e.id == BigInt(userOrRoleId as string)
-              : e.name == userOrRoleId
-          );
+        (await bot.helpers.getGuild(data.message!.guildId!))?.roles.find((e) =>
+          /^[\d+]{17,}$/.test(userOrRoleId)
+            ? e.id == BigInt(userOrRoleId as string)
+            : e.name == userOrRoleId
+        );
+      try {
+        if (!returned)
+          returned = await bot.cache.users.get(BigInt(userOrRoleId));
+      } catch {}
 
       if (!returned && required) {
         const option = options?.find((e) => e.name == name);
@@ -335,7 +338,7 @@ export function createOptionResults(
       }
       return attachment as Attachment;
     },
-    getChannel(name, required) {
+    async getChannel(name, required) {
       const res = this.results.find((e) => e.name == name && e.type == 7);
       if (!data.interaction?.guildId && !data.message?.guildId)
         throw "This option can only be used in guilds.";
@@ -351,13 +354,17 @@ export function createOptionResults(
         typeof res?.value === "string" && res?.value.startsWith("<#")
           ? res.value.substring(2, res.value.length - 1)
           : (res?.value as string);
-      const channel = bot.cache.channels.memory.find(
+      let channel = bot.cache.channels.memory.find(
         (e) =>
           e.guildId == data.message?.guildId &&
           (/^[\d+]{17,}$/.test(channelId)
             ? e.id == BigInt(channelId as string)
             : e.name == channelId)
       );
+      try {
+        if (!channel && channelId)
+          channel = await bot.cache.channels.get(BigInt(channelId));
+      } catch {}
       if (!channel && required) {
         const option = options?.find((e) => e.name == name);
         if (option?.missing && data.message)
