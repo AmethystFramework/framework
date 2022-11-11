@@ -208,7 +208,7 @@ export async function createContext(
       ? await bot.cache.channels.get(data.message.channelId)
       : //@ts-ignore this should fix types
         await bot.cache.channels.get(data.interaction.channelId),
-    id: data.message ? data.message.id : data.interaction!.message!.id,
+    id: data.message ? data.message.id : data.interaction?.message?.id ?? 0n,
   };
 
   //Assign guild.
