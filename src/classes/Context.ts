@@ -1,3 +1,4 @@
+import { InteractionResponseTypes } from "https://deno.land/x/discordeno@17.1.0/mod.ts";
 import {
   Channel,
   Guild,
@@ -39,6 +40,14 @@ export class Context {
     this.channel = options.channel;
     this.options = options.options;
     this.id = options.id;
+    if (this.interaction) {
+      client.helpers.sendInteractionResponse(
+        this.interaction.id,
+        this.interaction.token,
+        { type: InteractionResponseTypes.DeferredChannelMessageWithSource }
+      );
+      this.replied = true;
+    }
   }
   /**
    * It's a constructor for the Context class
@@ -77,7 +86,7 @@ export class Context {
           this.interaction.token,
           {
             type: 4,
-            data: { ...content, flags: content.private ? 1 << 6 : undefined },
+            data: { ...content, flags: content.empheral ? 1 << 6 : undefined },
           }
         );
         this.replied = true;
@@ -213,9 +222,9 @@ export async function createContext(
 
   //Assign guild.
   if (data.message && data.message.guildId)
-    options.guild = await bot.helpers.getGuild(data.message.guildId);
+    options.guild = await bot.cache.guilds.get(data.message.guildId);
   else if (data.interaction && data.interaction.guildId)
-    options.guild = await bot.helpers.getGuild(data.interaction.guildId);
+    options.guild = await bot.cache.guilds.get(data.interaction.guildId);
 
   // Assign message if context is for a Interaction.
   if (data.interaction && data.interaction.message)

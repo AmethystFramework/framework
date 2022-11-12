@@ -111,7 +111,7 @@ export async function handleMessageCommands(
       prefix = `<@!${bot.id}>`;
   }
 
-  if (prefix === undefined) return console.log("Invalid prefix: " + prefix);
+  if (prefix === undefined) return;
   if (
     bot.prefixCaseSensitive
       ? !message.content.startsWith(prefix)

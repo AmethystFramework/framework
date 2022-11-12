@@ -212,8 +212,8 @@ export function createOptionResults(
       }
       const user = await this.getUser(name, required as false);
       const member = user
-        ? (await bot.cache.members.get(guildId, user.id)) ??
-          (force ? await bot.helpers.getMember(guildId, user.id) : undefined)
+        ? (await bot.cache.members.get(user.id, guildId)) ??
+          (force ? await bot.cache.members.get(user.id, guildId) : undefined)
         : undefined;
       if (!member && required) {
         const option = options?.find((e) => e.name == name);
@@ -253,11 +253,13 @@ export function createOptionResults(
         if (!(option?.missing && data.message) && !bot.events.commandError)
           throw `"${name}" was a required argument that wasn't given.`;
       }
+      //@ts-ignore
+      res?.value = res?.value.replace("<@&", "").replace(">", "");
       return (
         res?.value
-          ? (await bot.helpers.getGuild(data.message!.guildId!))?.roles.find(
+          ? (await bot.cache.guilds.get(data.message!.guildId!))?.roles.find(
               (e) =>
-                e.id == BigInt(res.value as string) ||
+                e.id + "" == res.value ||
                 `<@&${res.value}>` == `<@&${e.id}>` ||
                 e.name == res.value
             )
@@ -293,7 +295,7 @@ export function createOptionResults(
             : e.username == userOrRoleId ||
               `${e.username}#${e.discriminator}` == userOrRoleId
         ) ||
-        (await bot.helpers.getGuild(data.message!.guildId!))?.roles.find((e) =>
+        (await bot.cache.guilds.get(data.message!.guildId!))?.roles.find((e) =>
           /^[\d+]{17,}$/.test(userOrRoleId)
             ? e.id == BigInt(userOrRoleId as string)
             : e.name == userOrRoleId
