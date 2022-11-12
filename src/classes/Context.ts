@@ -214,9 +214,9 @@ export async function createContext(
       ? await bot.helpers.getUser(data.message.authorId)
       : data.interaction?.user,
     channel: data.message
-      ? await bot.cache.channels.get(data.message.channelId)
+      ? await bot.helpers.getChannel(data.message.channelId)
       : //@ts-ignore this should fix types
-        await bot.cache.channels.get(data.interaction.channelId),
+        await bot.helpers.getChannel(data.interaction.channelId),
     id: data.message ? data.message.id : data.interaction?.message?.id ?? 0n,
   };
 
