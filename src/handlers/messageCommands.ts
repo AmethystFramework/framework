@@ -35,20 +35,6 @@ async function executeCommand(
     }
   }
   try {
-    for (const channelId in message.mentionedChannelIds)
-      await bot.cache.channels.get(BigInt(channelId));
-  } catch {}
-
-  try {
-    for (const userId in message.mentionedUserIds)
-      await bot.cache.users.get(BigInt(userId));
-  } catch {}
-
-  try {
-    for (const roleId in message.mentionedRoleIds)
-      await bot.cache.roles.get(BigInt(roleId));
-  } catch {}
-  try {
     await command.execute(
       bot,
       await createContext(
@@ -60,7 +46,6 @@ async function executeCommand(
       )
     );
   } catch (e) {
-    console.log(e);
     if (bot.events.commandError) {
       bot.events.commandError(bot, {
         message,
@@ -132,11 +117,7 @@ export async function handleMessageCommands(
       break;
     }
   }
-  if (
-    message.member?.user?.toggles.bot &&
-    (command?.ignoreBots ?? bot.ignoreBots)
-  )
-    return;
+  if (message.isFromBot && (command?.ignoreBots ?? bot.ignoreBots)) return;
   if (!command) return bot.events.commandNotFound?.(bot, message, commandName);
   args =
     command.quotedArguments === true ||

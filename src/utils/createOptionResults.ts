@@ -53,11 +53,13 @@ export function createOptionResults(
         const option = options?.find((e) => e.name == name);
         if (option?.missing && data.message)
           option.missing(bot, data.message, name);
-        if (bot.events.commandError)
+        if (bot.events.commandError) {
           bot.events.commandError(bot, {
             error: { type: ErrorEnums.MISSING_REQUIRED_ARGUMENTS, value: name },
             message: data.message,
           });
+          throw new Error("Not Enough Arguments");
+        }
         if (!(option?.missing && data.message) && !bot.events.commandError)
           throw `"${name}" was a required argument that wasn't given.`;
       }
@@ -69,11 +71,13 @@ export function createOptionResults(
         const option = options?.find((e) => e.name == name);
         if (option?.missing && data.message)
           option.missing(bot, data.message, name);
-        if (bot.events.commandError)
+        if (bot.events.commandError) {
           bot.events.commandError(bot, {
             error: { type: ErrorEnums.MISSING_REQUIRED_ARGUMENTS, value: name },
             message: data.message,
           });
+          throw new Error("Not Enough Arguments");
+        }
         if (!(option?.missing && data.message) && !bot.events.commandError)
           throw `"${name}" was a required argument that wasn't given.`;
       }
@@ -85,11 +89,13 @@ export function createOptionResults(
         const option = options?.find((e) => e.name == name);
         if (option?.missing && data.message)
           option.missing(bot, data.message, name);
-        if (bot.events.commandError)
+        if (bot.events.commandError) {
           bot.events.commandError(bot, {
             error: { type: ErrorEnums.MISSING_REQUIRED_ARGUMENTS, value: name },
             message: data.message,
           });
+          throw new Error("Not Enough Arguments");
+        }
         if (!(option?.missing && data.message) && !bot.events.commandError)
           throw `"${name}" was a required argument that wasn't given.`;
       }
@@ -104,11 +110,13 @@ export function createOptionResults(
         const option = options?.find((e) => e.name == name);
         if (option?.missing && data.message)
           option.missing(bot, data.message, name);
-        if (bot.events.commandError)
+        if (bot.events.commandError) {
           bot.events.commandError(bot, {
             error: { type: ErrorEnums.MISSING_REQUIRED_ARGUMENTS, value: name },
             message: data.message,
           });
+          throw new Error("Not Enough Arguments");
+        }
         if (!(option?.missing && data.message) && !bot.events.commandError)
           throw `"${name}" was a required argument that wasn't given.`;
       }
@@ -120,11 +128,13 @@ export function createOptionResults(
         const option = options?.find((e) => e.name == name);
         if (option?.missing && data.message)
           option.missing(bot, data.message, name);
-        if (bot.events.commandError)
+        if (bot.events.commandError) {
           bot.events.commandError(bot, {
             error: { type: ErrorEnums.MISSING_REQUIRED_ARGUMENTS, value: name },
             message: data.message,
           });
+          throw new Error("Not Enough Arguments");
+        }
         if (!(option?.missing && data.message) && !bot.events.commandError)
           throw `"${name}" was a required argument that wasn't given.`;
       }
@@ -145,11 +155,13 @@ export function createOptionResults(
         const option = options?.find((e) => e.name == name);
         if (option?.missing && data.message)
           option.missing(bot, data.message, name);
-        if (bot.events.commandError)
+        if (bot.events.commandError) {
           bot.events.commandError(bot, {
             error: { type: ErrorEnums.MISSING_REQUIRED_ARGUMENTS, value: name },
             message: data.message,
           });
+          throw new Error("Not Enough Arguments");
+        }
         if (!(option?.missing && data.message) && !bot.events.commandError)
           throw `"${name}" was a required argument that wasn't given.`;
       }
@@ -180,17 +192,19 @@ export function createOptionResults(
               `${e.username}#${e.discriminator}` == userId;
       });
       try {
-        if (!user && userId) user = await bot.cache.users.get(BigInt(userId));
+        if (!user && userId) user = await bot.helpers.getUser(BigInt(userId));
       } catch {}
       if (!user && required) {
         const option = options?.find((e) => e.name == name);
         if (option?.missing && data.message)
           option.missing(bot, data.message, name);
-        if (bot.events.commandError)
+        if (bot.events.commandError) {
           bot.events.commandError(bot, {
             error: { type: ErrorEnums.MISSING_REQUIRED_ARGUMENTS, value: name },
             message: data.message,
           });
+          throw new Error("Not Enough Arguments");
+        }
         if (!(option?.missing && data.message) && !bot.events.commandError)
           throw `"${name}" was a required argument that wasn't given.`;
       }
@@ -219,11 +233,13 @@ export function createOptionResults(
         const option = options?.find((e) => e.name == name);
         if (option?.missing && data.message)
           option.missing(bot, data.message, name);
-        if (bot.events.commandError)
+        if (bot.events.commandError) {
           bot.events.commandError(bot, {
             error: { type: ErrorEnums.MISSING_REQUIRED_ARGUMENTS, value: name },
             message: data.message,
           });
+          throw new Error("Not Enough Arguments");
+        }
         if (!(option?.missing && data.message) && !bot.events.commandError)
           throw `"${name}" was a required argument that wasn't given.`;
       }
@@ -245,16 +261,18 @@ export function createOptionResults(
         const option = options?.find((e) => e.name == name);
         if (option?.missing && data.message)
           option.missing(bot, data.message, name);
-        if (bot.events.commandError)
+        if (bot.events.commandError) {
           bot.events.commandError(bot, {
             error: { type: ErrorEnums.MISSING_REQUIRED_ARGUMENTS, value: name },
             message: data.message,
           });
+          throw new Error("Not Enough Arguments");
+        }
         if (!(option?.missing && data.message) && !bot.events.commandError)
           throw `"${name}" was a required argument that wasn't given.`;
       }
       //@ts-ignore
-      res?.value = res?.value.replace("<@&", "").replace(">", "");
+      res.value = res.value.replace("<@&", "").replace(">", "");
       return (
         res?.value
           ? (await bot.cache.guilds.get(data.message!.guildId!))?.roles.find(
@@ -302,18 +320,20 @@ export function createOptionResults(
         );
       try {
         if (!returned)
-          returned = await bot.cache.users.get(BigInt(userOrRoleId));
+          returned = await bot.helpers.getUser(BigInt(userOrRoleId));
       } catch {}
 
       if (!returned && required) {
         const option = options?.find((e) => e.name == name);
         if (option?.missing && data.message)
           option.missing(bot, data.message, name);
-        if (bot.events.commandError)
+        if (bot.events.commandError) {
           bot.events.commandError(bot, {
             error: { type: ErrorEnums.MISSING_REQUIRED_ARGUMENTS, value: name },
             message: data.message,
           });
+          throw new Error("Not Enough Arguments");
+        }
         if (!(option?.missing && data.message) && !bot.events.commandError)
           throw `"${name}" was a required argument that wasn't given.`;
       }
@@ -330,11 +350,13 @@ export function createOptionResults(
         const option = options?.find((e) => e.name == name);
         if (option?.missing && data.message)
           option.missing(bot, data.message, name);
-        if (bot.events.commandError)
+        if (bot.events.commandError) {
           bot.events.commandError(bot, {
             error: { type: ErrorEnums.MISSING_REQUIRED_ARGUMENTS, value: name },
             message: data.message,
           });
+          throw new Error("Not Enough Arguments");
+        }
         if (!(option?.missing && data.message) && !bot.events.commandError)
           throw `"${name}" was a required argument that wasn't given.`;
       }
@@ -371,11 +393,13 @@ export function createOptionResults(
         const option = options?.find((e) => e.name == name);
         if (option?.missing && data.message)
           option.missing(bot, data.message, name);
-        if (bot.events.commandError)
+        if (bot.events.commandError) {
           bot.events.commandError(bot, {
             error: { type: ErrorEnums.MISSING_REQUIRED_ARGUMENTS, value: name },
             message: data.message,
           });
+          throw new Error("Not Enough Arguments");
+        }
         if (!(option?.missing && data.message) && !bot.events.commandError)
           throw `"${name}" was a required argument that wasn't given.`;
       }

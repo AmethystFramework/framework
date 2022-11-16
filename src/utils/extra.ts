@@ -250,7 +250,6 @@ export function enableAmethystPlugin(
       }
     },
     updateSlashCommands: () => {
-
       const commands = bot.category!.map((category) => {
         return category.toApplicationCommand();
       });
@@ -362,12 +361,22 @@ export function enableAmethystPlugin(
       amethystBot.user = await amethystBot.helpers.getUser(amethystBot.id);
       registerTasks(amethystBot);
       try {
-        await bot.helpers.upsertGlobalApplicationCommands(
-          amethystBot.category!.map((category) => {
-            return category.toApplicationCommand();
-          })
-        );
-      } catch (e) {}
+        const commands =
+          await amethystBot.helpers.upsertGlobalApplicationCommands(
+            amethystBot.category!.map((category) => {
+              return category.toApplicationCommand();
+            })
+          );
+        commands.forEach((command) => {
+          const category = amethystBot.category.get(command.name);
+          command.options?.forEach((option) => {
+            const c = category?.commands.get(option.name);
+            c!.mention = `</${option.name}:${command.id}>`;
+          });
+        });
+      } catch (e) {
+        console.log(e);
+      }
       Ready = true;
     });
   })();

@@ -57,6 +57,8 @@ export class CommandClass {
   /**Ignore bots when they try to use the command*/
   ignoreBots: boolean;
   extras: any;
+  /* Mention slash command in chat */
+  mention?: string;
   execute: (bot: AmethystBot, ctx: Context) => unknown;
 
   /**

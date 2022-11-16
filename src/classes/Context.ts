@@ -222,9 +222,9 @@ export async function createContext(
 
   //Assign guild.
   if (data.message && data.message.guildId)
-    options.guild = await bot.cache.guilds.get(data.message.guildId);
+    options.guild = await bot.helpers.getGuild(data.message.guildId);
   else if (data.interaction && data.interaction.guildId)
-    options.guild = await bot.cache.guilds.get(data.interaction.guildId);
+    options.guild = await bot.helpers.getGuild(data.interaction.guildId);
 
   // Assign message if context is for a Interaction.
   if (data.interaction && data.interaction.message)

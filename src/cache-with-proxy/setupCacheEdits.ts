@@ -71,9 +71,8 @@ export function setupCacheEdits<B extends Bot>(
     const messageId = bot.transformers.snowflake(payload.message_id);
     const message = await bot.cache.messages.get(
       messageId,
-      undefined,
-      undefined,
-      false
+      bot.transformers.snowflake(payload.channel_id),
+      undefined
     );
 
     const emoji = bot.transformers.emoji(bot, payload.emoji);
@@ -120,9 +119,8 @@ export function setupCacheEdits<B extends Bot>(
     const messageId = bot.transformers.snowflake(payload.message_id);
     const message = await bot.cache.messages.get(
       messageId,
-      undefined,
-      undefined,
-      false
+      bot.transformers.snowflake(payload.channel_id),
+      undefined
     );
 
     const emoji = bot.transformers.emoji(bot, payload.emoji);
@@ -162,7 +160,10 @@ export function setupCacheEdits<B extends Bot>(
     const payload = data.d as DiscordMessageReactionRemoveAll;
 
     const messageId = bot.transformers.snowflake(payload.message_id);
-    const message = await bot.cache.messages.get(messageId);
+    const message = await bot.cache.messages.get(
+      messageId,
+      bot.transformers.snowflake(payload.channel_id)
+    );
 
     if (message) {
       // when an admin deleted all the reactions of a message
@@ -193,7 +194,7 @@ export function setupCacheEdits<B extends Bot>(
     await bot.cache.channels.set(channel);
 
     //Send the event.
-    bot.events.channelUpdateWithOldChannel(bot, oldChannel!, channel);
+    bot.events.channelUpdateWithOldChannel(bot, oldChannel ?? channel, channel);
     CHANNEL_UPDATE(bot, data, shardId);
   };
 
@@ -203,7 +204,7 @@ export function setupCacheEdits<B extends Bot>(
     const message = bot.transformers.message(bot, payload);
     const oldMessage = await bot.cache.messages.get(
       BigInt(payload.id),
-      undefined,
+      bot.transformers.snowflake(payload.channel_id),
       undefined,
       false
     );
@@ -211,7 +212,7 @@ export function setupCacheEdits<B extends Bot>(
     await bot.cache.messages.set(message);
 
     //Send the event.
-    bot.events.messageUpdateWithOldMessage(bot, oldMessage!, message);
+    bot.events.messageUpdateWithOldMessage(bot, oldMessage ?? message, message);
 
     MESSAGE_UPDATE(bot, data, shardId);
   };
@@ -226,8 +227,7 @@ export function setupCacheEdits<B extends Bot>(
     const oldGuild = await bot.cache.guilds.get(guild.id, false);
     await bot.cache.guilds.set(guild);
 
-    //Send the event.
-    bot.events.guildUpdateWithOldGuild(bot, oldGuild!, guild);
+    bot.events.guildUpdateWithOldGuild(bot, oldGuild ?? guild, guild);
 
     GUILD_UPDATE(bot, data, shardId);
   };
@@ -246,8 +246,18 @@ export function setupCacheEdits<B extends Bot>(
 
     await bot.cache.roles.set(role);
     //Send the event.
-    bot.events.guildRoleUpdateWithOldRole(bot, oldRole!, role);
+    bot.events.guildRoleUpdateWithOldRole(bot, oldRole ?? role, role);
     GUILD_ROLE_UPDATE(bot, data, shardId);
+  };
+
+  bot.handlers.USER_UPDATE = async function (_, data, shardId) {
+    const payload = data.d as DiscordUser;
+    const user = bot.transformers.user(bot, payload);
+    const oldUser = await bot.cache.users.get(BigInt(payload.id), false);
+
+    await bot.cache.users.set(user);
+    if (oldUser) bot.events.userUpdateWithOldUser(bot, oldUser, user);
+    USER_UPDATE(bot, data, shardId);
   };
 
   bot.handlers.GUILD_MEMBER_UPDATE = async function (_, data, shardId) {
@@ -265,20 +275,9 @@ export function setupCacheEdits<B extends Bot>(
     );
 
     await bot.cache.members.set(member);
-    //Send the event.
-    bot.events.guildMemberUpdateWithOldMember(bot, oldMember!, member);
+
+    bot.events.guildMemberUpdateWithOldMember(bot, oldMember ?? member, member);
     GUILD_MEMBER_UPDATE(bot, data, shardId);
-  };
-
-  bot.handlers.USER_UPDATE = async function (_, data, shardId) {
-    const payload = data.d as DiscordUser;
-    const user = bot.transformers.user(bot, payload);
-    const oldUser = await bot.cache.users.get(BigInt(payload.id), false);
-
-    await bot.cache.users.set(user);
-
-    bot.events.userUpdateWithOldUser(bot, oldUser!, user);
-    USER_UPDATE(bot, data, shardId);
   };
 
   bot.handlers.GUILD_UPDATE = function (_, data, shardId) {

@@ -331,7 +331,7 @@ export function createProxyCache<
 
       await bot.cache.users.set(user);
 
-      return bot.cache.users.get(userId);
+      return user;
     },
     fetchMessage: async (
       messageId: bigint,
@@ -583,7 +583,8 @@ export function createProxyCache<
             console.warn(
               `[CACHE] Can't cache role(${role.id}) since guild.roles is enabled but a guild id was not found.`
             );
-        } else bot.cache.roles.memory.set(role.id, role);
+        }
+        bot.cache.roles.memory.set(role.id, role);
       }
       // If user wants non-memory cache, we cache it
       if (options.cacheOutsideMemory?.roles && options.setItem)
@@ -667,7 +668,7 @@ export function createProxyCache<
             const guild =
               bot.cache.guilds.memory.get(member.guildId) ??
               (await fetchers.fetchGuild(member.guildId, fetch, true));
-            if (guild) guild.members.set(member.id, member);
+            if (guild) guild.members?.set(member.id, member);
             else
               console.warn(
                 `[CACHE] Can't cache member(${member.id}) since guild.members is enabled but a guild (${member.guildId}) was not found`
@@ -676,11 +677,12 @@ export function createProxyCache<
             console.warn(
               `[CACHE] Can't cache member(${member.id}) since guild.members is enabled but a guild id was not found.`
             );
-        } else
-          bot.cache.members.memory.set(
-            BigInt(`${member.id}${member.guildId}`),
-            member
-          );
+        }
+
+        bot.cache.members.memory.set(
+          BigInt(`${member.id}${member.guildId}`),
+          member
+        );
       }
       // If user wants non-memory cache, we cache it
       if (options.cacheOutsideMemory?.members && options.setItem)
@@ -794,13 +796,12 @@ export function createProxyCache<
               console.warn(
                 `[CACHE] Can't cache channel(${channel.id}) since guild.channels is enabled but a guild (${guildID}) was not found`
               );
-          } else if ([1, 3].includes(channel.type)) {
-            bot.cache.channels.memory.set(channel.id, channel);
           } else
             console.warn(
               `[CACHE] Can't cache channel(${channel.id}) since guild.channels is enabled but a guild id was not found.`
             );
-        } else bot.cache.channels.memory.set(channel.id, channel);
+        }
+        bot.cache.channels.memory.set(channel.id, channel);
       }
       // If user wants non-memory cache, we cache it
       if (options.cacheOutsideMemory?.channels && options.setItem)
@@ -908,7 +909,7 @@ export function createProxyCache<
       // If user wants memory cache, we cache it
       if (options.cacheInMemory?.messages) {
         if (options.cacheInMemory?.channels) {
-          if (message.channelId) {
+          if (message.channelId && message.guildId) {
             bot.cache.messages.channelIDs.set(message.id, message.channelId);
 
             const channel = await bot.cache.channels.get(
@@ -929,7 +930,9 @@ export function createProxyCache<
             console.warn(
               `[CACHE] Can't cache message(${message.id}) since channel.messages is enabled but a channel was not found.`
             );
-        } else bot.cache.messages.memory.set(message.id, message);
+        }
+
+        bot.cache.messages.memory.set(message.id, message);
       }
       // If user wants non-memory cache, we cache it
       if (options.cacheOutsideMemory?.messages && options.setItem)
@@ -973,7 +976,7 @@ export function createProxyCache<
     // Add to memory
     bot.cache.users.set(args);
 
-    return args;
+    return old;
   };
 
   bot.transformers.guild = function (_, payload) {
@@ -1028,7 +1031,7 @@ export function createProxyCache<
     // Add to memory
     bot.cache.guilds.set(args);
 
-    return args;
+    return old;
   };
 
   bot.transformers.channel = function (_, payload) {
@@ -1053,13 +1056,14 @@ export function createProxyCache<
     // Add to memory
     bot.cache.channels.set(args);
 
-    return args;
+    return old;
   };
 
   bot.transformers.member = function (_, payload, guildId, userId) {
     // Create the object from existing transformer.
     const old = member(bot, payload, guildId, userId);
-
+    //@ts-ignore
+    old.user = payload.user;
     // Filter to desired args
     const args: T["member"] = {};
     const keys = Object.keys(old) as (keyof Member)[];
@@ -1077,7 +1081,7 @@ export function createProxyCache<
     // Add to memory
     bot.cache.members.set(args);
 
-    return args;
+    return old;
   };
 
   bot.transformers.role = function (_, payload) {
@@ -1101,7 +1105,7 @@ export function createProxyCache<
     // Add to memory
     bot.cache.roles.set(args);
 
-    return args;
+    return old;
   };
 
   bot.transformers.message = function (_, payload) {
@@ -1125,7 +1129,7 @@ export function createProxyCache<
     // Add to memory
     bot.cache.messages.set(args);
 
-    return args;
+    return old;
   };
 
   setupCacheRemovals(bot);
