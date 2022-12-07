@@ -3,6 +3,8 @@ import {
   Bot,
   Channel,
   Collection,
+  createBotGatewayHandlers,
+  DiscordGatewayPayload,
   Guild,
   GuildToggles,
   Member,
@@ -14,8 +16,19 @@ import { BotWithProxyEvents } from "./events.ts";
 import { setupCacheCreations } from "./setupCacheCreations.ts";
 import { setupCacheEdits, unavailablesGuilds } from "./setupCacheEdits.ts";
 import { setupCacheRemovals } from "./setupCacheRemovals.ts";
-
+const updateHandlers = () => {
+  const handlers = createBotGatewayHandlers({});
+  return {
+    ...handlers,
+    GUILD_LOADED_DD: (
+      bot: Bot,
+      data: DiscordGatewayPayload,
+      shardId: number
+    ) => {},
+  };
+};
 export interface ProxyCacheProps<T extends ProxyCacheTypes> {
+  handlers: ReturnType<typeof updateHandlers>;
   events: BotWithProxyEvents;
   cache: Bot["cache"] & {
     options: CreateProxyCacheOptions;
@@ -122,7 +135,7 @@ export function createProxyCache<
   bot.enabledPlugins.add("PROXY_CACHE");
 
   bot.cache.options = options;
-
+  bot.handlers = updateHandlers();
   if (!bot.cache.options.cacheInMemory)
     bot.cache.options.cacheInMemory = { default: true };
   if (!bot.cache.options.cacheOutsideMemory)
@@ -352,7 +365,7 @@ export function createProxyCache<
   };
 
   if (!bot.cache.options.bulk) bot.cache.options.bulk = {};
-
+  bot.events;
   // Get bulk removers passed by user, data about which internal removers to replace
   const { removeChannel, removeGuild, removeMessages, removeRole } =
     bot.cache.options.bulk;
@@ -733,7 +746,6 @@ export function createProxyCache<
           return bot.cache.channels.memory.get(channelID);
         }
       }
-
       // Otherwise try to get from non-memory cache
       if (options.cacheOutsideMemory?.channels && options.getItem) {
         const stored = await options.getItem<T["channel"]>(
@@ -747,7 +759,6 @@ export function createProxyCache<
         // If its stored, return that
         if (stored) return stored;
       }
-
       // If neither stored nor memory has the channel and fetching is enabled, fetch it
       if (options.fetchIfMissing?.channels) {
         return fetchers.fetchChannel(

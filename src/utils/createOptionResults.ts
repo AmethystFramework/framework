@@ -37,14 +37,15 @@ export function createOptionResults(
           const option = options?.filter(
             (e) => ![11, "Attachment"].includes(e.type as string | number)
           )[index];
-          return {
-            name: option.name,
-            value: arg,
-            type:
-              typeof option.type == "string"
-                ? ApplicationCommandOptionTypes[option.type]
-                : option.type,
-          };
+          if (option)
+            return {
+              name: option.name,
+              value: arg,
+              type:
+                typeof option.type == "string"
+                  ? ApplicationCommandOptionTypes[option.type]
+                  : option.type,
+            };
         })
       : []) as result[],
     get(name, required) {
@@ -105,7 +106,7 @@ export function createOptionResults(
     getLongString(name, required) {
       if (data.interaction)
         return this.getString(name, required as false) as string;
-      const str = data.message?.content.split(" ").slice(1).join(" ");
+      const str = data.message?.content.split(" ").splice(1).join(" ");
       if (!str && required) {
         const option = options?.find((e) => e.name == name);
         if (option?.missing && data.message)

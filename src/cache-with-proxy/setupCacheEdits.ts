@@ -69,6 +69,7 @@ export function setupCacheEdits<B extends Bot>(
     const payload = data.d as DiscordMessageReactionAdd;
 
     const messageId = bot.transformers.snowflake(payload.message_id);
+
     const message = await bot.cache.messages.get(
       messageId,
       bot.transformers.snowflake(payload.channel_id),
@@ -183,13 +184,14 @@ export function setupCacheEdits<B extends Bot>(
 
   bot.handlers.CHANNEL_UPDATE = async function (_, data, shardId) {
     const payload = data.d as DiscordChannel;
-    //TODO: This transformer is wierd. Make it better. {channel: channel} is not necessary.
-    const channel = bot.transformers.channel(bot, { channel: payload });
     const oldChannel = await bot.cache.channels.get(
       BigInt(payload.id),
       payload.guild_id ? BigInt(payload.guild_id) : undefined,
       false
     );
+
+    //TODO: This transformer is wierd. Make it better. {channel: channel} is not necessary.
+    const channel = bot.transformers.channel(bot, { channel: payload });
 
     await bot.cache.channels.set(channel);
 
@@ -201,13 +203,13 @@ export function setupCacheEdits<B extends Bot>(
   bot.handlers.MESSAGE_UPDATE = async function (_, data, shardId) {
     const payload = data.d as DiscordMessage;
     if (!payload.edited_timestamp) return;
-    const message = bot.transformers.message(bot, payload);
     const oldMessage = await bot.cache.messages.get(
       BigInt(payload.id),
       bot.transformers.snowflake(payload.channel_id),
       undefined,
       false
     );
+    const message = bot.transformers.message(bot, payload);
 
     await bot.cache.messages.set(message);
 
@@ -219,12 +221,12 @@ export function setupCacheEdits<B extends Bot>(
 
   bot.handlers.GUILD_UPDATE = async function (_, data, shardId) {
     const payload = data.d as DiscordGuild;
+    const oldGuild = await bot.cache.guilds.get(BigInt(payload.id), false);
     const guild = bot.transformers.guild(bot, {
       guild: payload,
       shardId: shardId,
     });
 
-    const oldGuild = await bot.cache.guilds.get(guild.id, false);
     await bot.cache.guilds.set(guild);
 
     bot.events.guildUpdateWithOldGuild(bot, oldGuild ?? guild, guild);
@@ -234,15 +236,15 @@ export function setupCacheEdits<B extends Bot>(
 
   bot.handlers.GUILD_ROLE_UPDATE = async function (_, data, shardId) {
     const payload = data.d as DiscordGuildRoleUpdate;
-    const role = bot.transformers.role(bot, {
-      role: payload.role,
-      guildId: BigInt(payload.guild_id),
-    });
     const oldRole = await bot.cache.roles.get(
       BigInt(payload.role.id),
       BigInt(payload.guild_id),
       false
     );
+    const role = bot.transformers.role(bot, {
+      role: payload.role,
+      guildId: BigInt(payload.guild_id),
+    });
 
     await bot.cache.roles.set(role);
     //Send the event.
@@ -252,8 +254,8 @@ export function setupCacheEdits<B extends Bot>(
 
   bot.handlers.USER_UPDATE = async function (_, data, shardId) {
     const payload = data.d as DiscordUser;
-    const user = bot.transformers.user(bot, payload);
     const oldUser = await bot.cache.users.get(BigInt(payload.id), false);
+    const user = bot.transformers.user(bot, payload);
 
     await bot.cache.users.set(user);
     if (oldUser) bot.events.userUpdateWithOldUser(bot, oldUser, user);
@@ -262,16 +264,17 @@ export function setupCacheEdits<B extends Bot>(
 
   bot.handlers.GUILD_MEMBER_UPDATE = async function (_, data, shardId) {
     const payload = data.d as DiscordGuildMemberUpdate;
+    const oldMember = await bot.cache.members.get(
+      BigInt(payload.user.id),
+      BigInt(payload.guild_id),
+      false
+    );
+
     const member = bot.transformers.member(
       bot,
       payload,
       BigInt(payload.guild_id),
       BigInt(payload.user.id)
-    );
-    const oldMember = await bot.cache.members.get(
-      BigInt(payload.user.id),
-      BigInt(payload.guild_id),
-      false
     );
 
     await bot.cache.members.set(member);

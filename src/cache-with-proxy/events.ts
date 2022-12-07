@@ -52,4 +52,24 @@ export interface BotWithProxyEvents extends Events {
     oldUser: User,
     newUser: User
   ): unknown;
+  guildDeleteWithOldGuild(
+    bot: BotWithProxyCache<ProxyCacheTypes, Bot>,
+    guild: Guild
+  ): unknown;
+  memberDeleteWithOldMember(
+    bot: BotWithProxyCache<ProxyCacheTypes, Bot>,
+    member: Member
+  ): unknown;
+  channelDeleteWithOldChannel(
+    bot: BotWithProxyCache<ProxyCacheTypes, Bot>,
+    channel: Channel
+  ): unknown;
+  messageDeleteWithOldMessage(
+    bot: BotWithProxyCache<ProxyCacheTypes, Bot>,
+    message: Message
+  ): unknown;
+  roleDeleteWithOldRole(
+    bot: BotWithProxyCache<ProxyCacheTypes, Bot>,
+    role: Role
+  ): unknown;
 }

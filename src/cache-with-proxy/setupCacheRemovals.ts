@@ -23,31 +23,42 @@ export function setupCacheRemovals<B extends Bot>(
     MESSAGE_DELETE_BULK,
   } = bot.handlers;
 
-  bot.handlers.GUILD_DELETE = function (_, data, shardId) {
+  bot.handlers.GUILD_DELETE = async function (_, data, shardId) {
     const payload = data.d as DiscordUnavailableGuild;
     const id = bot.transformers.snowflake(payload.id);
-
+    const guild = await bot.cache.guilds.get(id);
     // Remove the guild from cache
     bot.cache.options.bulk?.removeGuild?.(id);
 
+    if (bot.events.guildDeleteWithOldGuild)
+      bot.events.guildDeleteWithOldGuild(bot, guild!);
     // remove guild from unavailable Set
     unavailablesGuilds.delete(id);
 
     GUILD_DELETE(bot, data, shardId);
   };
 
-  bot.handlers.CHANNEL_DELETE = function (_, data, shardId) {
+  bot.handlers.CHANNEL_DELETE = async function (_, data, shardId) {
     const payload = data.d as DiscordChannel;
+    const channel = await bot.cache.channels.get(BigInt(payload.id));
     // HANDLER BEFORE DELETING, BECAUSE HANDLER RUNS TRANSFORMER WHICH RE CACHES
     CHANNEL_DELETE(bot, data, shardId);
-
+    if (bot.events.channelDeleteWithOldChannel)
+      bot.events.channelDeleteWithOldChannel(bot, channel!);
     const id = bot.transformers.snowflake(payload.id);
     bot.cache.options.bulk?.removeChannel?.(id);
   };
 
-  bot.handlers.GUILD_MEMBER_REMOVE = function (_, data, shardId) {
+  bot.handlers.GUILD_MEMBER_REMOVE = async function (_, data, shardId) {
     const payload = data.d as DiscordGuildMemberRemove;
     GUILD_MEMBER_REMOVE(bot, data, shardId);
+
+    const member = await bot.cache.members.get(
+      BigInt(payload.user.id),
+      BigInt(payload.guild_id)
+    );
+    if (bot.events.memberDeleteWithOldMember)
+      bot.events.memberDeleteWithOldMember(bot, member!);
 
     bot.cache.members.delete(
       bot.transformers.snowflake(payload.user.id),
@@ -82,10 +93,12 @@ export function setupCacheRemovals<B extends Bot>(
   //     GUILD_EMOJIS_UPDATE(bot, data, shardId);
   //   };
 
-  bot.handlers.MESSAGE_DELETE = function (_, data) {
+  bot.handlers.MESSAGE_DELETE = async function (_, data) {
     const payload = data.d as DiscordMessageDelete;
     const id = bot.transformers.snowflake(payload.id);
-
+    const message = await bot.cache.messages.get(BigInt(payload.id));
+    if (bot.events.messageDeleteWithOldMessage)
+      bot.events.messageDeleteWithOldMessage(bot, message!);
     // Use .then() strategy to keep this function sync but also no point deleting if its not in cache :bigbrain:
     bot.cache.messages.get(id).then((message) => {
       // DON'T RUN INTERNAL HANDLER since internal does not pass `message`
@@ -116,10 +129,12 @@ export function setupCacheRemovals<B extends Bot>(
     MESSAGE_DELETE_BULK(bot, data, shardId);
   };
 
-  bot.handlers.GUILD_ROLE_DELETE = function (_, data, shardId) {
+  bot.handlers.GUILD_ROLE_DELETE = async function (_, data, shardId) {
     const payload = data.d as DiscordGuildRoleDelete;
     const id = bot.transformers.snowflake(payload.role_id);
-
+    const role = await bot.cache.roles.get(id);
+    if (bot.events.roleDeleteWithOldRole)
+      bot.events.roleDeleteWithOldRole(bot, role!);
     bot.cache.options.bulk?.removeRole?.(id);
 
     GUILD_ROLE_DELETE(bot, data, shardId);
