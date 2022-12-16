@@ -81,7 +81,7 @@ setInterval(() => {
 }, 30000);
 
 inhibitors.set("nsfw", async (bot, command, options) => {
-  const channel = (await bot.cache.channels.get(options!.channelId))!;
+  const channel = (await bot.helpers.getChannel(options!.channelId))!;
   if (command.nsfw && !channel.nsfw) return { type: ErrorEnums.NSFW };
   return true;
 });

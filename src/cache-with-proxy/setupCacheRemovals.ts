@@ -26,7 +26,7 @@ export function setupCacheRemovals<B extends Bot>(
   bot.handlers.GUILD_DELETE = async function (_, data, shardId) {
     const payload = data.d as DiscordUnavailableGuild;
     const id = bot.transformers.snowflake(payload.id);
-    const guild = await bot.cache.guilds.get(id);
+    const guild = await bot.cache.guilds.get(id, false);
     // Remove the guild from cache
     bot.cache.options.bulk?.removeGuild?.(id);
 
@@ -40,7 +40,11 @@ export function setupCacheRemovals<B extends Bot>(
 
   bot.handlers.CHANNEL_DELETE = async function (_, data, shardId) {
     const payload = data.d as DiscordChannel;
-    const channel = await bot.cache.channels.get(BigInt(payload.id));
+    const channel = await bot.cache.channels.get(
+      BigInt(payload.id),
+      undefined,
+      false
+    );
     // HANDLER BEFORE DELETING, BECAUSE HANDLER RUNS TRANSFORMER WHICH RE CACHES
     CHANNEL_DELETE(bot, data, shardId);
     if (bot.events.channelDeleteWithOldChannel)
@@ -55,7 +59,8 @@ export function setupCacheRemovals<B extends Bot>(
 
     const member = await bot.cache.members.get(
       BigInt(payload.user.id),
-      BigInt(payload.guild_id)
+      BigInt(payload.guild_id),
+      false
     );
     if (bot.events.memberDeleteWithOldMember)
       bot.events.memberDeleteWithOldMember(bot, member!);
@@ -96,7 +101,12 @@ export function setupCacheRemovals<B extends Bot>(
   bot.handlers.MESSAGE_DELETE = async function (_, data) {
     const payload = data.d as DiscordMessageDelete;
     const id = bot.transformers.snowflake(payload.id);
-    const message = await bot.cache.messages.get(BigInt(payload.id));
+    const message = await bot.cache.messages.get(
+      BigInt(payload.id),
+      BigInt(payload.channel_id),
+      payload.guild_id ? BigInt(payload.guild_id) : undefined,
+      false
+    );
     if (bot.events.messageDeleteWithOldMessage)
       bot.events.messageDeleteWithOldMessage(bot, message!);
     // Use .then() strategy to keep this function sync but also no point deleting if its not in cache :bigbrain:
@@ -132,7 +142,7 @@ export function setupCacheRemovals<B extends Bot>(
   bot.handlers.GUILD_ROLE_DELETE = async function (_, data, shardId) {
     const payload = data.d as DiscordGuildRoleDelete;
     const id = bot.transformers.snowflake(payload.role_id);
-    const role = await bot.cache.roles.get(id);
+    const role = await bot.cache.roles.get(id, BigInt(payload.guild_id), false);
     if (bot.events.roleDeleteWithOldRole)
       bot.events.roleDeleteWithOldRole(bot, role!);
     bot.cache.options.bulk?.removeRole?.(id);

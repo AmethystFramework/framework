@@ -388,7 +388,7 @@ export function createOptionResults(
       );
       try {
         if (!channel && channelId)
-          channel = await bot.cache.channels.get(BigInt(channelId));
+          channel = await bot.helpers.getChannel(BigInt(channelId));
       } catch {}
       if (!channel && required) {
         const option = options?.find((e) => e.name == name);

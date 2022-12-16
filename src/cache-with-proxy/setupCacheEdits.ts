@@ -196,7 +196,12 @@ export function setupCacheEdits<B extends Bot>(
     await bot.cache.channels.set(channel);
 
     //Send the event.
-    bot.events.channelUpdateWithOldChannel(bot, oldChannel ?? channel, channel);
+    if (bot.events.channelUpdateWithOldChannel)
+      bot.events.channelUpdateWithOldChannel(
+        bot,
+        oldChannel ?? channel,
+        channel
+      );
     CHANNEL_UPDATE(bot, data, shardId);
   };
 
@@ -214,7 +219,12 @@ export function setupCacheEdits<B extends Bot>(
     await bot.cache.messages.set(message);
 
     //Send the event.
-    bot.events.messageUpdateWithOldMessage(bot, oldMessage ?? message, message);
+    if (bot.events.messageUpdateWithOldMessage)
+      bot.events.messageUpdateWithOldMessage(
+        bot,
+        oldMessage ?? message,
+        message
+      );
 
     MESSAGE_UPDATE(bot, data, shardId);
   };
@@ -228,8 +238,8 @@ export function setupCacheEdits<B extends Bot>(
     });
 
     await bot.cache.guilds.set(guild);
-
-    bot.events.guildUpdateWithOldGuild(bot, oldGuild ?? guild, guild);
+    if (bot.events.guildUpdateWithOldGuild)
+      bot.events.guildUpdateWithOldGuild(bot, oldGuild ?? guild, guild);
 
     GUILD_UPDATE(bot, data, shardId);
   };
@@ -248,7 +258,8 @@ export function setupCacheEdits<B extends Bot>(
 
     await bot.cache.roles.set(role);
     //Send the event.
-    bot.events.guildRoleUpdateWithOldRole(bot, oldRole ?? role, role);
+    if (bot.events.guildRoleUpdateWithOldRole)
+      bot.events.guildRoleUpdateWithOldRole(bot, oldRole ?? role, role);
     GUILD_ROLE_UPDATE(bot, data, shardId);
   };
 
@@ -258,7 +269,8 @@ export function setupCacheEdits<B extends Bot>(
     const user = bot.transformers.user(bot, payload);
 
     await bot.cache.users.set(user);
-    if (oldUser) bot.events.userUpdateWithOldUser(bot, oldUser, user);
+    if (oldUser && bot.events.userUpdateWithOldUser)
+      bot.events.userUpdateWithOldUser(bot, oldUser, user);
     USER_UPDATE(bot, data, shardId);
   };
 
@@ -279,7 +291,12 @@ export function setupCacheEdits<B extends Bot>(
 
     await bot.cache.members.set(member);
 
-    bot.events.guildMemberUpdateWithOldMember(bot, oldMember ?? member, member);
+    if (bot.events.guildMemberUpdateWithOldMember)
+      bot.events.guildMemberUpdateWithOldMember(
+        bot,
+        oldMember ?? member,
+        member
+      );
     GUILD_MEMBER_UPDATE(bot, data, shardId);
   };
 
