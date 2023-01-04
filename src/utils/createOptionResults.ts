@@ -1,18 +1,6 @@
-import {
-  ApplicationCommandOptionTypes,
-  Attachment,
-  Channel,
-  Interaction,
-  Message,
-  Role,
-  User,
-} from "../../deps.ts";
-import { AmethystBot, ErrorEnums } from "../../mod.ts";
-import {
-  commandOption,
-  optionResults,
-  result,
-} from "../interfaces/commandArgumentOptions.ts";
+import { ApplicationCommandOptionTypes, Attachment, Channel, Interaction, Message, Role, User } from '../../deps.ts';
+import { AmethystBot, ErrorEnums } from '../../mod.ts';
+import { commandOption, optionResults, result } from '../interfaces/commandArgumentOptions.ts';
 
 /**
  * It takes an array of options, and an object containing a message or interaction, and returns an
@@ -25,15 +13,15 @@ import {
 export function createOptionResults(
   bot: AmethystBot,
   options: commandOption[],
-  data: { interaction?: Interaction; message?: Message & { args: string[] } }
+  data: { interaction?: Interaction; message?: Message & { args: string[] } },
 ): optionResults {
   return {
     results: (data.interaction?.data?.options
       ? data.interaction.data?.options[0].options?.map((e) => {
-          return { ...e, value: e.value! };
-        })
+        return { ...e, value: e.value! };
+      })
       : data.message?.args.length && options?.length
-      ? data.message.args.map((arg, index) => {
+        ? data.message.args.map((arg, index) => {
           const option = options?.filter(
             (e) => ![11, "Attachment"].includes(e.type as string | number)
           )[index];
@@ -47,7 +35,7 @@ export function createOptionResults(
                   : option.type,
             };
         })
-      : []) as result[],
+        : []) as result[],
     get(name, required) {
       const res = this.results.find((e) => e.name == name);
       if (!res && required) {
@@ -58,7 +46,8 @@ export function createOptionResults(
           bot.events.commandError(bot, {
             error: { type: ErrorEnums.MISSING_REQUIRED_ARGUMENTS, value: name },
             message: data.message,
-          });
+
+          }, this.context!);
           throw new Error("Not Enough Arguments");
         }
         if (!(option?.missing && data.message) && !bot.events.commandError)
@@ -76,7 +65,7 @@ export function createOptionResults(
           bot.events.commandError(bot, {
             error: { type: ErrorEnums.MISSING_REQUIRED_ARGUMENTS, value: name },
             message: data.message,
-          });
+          }, this.context!);
           throw new Error("Not Enough Arguments");
         }
         if (!(option?.missing && data.message) && !bot.events.commandError)
@@ -94,7 +83,7 @@ export function createOptionResults(
           bot.events.commandError(bot, {
             error: { type: ErrorEnums.MISSING_REQUIRED_ARGUMENTS, value: name },
             message: data.message,
-          });
+          }, this.context!);
           throw new Error("Not Enough Arguments");
         }
         if (!(option?.missing && data.message) && !bot.events.commandError)
@@ -115,7 +104,7 @@ export function createOptionResults(
           bot.events.commandError(bot, {
             error: { type: ErrorEnums.MISSING_REQUIRED_ARGUMENTS, value: name },
             message: data.message,
-          });
+          }, this.context!);
           throw new Error("Not Enough Arguments");
         }
         if (!(option?.missing && data.message) && !bot.events.commandError)
@@ -133,7 +122,7 @@ export function createOptionResults(
           bot.events.commandError(bot, {
             error: { type: ErrorEnums.MISSING_REQUIRED_ARGUMENTS, value: name },
             message: data.message,
-          });
+          }, this.context!);
           throw new Error("Not Enough Arguments");
         }
         if (!(option?.missing && data.message) && !bot.events.commandError)
@@ -149,8 +138,8 @@ export function createOptionResults(
           ? ["yes", "true", "y"].includes(res.value)
             ? true
             : ["n", "no", "false"].includes(res.value)
-            ? false
-            : undefined
+              ? false
+              : undefined
           : (res?.value as boolean | undefined);
       if (bool === undefined && required) {
         const option = options?.find((e) => e.name == name);
@@ -160,7 +149,7 @@ export function createOptionResults(
           bot.events.commandError(bot, {
             error: { type: ErrorEnums.MISSING_REQUIRED_ARGUMENTS, value: name },
             message: data.message,
-          });
+          }, this.context!);
           throw new Error("Not Enough Arguments");
         }
         if (!(option?.missing && data.message) && !bot.events.commandError)
@@ -174,27 +163,27 @@ export function createOptionResults(
         return (
           res.value
             ? data.interaction.data?.resolved?.users?.get(
-                BigInt(res.value as string)
-              )
+              BigInt(res.value as string)
+            )
             : undefined
         ) as User;
       const userId =
         typeof res?.value === "string" && res?.value.startsWith("<@")
           ? res.value.substring(
-              res.value!.startsWith("<@!") ? 3 : 2,
-              res.value.length - 1
-            )
+            res.value!.startsWith("<@!") ? 3 : 2,
+            res.value.length - 1
+          )
           : (res?.value as string);
 
       let user = bot.cache.users.memory.find((e) => {
         return /^[\d+]{17,}$/.test(userId)
           ? e.id == BigInt(userId as string)
           : e.username == userId ||
-              `${e.username}#${e.discriminator}` == userId;
+          `${e.username}#${e.discriminator}` == userId;
       });
       try {
         if (!user && userId) user = await bot.helpers.getUser(BigInt(userId));
-      } catch {}
+      } catch { }
       if (!user && required) {
         const option = options?.find((e) => e.name == name);
         if (option?.missing && data.message)
@@ -203,7 +192,7 @@ export function createOptionResults(
           bot.events.commandError(bot, {
             error: { type: ErrorEnums.MISSING_REQUIRED_ARGUMENTS, value: name },
             message: data.message,
-          });
+          }, this.context!);
           throw new Error("Not Enough Arguments");
         }
         if (!(option?.missing && data.message) && !bot.events.commandError)
@@ -221,14 +210,14 @@ export function createOptionResults(
         const res = this.results.find((e) => e.name == name && e.type == 6);
         return res
           ? data.interaction.data?.resolved?.members?.get(
-              BigInt(res.value as string)
-            )
+            BigInt(res.value as string)
+          )
           : undefined;
       }
       const user = await this.getUser(name, required as false);
       const member = user
         ? (await bot.cache.members.get(user.id, guildId)) ??
-          (force ? await bot.cache.members.get(user.id, guildId) : undefined)
+        (force ? await bot.cache.members.get(user.id, guildId) : undefined)
         : undefined;
       if (!member && required) {
         const option = options?.find((e) => e.name == name);
@@ -238,7 +227,7 @@ export function createOptionResults(
           bot.events.commandError(bot, {
             error: { type: ErrorEnums.MISSING_REQUIRED_ARGUMENTS, value: name },
             message: data.message,
-          });
+          }, this.context!);
           throw new Error("Not Enough Arguments");
         }
         if (!(option?.missing && data.message) && !bot.events.commandError)
@@ -254,8 +243,8 @@ export function createOptionResults(
         return (
           res?.value && data.interaction.data?.resolved?.roles
             ? data.interaction.data?.resolved?.roles?.get(
-                BigInt(res.value as string)
-              )
+              BigInt(res.value as string)
+            )
             : undefined
         ) as Role;
       if (!res?.value && required) {
@@ -266,7 +255,7 @@ export function createOptionResults(
           bot.events.commandError(bot, {
             error: { type: ErrorEnums.MISSING_REQUIRED_ARGUMENTS, value: name },
             message: data.message,
-          });
+          }, this.context!);
           throw new Error("Not Enough Arguments");
         }
         if (!(option?.missing && data.message) && !bot.events.commandError)
@@ -277,11 +266,11 @@ export function createOptionResults(
       return (
         res?.value
           ? (await bot.cache.guilds.get(data.message!.guildId!))?.roles.find(
-              (e) =>
-                e.id + "" == res.value ||
-                `<@&${res.value}>` == `<@&${e.id}>` ||
-                e.name == res.value
-            )
+            (e) =>
+              e.id + "" == res.value ||
+              `<@&${res.value}>` == `<@&${e.id}>` ||
+              e.name == res.value
+          )
           : undefined
       ) as Role;
     },
@@ -291,28 +280,28 @@ export function createOptionResults(
         return (
           res?.value
             ? data.interaction.data.resolved.roles?.get(
-                BigInt(res.value as string)
-              ) ||
-              data.interaction.data.resolved.users?.get(
-                BigInt(res.value as string)
-              )
+              BigInt(res.value as string)
+            ) ||
+            data.interaction.data.resolved.users?.get(
+              BigInt(res.value as string)
+            )
             : undefined
         ) as Role | User;
       const userOrRoleId =
         typeof res?.value === "string" && res?.value.startsWith("<@")
           ? res.value.substring(
-              res.value!.startsWith("<@!") || res.value.startsWith("<@&")
-                ? 3
-                : 2,
-              res.value.length - 1
-            )
+            res.value!.startsWith("<@!") || res.value.startsWith("<@&")
+              ? 3
+              : 2,
+            res.value.length - 1
+          )
           : (res?.value as string);
       let returned =
         bot.cache.users.memory.find((e) =>
           /^[\d+]{17,}$/.test(userOrRoleId)
             ? e.id == BigInt(userOrRoleId as string)
             : e.username == userOrRoleId ||
-              `${e.username}#${e.discriminator}` == userOrRoleId
+            `${e.username}#${e.discriminator}` == userOrRoleId
         ) ||
         (await bot.cache.guilds.get(data.message!.guildId!))?.roles.find((e) =>
           /^[\d+]{17,}$/.test(userOrRoleId)
@@ -322,7 +311,7 @@ export function createOptionResults(
       try {
         if (!returned)
           returned = await bot.helpers.getUser(BigInt(userOrRoleId));
-      } catch {}
+      } catch { }
 
       if (!returned && required) {
         const option = options?.find((e) => e.name == name);
@@ -332,7 +321,7 @@ export function createOptionResults(
           bot.events.commandError(bot, {
             error: { type: ErrorEnums.MISSING_REQUIRED_ARGUMENTS, value: name },
             message: data.message,
-          });
+          }, this.context!);
           throw new Error("Not Enough Arguments");
         }
         if (!(option?.missing && data.message) && !bot.events.commandError)
@@ -355,7 +344,7 @@ export function createOptionResults(
           bot.events.commandError(bot, {
             error: { type: ErrorEnums.MISSING_REQUIRED_ARGUMENTS, value: name },
             message: data.message,
-          });
+          }, this.context!);
           throw new Error("Not Enough Arguments");
         }
         if (!(option?.missing && data.message) && !bot.events.commandError)
@@ -371,8 +360,8 @@ export function createOptionResults(
         return (
           res?.value
             ? data.interaction.data.resolved.channels.get(
-                BigInt(res.value as string)
-              )
+              BigInt(res.value as string)
+            )
             : undefined
         ) as Channel;
       const channelId =
@@ -389,7 +378,7 @@ export function createOptionResults(
       try {
         if (!channel && channelId)
           channel = await bot.helpers.getChannel(BigInt(channelId));
-      } catch {}
+      } catch { }
       if (!channel && required) {
         const option = options?.find((e) => e.name == name);
         if (option?.missing && data.message)
@@ -398,7 +387,7 @@ export function createOptionResults(
           bot.events.commandError(bot, {
             error: { type: ErrorEnums.MISSING_REQUIRED_ARGUMENTS, value: name },
             message: data.message,
-          });
+          }, this.context!);
           throw new Error("Not Enough Arguments");
         }
         if (!(option?.missing && data.message) && !bot.events.commandError)

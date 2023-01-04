@@ -1,4 +1,4 @@
-import { PermissionStrings } from "../../deps.ts";
+import { PermissionStrings } from '../../deps.ts';
 
 export enum ErrorEnums {
   OWNER_ONLY,
@@ -11,6 +11,7 @@ export enum ErrorEnums {
   MISSING_REQUIRED_ROLES,
   MISSING_REQUIRED_ARGUMENTS,
   OTHER,
+  COMMANDRUNTIME
 }
 
 export interface BaseError {

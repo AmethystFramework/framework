@@ -1,4 +1,4 @@
-import { AmethystBot, AmethystCollection } from "../../mod.ts";
+import { AmethystBot, AmethystCollection } from '../../mod.ts';
 
 /* It's a class that can be used to handle events. */
 export class AmethystEventHandler {
@@ -31,16 +31,13 @@ export class AmethystEventHandler {
     else {
       events = [listener];
       try {
-        console.warn(
-          "client.events." + event + " has no function bound to it."
-        );
         //@ts-ignore this should fix types
         this.client.events[event] = (...args: any[]) => {
           /* Dispatching the event to the event handler. */
           this.client.eventHandler.dispatch(event, ...args);
         };
       } catch {
-        console.warn("client.events." + event + " does not exist");
+        //
       }
     }
 

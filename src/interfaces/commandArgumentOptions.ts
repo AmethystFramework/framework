@@ -11,8 +11,9 @@ import {
   Message,
   Role,
   User,
-} from "../../deps.ts";
-import { AmethystBot } from "./bot.ts";
+} from '../../deps.ts';
+import { Context } from '../classes/Context.ts';
+import { AmethystBot } from './bot.ts';
 
 export interface commandOption {
   /**The command name*/
@@ -22,11 +23,11 @@ export interface commandOption {
   description?: string;
   /**The option type*/
   type:
-    | Omit<ApplicationCommandOptionTypes, "SubCommand" | "SubCommandGroup">
-    | keyof Omit<
-        typeof ApplicationCommandOptionTypes,
-        "SubCommand" | "SubCommandGroup"
-      >;
+  | Omit<ApplicationCommandOptionTypes, "SubCommand" | "SubCommandGroup">
+  | keyof Omit<
+    typeof ApplicationCommandOptionTypes,
+    "SubCommand" | "SubCommandGroup"
+  >;
 
   /**Whether the option is required or not, defaults to "false"*/
   required?: boolean;
@@ -56,6 +57,7 @@ export interface result {
 }
 
 export interface optionResults {
+  context?: Context;
   /**An array of the returned results*/
   results: result[];
   /**Will get the option through it's name without checking it's type*/

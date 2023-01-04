@@ -1,14 +1,8 @@
-import { InteractionResponseTypes } from "https://deno.land/x/discordeno@17.1.0/mod.ts";
-import {
-  Channel,
-  Guild,
-  Interaction,
-  Member,
-  Message,
-  User,
-} from "../../deps.ts";
-import { AmethystBot } from "../../mod.ts";
-import { optionResults } from "../interfaces/commandArgumentOptions.ts";
+import { InteractionResponseTypes } from 'https://deno.land/x/discordeno@17.1.0/mod.ts';
+
+import { Channel, Guild, Interaction, Member, Message, User } from '../../deps.ts';
+import { AmethystBot } from '../../mod.ts';
+import { optionResults } from '../interfaces/commandArgumentOptions.ts';
 
 /* It's a class that represents a context of a message or interaction */
 export class Context {
@@ -48,6 +42,7 @@ export class Context {
       );
       this.replied = true;
     }
+    this.options.context = this;
   }
   /**
    * It's a constructor for the Context class
@@ -216,7 +211,7 @@ export async function createContext(
     channel: data.message
       ? await bot.helpers.getChannel(data.message.channelId)
       : //@ts-ignore this should fix types
-        await bot.helpers.getChannel(data.interaction.channelId),
+      await bot.helpers.getChannel(data.interaction.channelId),
     id: data.message ? data.message.id : data.interaction?.message?.id ?? 0n,
   };
 

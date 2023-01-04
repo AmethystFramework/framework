@@ -1,28 +1,19 @@
-import { cache } from "../cache.ts";
-import { AmethystEventHandler } from "../classes/AmethystEvents.ts";
-import CategoryClass from "../classes/Category.ts";
-import { CommandClass } from "../classes/Command.ts";
-import { handleMessageCommands } from "../handlers/messageCommands.ts";
-import { handleSlash } from "../handlers/slashCommands.ts";
-import { inhibitors } from "../inhibators/mod.ts";
-import { AmethystBotOptions } from "../interfaces/AmethystBotOptions.ts";
-import { AmethystBot } from "../interfaces/bot.ts";
-import { AmethystError } from "../interfaces/errors.ts";
-import { AmethystTask } from "../interfaces/tasks.ts";
-import { AmethystCollection } from "../utils/AmethystCollection.ts";
-import {
-  awaitComponent,
-  awaitMessage,
-  awaitReaction,
-} from "../utils/Collectors.ts";
-
-import { Bot, Emoji, Interaction, Message } from "../../deps.ts";
-import { BotWithProxyCache, ProxyCacheTypes } from "../cache-with-proxy/mod.ts";
-import {
-  loadCommands,
-  loadEvents,
-  loadInhibitors,
-} from "../utils/fileLoader.ts";
+import { Bot, Emoji, Interaction, Message } from '../../deps.ts';
+import { BotWithProxyCache, ProxyCacheTypes } from '../cache-with-proxy/mod.ts';
+import { cache } from '../cache.ts';
+import { AmethystEventHandler } from '../classes/AmethystEvents.ts';
+import CategoryClass from '../classes/Category.ts';
+import { CommandClass } from '../classes/Command.ts';
+import { handleMessageCommands } from '../handlers/messageCommands.ts';
+import { handleSlash } from '../handlers/slashCommands.ts';
+import { inhibitors } from '../inhibators/mod.ts';
+import { AmethystBotOptions } from '../interfaces/AmethystBotOptions.ts';
+import { AmethystBot } from '../interfaces/bot.ts';
+import { AmethystError } from '../interfaces/errors.ts';
+import { AmethystTask } from '../interfaces/tasks.ts';
+import { AmethystCollection } from '../utils/AmethystCollection.ts';
+import { awaitComponent, awaitMessage, awaitReaction } from '../utils/Collectors.ts';
+import { loadCommands, loadEvents, loadInhibitors } from '../utils/fileLoader.ts';
 
 let Ready = false;
 /**

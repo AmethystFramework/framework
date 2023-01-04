@@ -5,6 +5,7 @@ import {
   getMissingChannelPermissions,
   getMissingGuildPermissions,
 } from "../../mod.ts";
+import { Context } from '../classes/Context.ts';
 import { AmethystBot } from "../interfaces/bot.ts";
 import { AmethystError, ErrorEnums } from "../interfaces/errors.ts";
 import { AmethystCollection } from "../utils/AmethystCollection.ts";
@@ -14,7 +15,7 @@ export const inhibitors = new AmethystCollection<
   <T extends CommandClass = CommandClass>(
     bot: AmethystBot,
     command: T,
-    options?: { memberId?: bigint; guildId?: bigint; channelId: bigint }
+    context: Context,
   ) => Promise<true | AmethystError>
 >();
 
@@ -29,11 +30,11 @@ inhibitors.set("cooldown", async (bot, command, options) => {
   const commandCooldown = command.cooldown || bot.defaultCooldown;
   if (
     !commandCooldown ||
-    (options?.memberId && bot.ignoreCooldown?.includes(options?.memberId))
+    (options?.author!.id && bot.ignoreCooldown?.includes(options?.author!.id))
   )
     return true;
 
-  const key = `${options!.memberId!}-${command.name}`;
+  const key = `${options!.author!.id!}-${command.name}`;
   const cooldown = membersInCooldown.get(key);
   if (cooldown) {
     if (cooldown.used >= (commandCooldown.allowedUses || 1)) {
@@ -81,7 +82,7 @@ setInterval(() => {
 }, 30000);
 
 inhibitors.set("nsfw", async (bot, command, options) => {
-  const channel = (await bot.helpers.getChannel(options!.channelId))!;
+  const channel = (await bot.helpers.getChannel(options!.channel!.id))!;
   if (command.nsfw && !channel.nsfw) return { type: ErrorEnums.NSFW };
   return true;
 });
@@ -90,7 +91,7 @@ inhibitors.set("nsfw", async (bot, command, options) => {
 inhibitors.set("ownerOnly", async (bot, command, options) => {
   if (
     command.ownerOnly &&
-    (!options?.memberId || !bot.owners?.includes(options.memberId))
+    (!options?.author!.id || !bot.owners?.includes(options.author!.id))
   )
     return { type: ErrorEnums.OWNER_ONLY };
   return true;
@@ -107,7 +108,7 @@ inhibitors.set("botPermissions", async (bot, cmd, options) => {
     (!options?.guildId ||
       getMissingGuildPermissions(
         bot,
-        (await bot.cache.guilds.get(options.guildId))!,
+        options.guild!,
         (await bot.cache.members.get(bot.id, options.guildId))!,
         command.botGuildPermissions
       ).length)
@@ -124,11 +125,11 @@ inhibitors.set("botPermissions", async (bot, cmd, options) => {
     };
   if (
     command.botChannelPermissions?.length &&
-    (!options?.channelId ||
+    (!options?.channel!.id ||
       (
         await getMissingChannelPermissions(
           bot,
-          options.channelId,
+          options.channel!.id,
           bot.id,
           command.botChannelPermissions
         )
@@ -139,7 +140,7 @@ inhibitors.set("botPermissions", async (bot, cmd, options) => {
       channel: true,
       value: await getMissingChannelPermissions(
         bot,
-        options!.channelId!,
+        options!.channel!.id!,
         bot.id,
         command.botChannelPermissions
       ),
@@ -156,11 +157,11 @@ inhibitors.set("userPermissions", async (bot, cmd, options) => {
   if (
     command.userGuildPermissions?.length &&
     (!options?.guildId ||
-      !options.memberId ||
+      !options.author!.id ||
       getMissingGuildPermissions(
         bot,
-        (await bot.cache.guilds.get(options.guildId))!,
-        (await bot.cache.members.get(options.memberId, options.guildId))!,
+        options.guild!,
+        options.member!,
         command.userGuildPermissions
       ).length)
   )
@@ -169,20 +170,20 @@ inhibitors.set("userPermissions", async (bot, cmd, options) => {
       channel: false,
       value: getMissingGuildPermissions(
         bot,
-        (await bot.cache.guilds.get(options?.guildId!))!,
-        (await bot.cache.members.get(options?.memberId!, options?.guildId!))!,
+        options.guild!,
+        options.member!,
         command.userGuildPermissions
       ),
     };
   if (
     command.userChannelPermissions?.length &&
-    (!options?.memberId ||
-      !options?.channelId ||
+    (!options?.guildId ||
+      !options.author!.id ||
       (
         await getMissingChannelPermissions(
           bot,
-          options.channelId,
-          options.memberId,
+          options.channel!,
+          options.member!,
           command.userChannelPermissions
         )
       ).length)
@@ -192,8 +193,8 @@ inhibitors.set("userPermissions", async (bot, cmd, options) => {
       channel: true,
       value: getMissingGuildPermissions(
         bot,
-        (await bot.cache.guilds.get(options?.guildId!))!,
-        (await bot.cache.members.get(options?.memberId!, options?.guildId!))!,
+        options.guild!,
+        options.member!,
         command.userChannelPermissions
       ),
     };

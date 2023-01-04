@@ -1,7 +1,7 @@
-import { CreateApplicationCommand } from "../../deps.ts";
-import { AmethystCollection, CommandClass } from "../../mod.ts";
-import { CategoryOptions } from "../types/categoryOptions.ts";
-import { validateRequiredParameters } from "./Validations.ts";
+import { CreateApplicationCommand } from '../../deps.ts';
+import { AmethystCollection, CommandClass } from '../../mod.ts';
+import { CategoryOptions } from '../types/categoryOptions.ts';
+import { validateRequiredParameters } from './Validations.ts';
 
 /* Exporting the class Category. */
 export default class CategoryClass {
@@ -88,38 +88,40 @@ export default class CategoryClass {
   getCommand(
     commandName: string,
     subCommandName?: string
-  ): CommandClass | undefined {
+  ): {
+    command?: CommandClass,
+    usedSubCommand: boolean,
+  } {
     if (this.uniqueCommands) {
       for (let i = 0; i < this.commands.size; i++)
         if (
           this.commands.at(i)!.name == commandName &&
           this.commands.at(i)?.commandType.includes("message")
         )
-          return this.commands.at(i)!;
+          return { command: this.commands.at(i), usedSubCommand: true };
     } else {
       if (this.name == commandName) {
+
         for (let i = 0; i < this.commands.size; i++) {
           if (subCommandName)
-            for (let i = 0; i < this.commands.size; i++)
-              if (
-                this.commands.at(i)!.name == commandName &&
-                this.commands.at(i)?.commandType.includes("message")
-              )
-                return this.commands.at(i)!;
-              else
-                for (let i = 0; i < this.commands.size; i++)
-                  if (
-                    this.commands.at(i)!.name == subCommandName &&
-                    this.commands.at(i)?.commandType.includes("message")
-                  )
-                    return this.commands.at(i)!;
-
-          return this.commands.get(this.default);
+            if (
+              this.commands.at(i)!.name == subCommandName &&
+              this.commands.at(i)?.commandType.includes("message")
+            )
+              return {
+                command: this.commands.at(i)!,
+                usedSubCommand: true
+              }
+          return {
+            command: this.commands.get(this.default), usedSubCommand: false
+          };
         }
       }
     }
 
-    return undefined;
+    return {
+      usedSubCommand: true
+    };
   }
 
   /**

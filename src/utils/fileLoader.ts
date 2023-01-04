@@ -1,4 +1,5 @@
 import { CommandClass } from "../classes/Command.ts";
+import { Context } from '../classes/Context.ts';
 import { AmethystBot } from "../interfaces/bot.ts";
 import { AmethystError } from "../interfaces/errors.ts";
 import { AmethystEvent, AmethystEvents } from "../interfaces/event.ts";
@@ -49,7 +50,7 @@ interface inhibitor {
   execute: <T extends CommandClass = CommandClass>(
     bot: AmethystBot,
     command: T,
-    options?: { memberId?: bigint; guildId?: bigint; channelId: bigint }
+    options?: Context
   ) => Promise<true | AmethystError>;
 }
 

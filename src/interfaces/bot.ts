@@ -1,12 +1,13 @@
-import { Bot, Interaction, Message, User } from "../../deps.ts";
-import { BotWithProxyCache, ProxyCacheTypes } from "../cache-with-proxy/mod.ts";
-import { AmethystEventHandler } from "../classes/AmethystEvents.ts";
-import CategoryClass from "../classes/Category.ts";
-import { CommandClass } from "../classes/Command.ts";
-import { CategoryOptions } from "../types/categoryOptions.ts";
-import { CommandOptions } from "../types/commandOptions.ts";
-import { AmethystCollection } from "../utils/AmethystCollection.ts";
-import { Async } from "../utils/types.ts";
+import { Bot, Interaction, Message, User } from '../../deps.ts';
+import { BotWithProxyCache, ProxyCacheTypes } from '../cache-with-proxy/mod.ts';
+import { AmethystEventHandler } from '../classes/AmethystEvents.ts';
+import CategoryClass from '../classes/Category.ts';
+import { CommandClass } from '../classes/Command.ts';
+import { Context } from '../classes/Context.ts';
+import { CategoryOptions } from '../types/categoryOptions.ts';
+import { CommandOptions } from '../types/commandOptions.ts';
+import { AmethystCollection } from '../utils/AmethystCollection.ts';
+import { Async } from '../utils/types.ts';
 import {
   AmethystReaction,
   ComponentCollector,
@@ -15,11 +16,11 @@ import {
   MessageCollectorOptions,
   ReactionCollector,
   ReactionCollectorOptions,
-} from "./collectors.ts";
-import { CommandCooldown } from "./command.ts";
-import { AmethystError } from "./errors.ts";
-import { AmethystEvents } from "./event.ts";
-import { AmethystTask } from "./tasks.ts";
+} from './collectors.ts';
+import { CommandCooldown } from './command.ts';
+import { AmethystError } from './errors.ts';
+import { AmethystEvents } from './event.ts';
+import { AmethystTask } from './tasks.ts';
 
 interface runningTasks {
   initialTimeouts: number[];
@@ -85,7 +86,7 @@ interface AmethystUtils {
     inhibitor: (
       bot: AmethystBot,
       command: T,
-      options?: { memberId?: bigint; guildId?: bigint; channelId: bigint }
+      options?: Context
     ) => Promise<true | AmethystError>
   ): void;
   deleteInhibitor(name: string): void;
@@ -108,7 +109,7 @@ interface AmethystProps
     <T extends CommandClass = CommandClass>(
       bot: AmethystBot,
       command: T,
-      options: { memberId?: bigint; channelId: bigint; guildId?: bigint }
+      options: Context
     ) => Promise<true | AmethystError>
   >;
   owners?: bigint[];
@@ -123,9 +124,9 @@ interface AmethystProps
   eventHandler: AmethystEventHandler;
   extras: any;
   prefix?:
-    | string
-    | string[]
-    | ((bot: AmethystBot, message: Message) => Async<string | string[]>);
+  | string
+  | string[]
+  | ((bot: AmethystBot, message: Message) => Async<string | string[]>);
 
   on(name: string, callback: (...args: any) => unknown): void;
   once(name: string, callback: (...args: any) => unknown): void;

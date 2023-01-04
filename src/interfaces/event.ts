@@ -1,28 +1,30 @@
-import { Bot, Interaction, Message } from "../../deps.ts";
-import { BotWithProxyEvents } from "../cache-with-proxy/events.ts";
-import { CommandClass } from "../classes/Command.ts";
-import { AmethystBot } from "./bot.ts";
+import { Bot, Interaction, Message } from '../../deps.ts';
+import { BotWithProxyEvents } from '../cache-with-proxy/events.ts';
+import { CommandClass } from '../classes/Command.ts';
+import { Context } from '../classes/Context.ts';
+import { AmethystBot } from './bot.ts';
+import { AmethystError } from './errors.ts';
 
-import { AmethystError } from "./errors.ts";
 export type Events = {
   [K in keyof BotWithProxyEvents]: BotWithProxyEvents[K] extends (
     bot: infer T,
     ...rest: infer R
   ) => infer U
-    ? Bot extends T
-      ? (bot: Bot, ...rest: R) => U
-      : (...rest: Parameters<BotWithProxyEvents[K]>) => U
-    : never;
+  ? Bot extends T
+  ? (bot: Bot, ...rest: R) => U
+  : (...rest: Parameters<BotWithProxyEvents[K]>) => U
+  : never;
 };
 
 export interface AmethystEvents extends Events {
   commandError(
     bot: AmethystBot,
     data: {
-      error: AmethystError;
+      error: AmethystError & { error?: Error };
       data?: Interaction;
       message?: Message;
-    }
+    },
+    context: Context
   ): unknown;
   commandNotFound(
     bot: AmethystBot,
