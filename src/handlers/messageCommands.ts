@@ -24,6 +24,7 @@ async function executeCommand(
     createOptionResults(bot, command.args || [], {
       message: { ...message, args },
     }),
+    command,
     bot
   );
   for (let i = 0; i < bot.inhibitors.size; i++) {

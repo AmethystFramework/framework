@@ -30,6 +30,7 @@ export async function handleSlash(bot: AmethystBot, data: Interaction) {
     createOptionResults(bot, command.args || [], {
       interaction: data,
     }),
+    command,
     bot
   );
   for (let i = 0; i < bot.inhibitors.size; i++) {

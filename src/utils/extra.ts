@@ -4,6 +4,7 @@ import { cache } from '../cache.ts';
 import { AmethystEventHandler } from '../classes/AmethystEvents.ts';
 import CategoryClass from '../classes/Category.ts';
 import { CommandClass } from '../classes/Command.ts';
+import { Context } from '../classes/Context.ts';
 import { handleMessageCommands } from '../handlers/messageCommands.ts';
 import { handleSlash } from '../handlers/slashCommands.ts';
 import { inhibitors } from '../inhibators/mod.ts';
@@ -163,7 +164,7 @@ export function createInhibitor<T extends CommandClass = CommandClass>(
   inhibitor: (
     bot: AmethystBot,
     command: T,
-    options?: { memberId?: bigint; guildId?: bigint; channelId: bigint }
+    options?: Context,
   ) => Promise<true | AmethystError>
 ) {
   // @ts-ignore -

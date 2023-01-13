@@ -1,8 +1,9 @@
 import { InteractionResponseTypes } from 'https://deno.land/x/discordeno@17.1.0/mod.ts';
 
 import { Channel, Guild, Interaction, Member, Message, User } from '../../deps.ts';
-import { AmethystBot } from '../../mod.ts';
+import { AmethystBot, CommandOptions } from '../../mod.ts';
 import { optionResults } from '../interfaces/commandArgumentOptions.ts';
+import { CommandClass } from './Command.ts';
 
 /* It's a class that represents a context of a message or interaction */
 export class Context {
@@ -20,6 +21,7 @@ export class Context {
   client: AmethystBot;
   options: optionResults;
   channel?: Channel;
+  command: CommandClass | CommandOptions;
   id: BigInt;
   constructor(options: ContextOptions, client: AmethystBot) {
     this.interaction = options.interaction;
@@ -34,12 +36,21 @@ export class Context {
     this.channel = options.channel;
     this.options = options.options;
     this.id = options.id;
+    this.command = options.command;
     if (this.interaction) {
-      client.helpers.sendInteractionResponse(
-        this.interaction.id,
-        this.interaction.token,
-        { type: InteractionResponseTypes.DeferredChannelMessageWithSource }
-      );
+      if (this.command.private) {
+        client.helpers.sendInteractionResponse(
+          this.interaction.id,
+          this.interaction.token,
+          { type: InteractionResponseTypes.DeferredUpdateMessage, data: { flags: 1 << 6 } }
+        );
+      } else {
+        client.helpers.sendInteractionResponse(
+          this.interaction.id,
+          this.interaction.token,
+          { type: InteractionResponseTypes.DeferredChannelMessageWithSource }
+        );
+      }
       this.replied = true;
     }
     this.options.context = this;
@@ -73,6 +84,7 @@ export class Context {
         return await createContext(
           { message: this.sentMessage },
           this.options,
+          this.command,
           this.client
         );
       } else {
@@ -112,6 +124,7 @@ export class Context {
       return await createContext(
         { message: this.sentMessage },
         this.options,
+        this.command,
         this.client
       );
     } else {
@@ -150,6 +163,7 @@ export class Context {
       return await createContext(
         { message: this.sentMessage },
         this.options,
+        this.command,
         this.client
       );
     } else {
@@ -184,6 +198,7 @@ type ContextOptions = {
   options: optionResults;
   channel?: Channel;
   user?: User;
+  command: CommandClass | CommandOptions;
   id: BigInt;
 };
 
@@ -197,6 +212,7 @@ type ContextOptions = {
 export async function createContext(
   data: { interaction?: Interaction; message?: Message },
   option: optionResults,
+  command: CommandClass | CommandOptions,
   bot: AmethystBot
 ): Promise<Context> {
   const options: ContextOptions = {
@@ -213,6 +229,7 @@ export async function createContext(
       : //@ts-ignore this should fix types
       await bot.helpers.getChannel(data.interaction.channelId),
     id: data.message ? data.message.id : data.interaction?.message?.id ?? 0n,
+    command: command,
   };
 
   //Assign guild.

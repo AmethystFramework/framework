@@ -49,6 +49,7 @@ export class CommandClass {
   extras: any;
   /* Mention slash command in chat */
   mention?: string;
+  private: boolean;
   execute: (bot: AmethystBot, ctx: Context) => unknown;
 
   /**
@@ -79,6 +80,7 @@ export class CommandClass {
     this.ownerOnly = options.ownerOnly ?? false;
     this.execute = options.execute ?? defaultFunction;
     this.extras = options.extras ?? {};
+    this.private = options.private ?? false;
   }
 
   /**
@@ -165,5 +167,6 @@ export class CommandClass {
     this.nsfw = options.nsfw ?? false;
     this.ownerOnly = options.ownerOnly ?? false;
     this.execute = options.execute ?? defaultFunction;
+    this.private = options.private ?? false;
   }
 }

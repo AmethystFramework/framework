@@ -105,17 +105,17 @@ export default class CategoryClass {
         for (let i = 0; i < this.commands.size; i++) {
           if (subCommandName)
             if (
-              this.commands.at(i)!.name == subCommandName &&
+              (this.commands.at(i)!.name == subCommandName.trim() || this.commands.at(i)!.aliases.includes(subCommandName.trim())) &&
               this.commands.at(i)?.commandType.includes("message")
             )
               return {
                 command: this.commands.at(i)!,
                 usedSubCommand: true
               }
-          return {
-            command: this.commands.get(this.default), usedSubCommand: false
-          };
         }
+        return {
+          command: this.commands.get(this.default), usedSubCommand: false
+        };
       }
     }
 

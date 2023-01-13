@@ -1,8 +1,8 @@
-import { PermissionStrings } from "../../deps.ts";
-import { Context } from "../classes/Context.ts";
-import { AmethystBot } from "../interfaces/bot.ts";
-import { CommandCooldown } from "../interfaces/command.ts";
-import { commandOption } from "../interfaces/commandArgumentOptions.ts";
+import { PermissionStrings } from '../../deps.ts';
+import { Context } from '../classes/Context.ts';
+import { AmethystBot } from '../interfaces/bot.ts';
+import { CommandCooldown } from '../interfaces/command.ts';
+import { commandOption } from '../interfaces/commandArgumentOptions.ts';
 
 export type CommandOptions = {
   /* Name of the command */
@@ -17,10 +17,10 @@ export type CommandOptions = {
   aliases?: string[];
   /* Type of command */
   commandType:
-    | ["application", "message"]
-    | ["message", "application"]
-    | ["message"]
-    | ["application"];
+  | ["application", "message"]
+  | ["message", "application"]
+  | ["message"]
+  | ["application"];
   /**The command cooldown*/
   cooldown?: CommandCooldown;
   /**Whether the command is allowed to run in non-nsfw channels*/
@@ -49,5 +49,6 @@ export type CommandOptions = {
   ignoreBots?: boolean;
   extras?: any;
   botCacheNumber?: number;
+  private?: boolean;
   execute?: (bot: AmethystBot, ctx: Context) => unknown;
 };
