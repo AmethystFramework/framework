@@ -1,21 +1,17 @@
 // deno-lint-ignore-file
-import { PermissionStrings } from "../../deps.ts";
-import {
-  CommandClass,
-  getMissingChannelPermissions,
-  getMissingGuildPermissions,
-} from "../../mod.ts";
+import { PermissionStrings } from '../../deps.ts';
+import { CommandClass, getMissingChannelPermissions, getMissingGuildPermissions } from '../../mod.ts';
 import { Context } from '../classes/Context.ts';
-import { AmethystBot } from "../interfaces/bot.ts";
-import { AmethystError, ErrorEnums } from "../interfaces/errors.ts";
-import { AmethystCollection } from "../utils/AmethystCollection.ts";
+import { AmethystBot } from '../interfaces/bot.ts';
+import { AmethystError, ErrorEnums } from '../interfaces/errors.ts';
+import { AmethystCollection } from '../utils/AmethystCollection.ts';
 
 export const inhibitors = new AmethystCollection<
   string,
   <T extends CommandClass = CommandClass>(
     bot: AmethystBot,
     command: T,
-    context: Context,
+    context: Context
   ) => Promise<true | AmethystError>
 >();
 
@@ -81,12 +77,6 @@ setInterval(() => {
   });
 }, 30000);
 
-inhibitors.set("nsfw", async (bot, command, options) => {
-  const channel = (await bot.helpers.getChannel(options!.channel!.id))!;
-  if (command.nsfw && !channel.nsfw) return { type: ErrorEnums.NSFW };
-  return true;
-});
-
 // deno-lint-ignore require-await
 inhibitors.set("ownerOnly", async (bot, command, options) => {
   if (
@@ -109,7 +99,7 @@ inhibitors.set("botPermissions", async (bot, cmd, options) => {
       getMissingGuildPermissions(
         bot,
         options.guild!,
-        (await bot.cache.members.get(bot.id, options.guildId))!,
+        (await bot.helpers.getMember(options.guildId, bot.id))!,
         command.botGuildPermissions
       ).length)
   )
@@ -119,7 +109,7 @@ inhibitors.set("botPermissions", async (bot, cmd, options) => {
       value: getMissingGuildPermissions(
         bot,
         (await bot.cache.guilds.get(options?.guildId!))!,
-        (await bot.cache.members.get(bot.id, options?.guildId!))!,
+        (await bot.helpers.getMember(options?.guildId!, bot.id))!,
         command.botGuildPermissions
       ),
     };

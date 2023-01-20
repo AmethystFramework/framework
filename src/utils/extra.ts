@@ -164,7 +164,7 @@ export function createInhibitor<T extends CommandClass = CommandClass>(
   inhibitor: (
     bot: AmethystBot,
     command: T,
-    options?: Context,
+    options?: Context
   ) => Promise<true | AmethystError>
 ) {
   // @ts-ignore -
@@ -352,22 +352,24 @@ export function enableAmethystPlugin(
       const amethystBot = bot as AmethystBot;
       amethystBot.user = await amethystBot.helpers.getUser(amethystBot.id);
       registerTasks(amethystBot);
-      try {
-        const commands =
-          await amethystBot.helpers.upsertGlobalApplicationCommands(
-            amethystBot.category!.map((category) => {
-              return category.toApplicationCommand();
-            })
-          );
-        commands.forEach((command) => {
-          const category = amethystBot.category.get(command.name);
-          command.options?.forEach((option) => {
-            const c = category?.commands.get(option.name);
-            c!.mention = `</${option.name}:${command.id}>`;
+      if (!Ready) {
+        try {
+          const commands =
+            await amethystBot.helpers.upsertGlobalApplicationCommands(
+              amethystBot.category!.map((category) => {
+                return category.toApplicationCommand();
+              })
+            );
+          commands.forEach((command) => {
+            const category = amethystBot.category.get(command.name);
+            command.options?.forEach((option) => {
+              const c = category?.commands.get(option.name);
+              c!.mention = `</${option.name}:${command.id}>`;
+            });
           });
-        });
-      } catch (e) {
-        console.log(e);
+        } catch (e) {
+          console.log(e);
+        }
       }
       Ready = true;
     });

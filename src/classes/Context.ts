@@ -1,5 +1,3 @@
-import { InteractionResponseTypes } from 'https://deno.land/x/discordeno@17.1.0/mod.ts';
-
 import { Channel, Guild, Interaction, Member, Message, User } from '../../deps.ts';
 import { AmethystBot, CommandOptions } from '../../mod.ts';
 import { optionResults } from '../interfaces/commandArgumentOptions.ts';
@@ -38,19 +36,6 @@ export class Context {
     this.id = options.id;
     this.command = options.command;
     if (this.interaction) {
-      if (this.command.private) {
-        client.helpers.sendInteractionResponse(
-          this.interaction.id,
-          this.interaction.token,
-          { type: InteractionResponseTypes.DeferredUpdateMessage, data: { flags: 1 << 6 } }
-        );
-      } else {
-        client.helpers.sendInteractionResponse(
-          this.interaction.id,
-          this.interaction.token,
-          { type: InteractionResponseTypes.DeferredChannelMessageWithSource }
-        );
-      }
       this.replied = true;
     }
     this.options.context = this;
@@ -222,21 +207,21 @@ export async function createContext(
     interactionContext: data.message ? false : true,
     guildId: data.message ? data.message.guildId : data.interaction?.guildId,
     user: data.message
-      ? await bot.helpers.getUser(data.message.authorId)
+      ? await bot.cache.users.get(data.message.authorId)
       : data.interaction?.user,
     channel: data.message
-      ? await bot.helpers.getChannel(data.message.channelId)
+      ? await bot.cache.channels.get(data.message.channelId)
       : //@ts-ignore this should fix types
-      await bot.helpers.getChannel(data.interaction.channelId),
+        await bot.cache.channels.get(data.interaction.channelId),
     id: data.message ? data.message.id : data.interaction?.message?.id ?? 0n,
     command: command,
   };
 
   //Assign guild.
   if (data.message && data.message.guildId)
-    options.guild = await bot.helpers.getGuild(data.message.guildId);
+    options.guild = await bot.cache.guilds.get(data.message.guildId);
   else if (data.interaction && data.interaction.guildId)
-    options.guild = await bot.helpers.getGuild(data.interaction.guildId);
+    options.guild = await bot.cache.guilds.get(data.interaction.guildId);
 
   // Assign message if context is for a Interaction.
   if (data.interaction && data.interaction.message)

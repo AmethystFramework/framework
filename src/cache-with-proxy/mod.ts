@@ -11,11 +11,12 @@ import {
   Message,
   Role,
   User,
-} from "../../deps.ts";
-import { BotWithProxyEvents } from "./events.ts";
-import { setupCacheCreations } from "./setupCacheCreations.ts";
-import { setupCacheEdits, unavailablesGuilds } from "./setupCacheEdits.ts";
-import { setupCacheRemovals } from "./setupCacheRemovals.ts";
+} from '../../deps.ts';
+import { BotWithProxyEvents } from './events.ts';
+import { setupCacheCreations } from './setupCacheCreations.ts';
+import { setupCacheEdits, unavailablesGuilds } from './setupCacheEdits.ts';
+import { setupCacheRemovals } from './setupCacheRemovals.ts';
+
 const updateHandlers = () => {
   const handlers = createBotGatewayHandlers({});
   return {
@@ -926,21 +927,15 @@ export function createProxyCache<
             const channel = await bot.cache.channels.get(
               message.channelId,
               message.guildId,
-              true
+              false
             );
             if (channel) {
               if (!channel.messages)
                 channel.messages = new Collection<bigint, Message>();
               channel.messages.set(message.id, message);
               bot.cache.channels.set(channel);
-            } else
-              console.warn(
-                `[CACHE] Can't cache message(${message.id}) since channel.messages is enabled but a channel (${message.channelId}) was not found`
-              );
-          } else
-            console.warn(
-              `[CACHE] Can't cache message(${message.id}) since channel.messages is enabled but a channel was not found.`
-            );
+            }
+          }
         }
 
         bot.cache.messages.memory.set(message.id, message);
@@ -1073,8 +1068,7 @@ export function createProxyCache<
   bot.transformers.member = function (_, payload, guildId, userId) {
     // Create the object from existing transformer.
     const old = member(bot, payload, guildId, userId);
-    //@ts-ignore
-    old.user = payload.user;
+    if (payload.user) old.user = user(bot, payload.user);
     // Filter to desired args
     const args: T["member"] = {};
     const keys = Object.keys(old) as (keyof Member)[];

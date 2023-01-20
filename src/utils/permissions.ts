@@ -8,8 +8,8 @@ import {
   PermissionStrings,
   Role,
   separateOverwrites,
-} from "../../deps.ts";
-import { AmethystBot } from "../interfaces/bot.ts";
+} from '../../deps.ts';
+import { AmethystBot } from '../interfaces/bot.ts';
 
 /** Calculates the permissions this member has in the given guild */
 export function calculateBasePermissions(
@@ -43,7 +43,7 @@ export async function calculateChannelOverwrites(
 ) {
   const channel =
     typeof channelOrId === "bigint"
-      ? await bot.cache.channels.get(channelOrId)
+      ? await bot.helpers.getChannel(channelOrId)
       : channelOrId;
 
   // This is a DM channel so return ADMINISTRATOR permission
