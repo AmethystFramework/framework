@@ -26,6 +26,56 @@ Amethyst utilizes Decorators to help you keep readability and simplify your code
 ## Usage
 
 ```typescript
+import { createBot, GatewayIntents, startBot } from "discordeno";
+import { enableCachePlugin, enableCacheSweepers } from "discordeno/cache-plugin";
+import {
+  AmethystBot,
+  Category,
+  Command,
+  Context,
+  enableAmethystPlugin,
+  Event,
+} from "@thereallonewolf/amethystframework";
+
+let baseClient = createBot({
+  token: "TOKEN",
+  intents: GatewayIntents.Guilds | GatewayIntents.GuildMessages | GatewayIntents.MessageContent,
+});
+
+//@ts-ignore
+let client = enableAmethystPlugin(enableCachePlugin(baseClient), {
+  botMentionAsPrefix: true,
+  prefix: "!", //Can be a function or a string.
+  ignoreBots: false,
+});
+enableCacheSweepers(client);
+
+startBot(client);
+
+@Category({
+  name: "general",
+  description: "My general commands",
+  uniqueCommands: true,
+  default: "", //As all the commands are unique so no need to set the default command.
+})
+export class General {
+  @Command({
+    name: "ping",
+    description: "Pong!",
+    commandType: ["application", "message"],
+    category: "general",
+    args: [],
+  })
+  async ping(bot: AmethystBot, ctx: Context) {
+    ctx.reply({ content: "Pong!" });
+  }
+
+  @Event("ready")
+  async ready() {
+    console.log("I am ready!");
+    client.amethystUtils.updateSlashCommands();
+  }
+}
 ```
 
 ## Contributing
