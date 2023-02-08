@@ -98,8 +98,8 @@ inhibitors.set("botPermissions", async (bot, cmd, options) => {
     (!options?.guildId ||
       getMissingGuildPermissions(
         bot,
-        options.guild!,
-        (await bot.helpers.getMember(options.guildId, bot.id))!,
+        (await bot.cache.guilds.get(options.guildId))!,
+        (await bot.cache.members.get(bot.id, options.guildId))!,
         command.botGuildPermissions
       ).length)
   )
@@ -108,8 +108,8 @@ inhibitors.set("botPermissions", async (bot, cmd, options) => {
       channel: false,
       value: getMissingGuildPermissions(
         bot,
-        (await bot.cache.guilds.get(options?.guildId!))!,
-        (await bot.helpers.getMember(options?.guildId!, bot.id))!,
+        options.guild!,
+        (await bot.cache.members.get(bot.id, options?.guildId!))!,
         command.botGuildPermissions
       ),
     };
@@ -150,7 +150,7 @@ inhibitors.set("userPermissions", async (bot, cmd, options) => {
       !options.author!.id ||
       getMissingGuildPermissions(
         bot,
-        options.guild!,
+        (await bot.cache.guilds.get(options.guildId))!,
         options.member!,
         command.userGuildPermissions
       ).length)

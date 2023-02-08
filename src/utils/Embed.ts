@@ -1,9 +1,4 @@
-import {
-  DiscordEmbedAuthor,
-  DiscordEmbedField,
-  DiscordEmbedFooter,
-  DiscordEmbedImage,
-} from "../../deps.ts";
+import { DiscordEmbedField } from "../../deps.ts";
 
 const embedLimits = {
   title: 256,
@@ -29,13 +24,24 @@ export class AmethystEmbed {
 
   color = 0x41ebf4;
   fields: DiscordEmbedField[] = [];
-  author?: DiscordEmbedAuthor;
+  author?: {
+    name: string;
+    iconUrl?: string;
+    url?: string;
+  };
   description?: string;
-  footer?: DiscordEmbedFooter;
-  image?: DiscordEmbedImage;
+  footer?: {
+    text: string;
+    iconUrl?: string;
+  };
+  image?: {
+    url: string;
+  };
   timestamp?: number;
   title?: string;
-  thumbnail?: DiscordEmbedImage;
+  thumbnail?: {
+    url: string;
+  };
   url?: string;
 
   /**
@@ -86,7 +92,7 @@ export class AmethystEmbed {
     const finalName = this.enforceLimits
       ? this.fitData(name, embedLimits.authorName)
       : name;
-    this.author = { name: finalName, icon_url: icon, url };
+    this.author = { name: finalName, iconUrl: icon, url };
 
     return this;
   }
@@ -175,7 +181,7 @@ export class AmethystEmbed {
   setFooter(text: string, icon?: string) {
     this.footer = {
       text: this.fitData(text, embedLimits.footerText),
-      icon_url: icon,
+      iconUrl: icon,
     };
 
     return this;

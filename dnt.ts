@@ -1,4 +1,4 @@
-import { build } from 'https://deno.land/x/dnt@0.33.0/mod.ts';
+import { build } from "https://deno.land/x/dnt@0.33.0/mod.ts";
 
 await Deno.remove("npm", { recursive: true }).catch((_) => {});
 
@@ -10,7 +10,7 @@ await build({
   package: {
     author: "some-boi",
     name: "@thereallonewolf/amethystframework",
-    version: "v6.2.4",
+    version: "v7.0.0",
     description: "Amethyst is a powerful and flexible Discordeno framework.",
     repository: {
       type: "git",

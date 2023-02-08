@@ -51,7 +51,7 @@ export async function calculateChannelOverwrites(
 
   const member =
     typeof memberOrId === "bigint"
-      ? await bot.cache.members.get(channel.guildId, memberOrId)
+      ? await bot.cache.members.get(memberOrId, channel.guildId)
       : memberOrId;
 
   if (!channel || !member) return 8n;
@@ -143,7 +143,7 @@ export async function botHasGuildPermissions(
   guild: Guild,
   permissions: PermissionStrings[]
 ) {
-  const member = await bot.cache.members.get(guild.id, bot.id);
+  const member = await bot.cache.members.get(bot.id, guild.id);
   // Since Bot is a normal member we can use the hasRolePermissions() function
   return hasGuildPermissions(bot, guild, member!, permissions);
 }
@@ -234,7 +234,7 @@ export async function requireBotGuildPermissions(
   guild: Guild,
   permissions: PermissionStrings[]
 ) {
-  const member = await bot.cache.members.get(guild.id, bot.id);
+  const member = await bot.cache.members.get(bot.id, guild.id);
   // Since Bot is a normal member we can use the throwOnMissingGuildPermission() function
   return requireGuildPermissions(bot, guild, member!, permissions);
 }
@@ -274,7 +274,7 @@ export async function requireOverwritePermissions(
   guildOrId: Guild,
   overwrites: OverwriteReadable[]
 ) {
-  const member = await bot.cache.members.get(guildOrId.id, bot.id);
+  const member = await bot.cache.members.get(bot.id, guildOrId.id);
   let requiredPerms: Set<PermissionStrings> = new Set(["MANAGE_CHANNELS"]);
 
   overwrites?.forEach((overwrite) => {
@@ -306,7 +306,7 @@ export async function highestRole(
   // Get the roles from the member
   const memberRoles = (
     typeof memberOrId === "bigint"
-      ? await bot.cache.members.get(guild.id, memberOrId)
+      ? await bot.cache.members.get(memberOrId, guild.id)
       : memberOrId
   )?.roles;
   // This member has no roles so the highest one is the @everyone role

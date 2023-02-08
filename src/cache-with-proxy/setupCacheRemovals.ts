@@ -29,9 +29,9 @@ export function setupCacheRemovals<B extends Bot>(
     const guild = await bot.cache.guilds.get(id, false);
     // Remove the guild from cache
     bot.cache.options.bulk?.removeGuild?.(id);
-
-    if (bot.events.guildDeleteWithOldGuild)
-      bot.events.guildDeleteWithOldGuild(bot, guild!);
+    if (guild)
+      if (bot.events.guildDeleteWithOldGuild)
+        bot.events.guildDeleteWithOldGuild(bot, guild!);
     // remove guild from unavailable Set
     unavailablesGuilds.delete(id);
 

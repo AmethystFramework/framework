@@ -11,11 +11,11 @@ import {
   Message,
   Role,
   User,
-} from '../../deps.ts';
-import { BotWithProxyEvents } from './events.ts';
-import { setupCacheCreations } from './setupCacheCreations.ts';
-import { setupCacheEdits, unavailablesGuilds } from './setupCacheEdits.ts';
-import { setupCacheRemovals } from './setupCacheRemovals.ts';
+} from "../../deps.ts";
+import { BotWithProxyEvents } from "./events.ts";
+import { setupCacheCreations } from "./setupCacheCreations.ts";
+import { setupCacheEdits, unavailablesGuilds } from "./setupCacheEdits.ts";
+import { setupCacheRemovals } from "./setupCacheRemovals.ts";
 
 const updateHandlers = () => {
   const handlers = createBotGatewayHandlers({});
@@ -265,7 +265,7 @@ export function createProxyCache<
       bot.cache.members.memory.forEach((member) => {
         if (member.guildId === id) {
           bot.cache.members.memory.delete(
-            BigInt(`${member.id}${member.guildID}`)
+            BigInt(`${member.id}${member.guildId}`)
           );
         }
       });
