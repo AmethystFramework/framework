@@ -1,11 +1,19 @@
-import { ApplicationCommandOption, ApplicationCommandOptionTypes, ChannelTypes, PermissionStrings } from '../../deps.ts';
-import { AmethystBot, CommandCooldown, commandOption, Context } from '../../mod.ts';
-import { CommandOptions } from '../types/commandOptions.ts';
-import { validateRequiredParameters } from './Validations.ts';
+import {
+  ApplicationCommandOption,
+  ApplicationCommandOptionTypes,
+  ChannelTypes,
+  PermissionStrings,
+} from "../../deps.ts";
+import {
+  AmethystBot,
+  CommandCooldown,
+  Context,
+  commandOption,
+} from "../../mod.ts";
+import { CommandOptions } from "../types/commandOptions.ts";
+import { validateRequiredParameters } from "./Validations.ts";
 
-const defaultFunction = (bot: AmethystBot, ctx: Context): void => {
-
-};
+const defaultFunction = (bot: AmethystBot, ctx: Context): void => {};
 /* It creates a class called Command. */
 export class CommandClass {
   /* Name of the command */
@@ -89,31 +97,26 @@ export class CommandClass {
    * @returns An object with the following properties:
    */
   toApplicationCommand(): ApplicationCommandOption {
-    if (!this.commandType.includes("application"))
-      return {
-        type: -99,
-        name: this.name,
-        description: this.description,
-      };
+   
     validateRequiredParameters(
       this.name,
       this.description,
       this.args?.length
         ? this.args.map((e) => {
-          return {
-            ...e,
-            description: e.description ?? "A slash command option",
-            channelTypes: e.channelTypes?.map((f) =>
-              typeof f == "string" ? ChannelTypes[f] : f
-            ),
-            type:
-              typeof e.type == "number"
-                ? e.type
-                : ApplicationCommandOptionTypes[
-                e.type as keyof typeof ApplicationCommandOptionTypes
-                ],
-          };
-        })
+            return {
+              ...e,
+              description: e.description ?? "A slash command option",
+              channelTypes: e.channelTypes?.map((f) =>
+                typeof f == "string" ? ChannelTypes[f] : f
+              ),
+              type:
+                typeof e.type == "number"
+                  ? e.type
+                  : ApplicationCommandOptionTypes[
+                      e.type as keyof typeof ApplicationCommandOptionTypes
+                    ],
+            };
+          })
         : []
     );
     return {
@@ -122,20 +125,20 @@ export class CommandClass {
       description: this.description,
       options: this.args?.length
         ? this.args.map((e) => {
-          return {
-            ...e,
-            description: e.description ?? "A slash command option",
-            channelTypes: e.channelTypes?.map((f) =>
-              typeof f == "string" ? ChannelTypes[f] : f
-            ),
-            type:
-              typeof e.type == "number"
-                ? e.type
-                : ApplicationCommandOptionTypes[
-                e.type as keyof typeof ApplicationCommandOptionTypes
-                ],
-          };
-        })
+            return {
+              ...e,
+              description: e.description ?? "A slash command option",
+              channelTypes: e.channelTypes?.map((f) =>
+                typeof f == "string" ? ChannelTypes[f] : f
+              ),
+              type:
+                typeof e.type == "number"
+                  ? e.type
+                  : ApplicationCommandOptionTypes[
+                      e.type as keyof typeof ApplicationCommandOptionTypes
+                    ],
+            };
+          })
         : [],
     };
   }

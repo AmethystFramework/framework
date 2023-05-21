@@ -1,7 +1,7 @@
-import { CreateApplicationCommand } from '../../deps.ts';
-import { AmethystCollection, CommandClass } from '../../mod.ts';
-import { CategoryOptions } from '../types/categoryOptions.ts';
-import { validateRequiredParameters } from './Validations.ts';
+import { CreateApplicationCommand } from "../../deps.ts";
+import { AmethystCollection, CommandClass } from "../../mod.ts";
+import { CategoryOptions } from "../types/categoryOptions.ts";
+import { validateRequiredParameters } from "./Validations.ts";
 
 /* Exporting the class Category. */
 export default class CategoryClass {
@@ -50,9 +50,10 @@ export default class CategoryClass {
       description: this.description,
       options: this.commands
         .filter((e) => e.scope == "guild")
+        .filter((e) => e.commandType.includes("application"))
         .map((e) => e.toApplicationCommand())
         .filter((n) => {
-          return n.type > 0;
+          return !n;
         }),
     };
   }
@@ -69,6 +70,7 @@ export default class CategoryClass {
       description: this.description,
       options: this.commands
         .filter((e) => e.scope == "global")
+        .filter((e) => e.commandType.includes("application"))
         .map((e) => e.toApplicationCommand())
         .filter((n) => {
           return n.type > 0;
@@ -89,8 +91,8 @@ export default class CategoryClass {
     commandName: string,
     subCommandName?: string
   ): {
-    command?: CommandClass,
-    usedSubCommand: boolean,
+    command?: CommandClass;
+    usedSubCommand: boolean;
   } {
     if (this.uniqueCommands) {
       for (let i = 0; i < this.commands.size; i++)
@@ -101,26 +103,27 @@ export default class CategoryClass {
           return { command: this.commands.at(i), usedSubCommand: true };
     } else {
       if (this.name == commandName) {
-
         for (let i = 0; i < this.commands.size; i++) {
           if (subCommandName)
             if (
-              (this.commands.at(i)!.name == subCommandName.trim() || this.commands.at(i)!.aliases.includes(subCommandName.trim())) &&
+              (this.commands.at(i)!.name == subCommandName.trim() ||
+                this.commands.at(i)!.aliases.includes(subCommandName.trim())) &&
               this.commands.at(i)?.commandType.includes("message")
             )
               return {
                 command: this.commands.at(i)!,
-                usedSubCommand: true
-              }
+                usedSubCommand: true,
+              };
         }
         return {
-          command: this.commands.get(this.default), usedSubCommand: false
+          command: this.commands.get(this.default),
+          usedSubCommand: false,
         };
       }
     }
 
     return {
-      usedSubCommand: true
+      usedSubCommand: true,
     };
   }
 

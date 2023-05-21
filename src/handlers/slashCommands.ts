@@ -1,9 +1,9 @@
-import { Interaction, InteractionResponseTypes } from '../../deps.ts';
-import { CommandClass } from '../classes/Command.ts';
-import { createContext } from '../classes/Context.ts';
-import { AmethystBot } from '../interfaces/bot.ts';
-import { ErrorEnums } from '../interfaces/errors.ts';
-import { createOptionResults } from '../utils/createOptionResults.ts';
+import { Interaction, InteractionResponseTypes } from "../../deps.ts";
+import { CommandClass } from "../classes/Command.ts";
+import { createContext } from "../classes/Context.ts";
+import { AmethystBot } from "../interfaces/bot.ts";
+import { ErrorEnums } from "../interfaces/errors.ts";
+import { createOptionResults } from "../utils/createOptionResults.ts";
 
 /**
  * It handles the slash command
@@ -35,7 +35,7 @@ export async function handleSlash(bot: AmethystBot, data: Interaction) {
   }
   const context = await createContext(
     {
-      interaction: { ...data, data: data.data.options?.[0] },
+      interaction: { ...data },
     },
     createOptionResults(bot, command.args || [], {
       interaction: data,

@@ -1,5 +1,5 @@
 import { CommandClass } from "../classes/Command.ts";
-import { Context } from '../classes/Context.ts';
+import { Context } from "../classes/Context.ts";
 import { AmethystBot } from "../interfaces/bot.ts";
 import { AmethystError } from "../interfaces/errors.ts";
 import { AmethystEvent, AmethystEvents } from "../interfaces/event.ts";
@@ -40,7 +40,7 @@ export async function loadCommands(bot: AmethystBot, dir: string) {
   const commandFiles = load<{ default?: CommandOptions }>(dir);
   for await (const commandFile of commandFiles) {
     if (commandFile.default) {
-      bot.amethystUtils.createCommand(commandFile.default);
+      bot.utils.createCommand(commandFile.default);
     }
   }
 }

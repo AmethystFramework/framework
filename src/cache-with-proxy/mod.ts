@@ -3,35 +3,22 @@ import {
   Bot,
   Channel,
   Collection,
-  createBotGatewayHandlers,
-  DiscordGatewayPayload,
   Guild,
   GuildToggles,
   Member,
   Message,
   Role,
   User,
+  iconHashToBigInt,
 } from "../../deps.ts";
 import { BotWithProxyEvents } from "./events.ts";
 import { setupCacheCreations } from "./setupCacheCreations.ts";
 import { setupCacheEdits, unavailablesGuilds } from "./setupCacheEdits.ts";
 import { setupCacheRemovals } from "./setupCacheRemovals.ts";
 
-const updateHandlers = () => {
-  const handlers = createBotGatewayHandlers({});
-  return {
-    ...handlers,
-    GUILD_LOADED_DD: (
-      bot: Bot,
-      data: DiscordGatewayPayload,
-      shardId: number
-    ) => {},
-  };
-};
 export interface ProxyCacheProps<T extends ProxyCacheTypes> {
-  handlers: ReturnType<typeof updateHandlers>;
   events: BotWithProxyEvents;
-  cache: Bot["cache"] & {
+  cache: {
     options: CreateProxyCacheOptions;
     guilds: {
       memory: Collection<bigint, T["guild"]>;
@@ -124,19 +111,16 @@ export interface ProxyCacheProps<T extends ProxyCacheTypes> {
 export type BotWithProxyCache<
   T extends ProxyCacheTypes,
   B extends Bot = Bot
-> = Omit<B, "cache"> & ProxyCacheProps<T>;
+> = B & ProxyCacheProps<T>;
 
 export function createProxyCache<
   T extends ProxyCacheTypes<boolean> = ProxyCacheTypes,
   B extends Bot = Bot
 >(rawBot: B, options: CreateProxyCacheOptions): BotWithProxyCache<T, B> {
-  // @ts-ignore why is this failing?
   const bot = rawBot as BotWithProxyCache<T, B>;
+  //@ts-ignore
+  bot.cache = { options: options };
 
-  bot.enabledPlugins.add("PROXY_CACHE");
-
-  bot.cache.options = options;
-  bot.handlers = updateHandlers();
   if (!bot.cache.options.cacheInMemory)
     bot.cache.options.cacheInMemory = { default: true };
   if (!bot.cache.options.cacheOutsideMemory)
@@ -848,7 +832,7 @@ export function createProxyCache<
       // If available in memory, use it.
       if (options.cacheInMemory?.messages) {
         // If guilds are cached, messages will be inside them
-        if (options.cacheInMemory?.guilds) {
+        if (options.cacheInMemory?.channels) {
           const channelID = bot.cache.messages.channelIDs.get(messageID);
           if (channelID) {
             const guildID = bot.cache.channels.guildIDs.get(channelID);
@@ -996,7 +980,7 @@ export function createProxyCache<
         memberCount: payload.guild.member_count ?? 0,
         shardId: payload.shardId,
         icon: payload.guild.icon
-          ? bot.utils.iconHashToBigInt(payload.guild.icon)
+          ? iconHashToBigInt(payload.guild.icon)
           : undefined,
         channels: new Collection<bigint, T["channel"]>(),
         roles: new Collection<bigint, T["role"]>(),
