@@ -1,20 +1,34 @@
-import { Bot, Emoji, Interaction, Message } from '../../deps.ts';
-import { BotWithProxyCache, ProxyCacheTypes } from '../cache-with-proxy/mod.ts';
-import { cache } from '../cache.ts';
-import { AmethystEventHandler } from '../classes/AmethystEvents.ts';
-import CategoryClass from '../classes/Category.ts';
-import { CommandClass } from '../classes/Command.ts';
-import { Context } from '../classes/Context.ts';
-import { handleMessageCommands } from '../handlers/messageCommands.ts';
-import { handleSlash } from '../handlers/slashCommands.ts';
-import { inhibitors } from '../inhibators/mod.ts';
-import { AmethystBotOptions } from '../interfaces/AmethystBotOptions.ts';
-import { AmethystBot } from '../interfaces/bot.ts';
-import { AmethystError } from '../interfaces/errors.ts';
-import { AmethystTask } from '../interfaces/tasks.ts';
-import { AmethystCollection } from '../utils/AmethystCollection.ts';
-import { awaitComponent, awaitMessage, awaitReaction } from '../utils/Collectors.ts';
-import { loadCommands, loadEvents, loadInhibitors } from '../utils/fileLoader.ts';
+import {
+  Bot,
+  Emoji,
+  Interaction,
+  Message,
+  snowflakeToBigint,
+} from "../../deps.ts";
+import { BotWithProxyCache, ProxyCacheTypes } from "../cache-with-proxy/mod.ts";
+import { cache } from "../cache.ts";
+import { AmethystEventHandler } from "../classes/AmethystEvents.ts";
+import CategoryClass from "../classes/Category.ts";
+import { CommandClass } from "../classes/Command.ts";
+import { Context } from "../classes/Context.ts";
+import { handleMessageCommands } from "../handlers/messageCommands.ts";
+import { handleSlash } from "../handlers/slashCommands.ts";
+import { inhibitors } from "../inhibators/mod.ts";
+import { AmethystBotOptions } from "../interfaces/AmethystBotOptions.ts";
+import { AmethystBot } from "../interfaces/bot.ts";
+import { AmethystError } from "../interfaces/errors.ts";
+import { AmethystTask } from "../interfaces/tasks.ts";
+import { AmethystCollection } from "../utils/AmethystCollection.ts";
+import {
+  awaitComponent,
+  awaitMessage,
+  awaitReaction,
+} from "../utils/Collectors.ts";
+import {
+  loadCommands,
+  loadEvents,
+  loadInhibitors,
+} from "../utils/fileLoader.ts";
 
 let Ready = false;
 /**
@@ -34,7 +48,7 @@ export function createTask(bot: AmethystBot, task: AmethystTask) {
  */
 function handleMessageCollector(bot: AmethystBot, message: Message) {
   const collector = bot.messageCollectors.get(
-    `${message.authorId}-${message.channelId}`
+    `${message.author.id}-${message.channelId}`
   );
   // This user has no collectors pending or the message is in a different channel
   if (!collector || message.channelId !== collector.channelId) return;
@@ -47,7 +61,7 @@ function handleMessageCollector(bot: AmethystBot, message: Message) {
     collector.maxUsage === collector.messages.length + 1
   ) {
     // Remove the collector
-    bot.messageCollectors.delete(`${message.authorId}-${message.channelId}`);
+    bot.messageCollectors.delete(`${message.author.id}-${message.channelId}`);
     // Resolve the collector
     return collector.resolve([...collector.messages, message]);
   }
@@ -185,11 +199,10 @@ export function enableAmethystPlugin(
   rawBot: BotWithProxyCache<ProxyCacheTypes, Bot>,
   options?: AmethystBotOptions
 ) {
-  rawBot.enabledPlugins.add("AMETHYST");
   const bot = rawBot as unknown as AmethystBot;
   bot.eventHandler = new AmethystEventHandler(bot);
   bot.runningTasks = { intervals: [], initialTimeouts: [] };
-  bot.amethystUtils = {
+  bot.utils = {
     //@ts-ignore -
     awaitMessage: (memberId, channelId, options) => {
       return awaitMessage(bot, memberId, channelId, options);
@@ -228,7 +241,7 @@ export function enableAmethystPlugin(
     },
     createCategory: (categoryOptions) => {
       if (bot.category!.get(categoryOptions.name)) {
-        bot.amethystUtils.updateCategory(categoryOptions);
+        bot.utils.updateCategory(categoryOptions);
       } else {
         const category = new CategoryClass(categoryOptions);
         bot.category!.set(category.name, category);
@@ -238,7 +251,7 @@ export function enableAmethystPlugin(
       if (bot.category!.get(categoryOptions.name)) {
         bot.category!.get(categoryOptions.name)?.update(categoryOptions);
       } else {
-        bot.amethystUtils.createCategory(categoryOptions);
+        bot.utils.createCategory(categoryOptions);
       }
     },
     updateSlashCommands: () => {
@@ -301,7 +314,7 @@ export function enableAmethystPlugin(
   bot.reactionCollectors = new AmethystCollection();
   bot.category = new AmethystCollection();
   bot.owners = options?.owners?.map((e) =>
-    typeof e == "string" ? bot.utils.snowflakeToBigint(e) : e
+    typeof e == "string" ? snowflakeToBigint(e) : e
   );
   bot.botMentionAsPrefix = options?.botMentionAsPrefix;
   bot.defaultCooldown = options?.defaultCooldown;

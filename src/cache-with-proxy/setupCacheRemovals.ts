@@ -113,7 +113,6 @@ export function setupCacheRemovals<B extends Bot>(
     bot.cache.messages.get(id).then((message) => {
       // DON'T RUN INTERNAL HANDLER since internal does not pass `message`
       bot.events.messageDelete(
-        bot,
         {
           id,
           channelId: bot.transformers.snowflake(payload.channel_id),

@@ -1,9 +1,9 @@
-import { Message } from '../../deps.ts';
-import { CommandClass } from '../classes/Command.ts';
-import { createContext } from '../classes/Context.ts';
-import { AmethystBot } from '../interfaces/bot.ts';
-import { ErrorEnums } from '../interfaces/errors.ts';
-import { createOptionResults } from '../utils/createOptionResults.ts';
+import { Message } from "../../deps.ts";
+import { CommandClass } from "../classes/Command.ts";
+import { createContext } from "../classes/Context.ts";
+import { AmethystBot } from "../interfaces/bot.ts";
+import { ErrorEnums } from "../interfaces/errors.ts";
+import { createOptionResults } from "../utils/createOptionResults.ts";
 
 /**
  * It executes a command
@@ -33,24 +33,29 @@ async function executeCommand(
     const f = await e(bot, command, context);
 
     if (typeof f != "boolean") {
-      return bot.events.commandError?.(bot, {
-        message,
-        error: f,
-      }, context);
+      return bot.events.commandError?.(
+        bot,
+        {
+          message,
+          error: f,
+        },
+        context
+      );
     }
   }
   try {
-    await command.execute(
-      bot,
-      context
-    );
+    await command.execute(bot, context);
   } catch (e) {
     if (bot.events.commandError) {
-      bot.events.commandError(bot, {
-        message,
+      bot.events.commandError(
+        bot,
+        {
+          message,
 
-        error: { type: ErrorEnums.COMMANDRUNTIME, error: e },
-      }, context);
+          error: { type: ErrorEnums.COMMANDRUNTIME, error: e },
+        },
+        context
+      );
     } else throw e;
   }
 }
@@ -75,10 +80,10 @@ export async function handleMessageCommands(
     typeof guildPrefix == "string"
       ? guildPrefix
       : guildPrefix?.find((e) =>
-        bot.prefixCaseSensitive
-          ? message.content.startsWith(e)
-          : message.content.toLowerCase().startsWith(e.toLowerCase())
-      );
+          bot.prefixCaseSensitive
+            ? message.content.startsWith(e)
+            : message.content.toLowerCase().startsWith(e.toLowerCase())
+        );
 
   //If prefix is a string and not a array
   if (typeof prefix == "string")
@@ -113,28 +118,26 @@ export async function handleMessageCommands(
     const data = bot.category.at(i)!.getCommand(commandName, subCommandName);
     command = data.command;
     if (command) {
-      if ((bot.category.at(i)!.uniqueCommands) || data.usedSubCommand == false)
-        if (subCommandName)
-          args.unshift(subCommandName);
+      if (bot.category.at(i)!.uniqueCommands || data.usedSubCommand == false)
+        if (subCommandName) args.unshift(subCommandName);
       break;
     }
   }
-  if (message.isFromBot && (command?.ignoreBots ?? bot.ignoreBots)) return;
+  if (message.author.bot && (command?.ignoreBots ?? bot.ignoreBots)) return;
   if (!command) return bot.events.commandNotFound?.(bot, message, commandName);
   args =
     command.quotedArguments === true ||
-      (command.quotedArguments === undefined && bot.messageQuotedArguments)
+    (command.quotedArguments === undefined && bot.messageQuotedArguments)
       ? args
-        .join(" ")
-        .match(/\w+|"[^"]+"/g)
-        ?.map((str) =>
-          str.startsWith('"') && str.endsWith('"')
-            ? str.replaceAll('"', "")
-            : str
-        ) || args
+          .join(" ")
+          .match(/\w+|"[^"]+"/g)
+          ?.map((str) =>
+            str.startsWith('"') && str.endsWith('"')
+              ? str.replaceAll('"', "")
+              : str
+          ) || args
       : args;
   ``;
-
 
   bot.events.commandStart?.(bot, command, message);
   await executeCommand(bot, message, command, args);

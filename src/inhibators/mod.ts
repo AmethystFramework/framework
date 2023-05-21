@@ -1,10 +1,9 @@
-// deno-lint-ignore-file
-import { PermissionStrings } from '../../deps.ts';
-import { CommandClass, getMissingChannelPermissions, getMissingGuildPermissions } from '../../mod.ts';
-import { Context } from '../classes/Context.ts';
-import { AmethystBot } from '../interfaces/bot.ts';
-import { AmethystError, ErrorEnums } from '../interfaces/errors.ts';
-import { AmethystCollection } from '../utils/AmethystCollection.ts';
+import { PermissionStrings } from "../../deps.ts";
+import { CommandClass } from "../../mod.ts";
+import { Context } from "../classes/Context.ts";
+import { AmethystBot } from "../interfaces/bot.ts";
+import { AmethystError, ErrorEnums } from "../interfaces/errors.ts";
+import { AmethystCollection } from "../utils/AmethystCollection.ts";
 
 export const inhibitors = new AmethystCollection<
   string,
@@ -87,57 +86,6 @@ inhibitors.set("ownerOnly", async (bot, command, options) => {
   return true;
 });
 
-inhibitors.set("botPermissions", async (bot, cmd, options) => {
-  const command = cmd as CommandClass & {
-    botGuildPermissions: PermissionStrings[];
-    botChannelPermissions: PermissionStrings[];
-  };
-
-  if (
-    command.botGuildPermissions?.length &&
-    (!options?.guildId ||
-      getMissingGuildPermissions(
-        bot,
-        (await bot.cache.guilds.get(options.guildId))!,
-        (await bot.cache.members.get(bot.id, options.guildId))!,
-        command.botGuildPermissions
-      ).length)
-  )
-    return {
-      type: ErrorEnums.BOT_MISSING_PERMISSIONS,
-      channel: false,
-      value: getMissingGuildPermissions(
-        bot,
-        options.guild!,
-        (await bot.cache.members.get(bot.id, options?.guildId!))!,
-        command.botGuildPermissions
-      ),
-    };
-  if (
-    command.botChannelPermissions?.length &&
-    (!options?.channel!.id ||
-      (
-        await getMissingChannelPermissions(
-          bot,
-          options.channel!.id,
-          bot.id,
-          command.botChannelPermissions
-        )
-      ).length)
-  )
-    return {
-      type: ErrorEnums.BOT_MISSING_PERMISSIONS,
-      channel: true,
-      value: await getMissingChannelPermissions(
-        bot,
-        options!.channel!.id!,
-        bot.id,
-        command.botChannelPermissions
-      ),
-    };
-  return true;
-});
-
 inhibitors.set("userPermissions", async (bot, cmd, options) => {
   const command = cmd as CommandClass & {
     userGuildPermissions: PermissionStrings[];
@@ -148,45 +96,15 @@ inhibitors.set("userPermissions", async (bot, cmd, options) => {
     command.userGuildPermissions?.length &&
     (!options?.guildId ||
       !options.author!.id ||
-      getMissingGuildPermissions(
-        bot,
-        (await bot.cache.guilds.get(options.guildId))!,
-        options.member!,
-        command.userGuildPermissions
-      ).length)
+      !(
+        await bot.helpers.getMember(options.guildId!, options.author!.id)
+      ).permissions!.hasAll(command.userGuildPermissions))
   )
     return {
       type: ErrorEnums.USER_MISSING_PERMISSIONS,
       channel: false,
-      value: getMissingGuildPermissions(
-        bot,
-        options.guild!,
-        options.member!,
-        command.userGuildPermissions
-      ),
+      value: command.userGuildPermissions,
     };
-  if (
-    command.userChannelPermissions?.length &&
-    (!options?.guildId ||
-      !options.author!.id ||
-      (
-        await getMissingChannelPermissions(
-          bot,
-          options.channel!,
-          options.member!,
-          command.userChannelPermissions
-        )
-      ).length)
-  )
-    return {
-      type: ErrorEnums.USER_MISSING_PERMISSIONS,
-      channel: true,
-      value: getMissingGuildPermissions(
-        bot,
-        options.guild!,
-        options.member!,
-        command.userChannelPermissions
-      ),
-    };
+
   return true;
 });

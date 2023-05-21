@@ -15,6 +15,6 @@ export function Category(options: CategoryOptions): ClassDecorator {
     else if (options.botCacheNumber) bot = cache.get(options.botCacheNumber)!;
     else bot = cache.first()!;
 
-    bot.amethystUtils.createCategory(options);
+    bot.utils.createCategory(options);
   };
 }

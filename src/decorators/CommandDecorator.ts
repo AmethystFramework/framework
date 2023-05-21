@@ -16,6 +16,6 @@ export function Command(options: CommandOptions): MethodDecorator {
     else if (options.botCacheNumber) bot = cache.get(options.botCacheNumber)!;
     else bot = cache.first()!;
 
-    bot.amethystUtils.createCommand(options);
+    bot.utils.createCommand(options);
   };
 }

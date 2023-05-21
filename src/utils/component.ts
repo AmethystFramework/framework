@@ -42,7 +42,7 @@ export class Components extends Array<ActionRow> {
     row.components = [
       {
         type: 3,
-        label: label,
+
         customId,
         options,
         placeholder,

@@ -37,7 +37,7 @@ export class AmethystEmbed {
   image?: {
     url: string;
   };
-  timestamp?: number;
+  timestamp?: string;
   title?: string;
   thumbnail?: {
     url: string;
@@ -206,7 +206,7 @@ export class AmethystEmbed {
    * @returns The object itself.
    */
   setTimestamp(time = Date.now()) {
-    this.timestamp = time;
+    this.timestamp = time + "";
 
     return this;
   }

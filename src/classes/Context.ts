@@ -1,13 +1,20 @@
-import { Channel, Guild, Interaction, Member, Message, User } from '../../deps.ts';
-import { AmethystBot, CommandOptions } from '../../mod.ts';
-import { optionResults } from '../interfaces/commandArgumentOptions.ts';
-import { CommandClass } from './Command.ts';
+import {
+  Channel,
+  Guild,
+  Interaction,
+  Member,
+  Message,
+  User,
+} from "../../deps.ts";
+import { AmethystBot, CommandOptions } from "../../mod.ts";
+import { optionResults } from "../interfaces/commandArgumentOptions.ts";
+import { CommandClass } from "./Command.ts";
 
 /* It's a class that represents a context of a message or interaction */
 export class Context {
   deffered = false;
   replied = false;
-  sentMessage: Interaction | Message | undefined;
+  sentMessage: Message | undefined;
   interaction?: Interaction;
   message?: Message;
   interactionContext: boolean;
@@ -60,10 +67,7 @@ export class Context {
       if (this.replied) {
         const msg = await this.client.helpers.sendFollowupMessage(
           this.interaction.token,
-          {
-            type: 4,
-            data: { ...content, flags: content.private ? 1 << 6 : undefined },
-          }
+          { ...content, flags: content.private ? 1 << 6 : undefined, type: 4 }
         );
         this.sentMessage = msg;
         return await createContext(
@@ -73,7 +77,7 @@ export class Context {
           this.client
         );
       } else {
-        await this.client.helpers.sendInteractionResponse(
+        const msg: any = await this.client.helpers.sendInteractionResponse(
           this.interaction.id,
           this.interaction.token,
           {
@@ -81,8 +85,15 @@ export class Context {
             data: { ...content, flags: content.empheral ? 1 << 6 : undefined },
           }
         );
+
+        this.sentMessage = msg;
         this.replied = true;
-        return this;
+        return await createContext(
+          { message: this.sentMessage },
+          this.options,
+          this.command,
+          this.client
+        );
       }
     } else if (this.message) {
       const msg = await this.client.helpers.sendMessage(
@@ -100,10 +111,9 @@ export class Context {
       this.sentMessage = msg;
       this.replied = true;
       if (content.private)
-        this.client.helpers.deleteMessage(
-          msg.channelId,
-          msg.id,
-          undefined,
+        setInterval(
+          () =>
+            this.client.helpers.deleteMessage(msg.channelId, msg.id, undefined),
           5000
         );
       return await createContext(
@@ -125,32 +135,70 @@ export class Context {
    */
   async editReply(content: any): Promise<Context> {
     if (this.interactionContext && this.interaction) {
-      await this.client.helpers.editOriginalInteractionResponse(
+      const msg = await this.client.helpers.editOriginalInteractionResponse(
         this.interaction.token,
-        content
-      );
-      return this;
-    } else if (this.message) {
-      const msg = await this.client.helpers.editMessage(
-        this.message.channelId,
-        this.message.id,
         content
       );
       this.sentMessage = msg;
       this.replied = true;
-      if (content.private)
-        this.client.helpers.deleteMessage(
-          msg.channelId,
-          msg.id,
-          undefined,
-          5000
+      if (msg)
+        return await createContext(
+          { message: this.sentMessage },
+          this.options,
+          this.command,
+          this.client
         );
-      return await createContext(
-        { message: this.sentMessage },
-        this.options,
-        this.command,
-        this.client
-      );
+      else return this;
+    } else if (this.message) {
+      if (this.sentMessage) {
+        const msg = await this.client.helpers.editMessage(
+          this.sentMessage.channelId,
+          this.sentMessage.id,
+          content
+        );
+        this.sentMessage = msg;
+        this.replied = true;
+        if (content.private)
+          setTimeout(
+            () =>
+              this.client.helpers.deleteMessage(
+                msg.channelId,
+                msg.id,
+                undefined
+              ),
+            5000
+          );
+        return await createContext(
+          { message: this.sentMessage },
+          this.options,
+          this.command,
+          this.client
+        );
+      } else {
+        const msg = await this.client.helpers.editMessage(
+          this.message.channelId,
+          this.message.id,
+          content
+        );
+        this.sentMessage = msg;
+        this.replied = true;
+        if (content.private)
+          setTimeout(
+            () =>
+              this.client.helpers.deleteMessage(
+                msg.channelId,
+                msg.id,
+                undefined
+              ),
+            5000
+          );
+        return await createContext(
+          { message: this.sentMessage },
+          this.options,
+          this.command,
+          this.client
+        );
+      }
     } else {
       return this;
     }
@@ -207,7 +255,7 @@ export async function createContext(
     interactionContext: data.message ? false : true,
     guildId: data.message ? data.message.guildId : data.interaction?.guildId,
     user: data.message
-      ? await bot.cache.users.get(data.message.authorId)
+      ? await bot.cache.users.get(data.message.author.id)
       : data.interaction?.user,
     channel: data.message
       ? await bot.cache.channels.get(data.message.channelId)
